@@ -1,6 +1,16 @@
 <template>
   <div class="orders">
-    <btable :items="list" :fields="fields" :notstriped="true" :search="['prom_id', 'phone']" @search="onSearch" :orders="true" :widths="tableWidths" @updatewidth="updateWidths">
+    <btable
+       :items="list"
+       :select-all="true"
+       :fields="fields"
+       :notstriped="true"
+       :search="['prom_id', 'phone']"
+       @search="onSearch"
+       :orders="true"
+       :widths="tableWidths"
+       @updatewidth="updateWidths"
+       >
 
       <template slot="row" slot-scope="data">
         <tr is="orderline" v-for="(item, key) in data.items" :dictionary="dictionary" :item="item" :key="key" :class="{'green lighten-5': item.status == 'delivered', 'pink lighten-5': item.status == 'canceled'}"></tr>
@@ -32,7 +42,7 @@
 <script>
     import orderline from './OrderLine'
     import autosms from './AutoSms'
-    import { mapActions, mapGetters } from 'vuex'
+    import { mapActions, mapGetters, mapMutations } from 'vuex'
 
     export default {
       data() {
@@ -47,7 +57,6 @@
           payStatus: '',
           massAction: {},
           fields: [
-            { key: 'mass', label: '', 'td_class': 'align-middle' },
             { key: 'prom_id', label: 'Заказ' },
             { key: 'workout', label: 'Обработка' },
             { key: 'payment', label: 'Оплата' },
@@ -92,6 +101,7 @@
         autosms
       },
       methods: {
+        ...mapMutations(['setOrders']),
         ...mapActions(['updateSettings']),
         updateWidths () {
           this.updateSettings({name: 'order_table_widths', value: JSON.stringify(this.tableWidths)})
@@ -160,6 +170,7 @@
           params = Object.assign(this.searchQuery, params)
           axios.get('api/orders', {params}).then((res) => {
             this.list = res.data.data
+            this.setOrders(this.list)
             this.curPage = res.data.current_page
             this.lastPage = res.data.last_page
             this.deliveryCollected = res.data.delivery_collected

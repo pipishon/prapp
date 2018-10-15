@@ -16,7 +16,7 @@ class NewPostCity extends Model
 
     public static function isAddressValid ($address = '')
     {
-        preg_match("/^([\w|-|(|)\s]+),(.*)/u", $address, $matches);
+        preg_match("/^([\w-()\s\.]+),(.*)/u", $address, $matches);
         $res = null;
         if (count($matches) > 1) {
           $res = DB::table('new_post_cities')

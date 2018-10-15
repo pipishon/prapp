@@ -57,13 +57,14 @@ class Order extends Model
       if (isset($input['phone'])) {
           $customer = Customer::whereIn('customers.id', function($q) use ($input) {
             $q->from('phones')->select('phones.customer_id')->where('phones.phone', 'like', '%'.$input['phone'].'%');
-          })->first();
-          if ($customer == null) {
+          })->get();
+          if ($customer->count() == 0) {
               $customer = Customer::where('name', 'like', '%'.$input['phone'].'%')
-                  ->orWhere('instagram_id', 'like', '%'.$input['phone'].'%')->first();
+                  ->orWhere('instagram_id', 'like', '%'.$input['phone'].'%')->get();
           }
           if ($customer != null) {
-              $query = $query->where('customer_id', $customer->id);//$query->orWhere('client_last_name', 'LIKE', '%'.$input[$type].'%')->orWhere('client_first_name', 'LIKE', '%'.$input[$type].'%');
+             $ids = $customer->pluck('id')->toArray();
+             $query = $query->whereIn('customer_id', $ids);//$query->orWhere('client_last_name', 'LIKE', '%'.$input[$type].'%')->orWhere('client_first_name', 'LIKE', '%'.$input[$type].'%');
           }
       }
       if (isset($input['status']) || isset($input['today_delivery']) || isset($input['not_payed'])) {
@@ -90,7 +91,7 @@ class Order extends Model
         if ($input['status'] == 'not-delivered') {
           $query = $query->where('status', '!=', 'delivered')->where('status', '!=', 'canceled');
         }
-        $query = $query->orderBy(DB::raw('IF(order_statuses.shipment_date IS NOT NULL AND order_statuses.shipment_date >= CURDATE(), ABS(DATEDIFF(order_statuses.shipment_date, NOW())), 1000000)'), 'asc')->orderBy('order_statuses.collected', 'asc');
+        $query = $query->orderBy(DB::raw('IF(order_statuses.shipment_date IS NOT NULL AND order_statuses.shipment_date >= CURDATE(), ABS(DATEDIFF(order_statuses.shipment_date, NOW())), 1000000)'), 'asc')->orderBy('order_statuses.collected', 'asc')->latest('order_statuses.payment_date');
       }
 
 

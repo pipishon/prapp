@@ -62,5 +62,8 @@ Route::prefix('sync')->group(function () {
   Route::get('newpost', 'SyncController@newPost');
 });
 
+Route::prefix('mass')->group(function () {
+  Route::get('delivered', 'MassActionController@statusDelivered');
+});
 
 Route::get('import', 'ImportController@import');

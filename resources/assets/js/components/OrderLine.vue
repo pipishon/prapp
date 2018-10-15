@@ -1,7 +1,7 @@
 <template>
   <tr class="order-line" >
-      <td class="align-middle">
-            <v-checkbox flat class="mt-0"  > </v-checkbox>
+        <td class="align-middle" style="padding: 7px;">
+            <v-checkbox flat class="mt-0" :value="selected.indexOf(data.item) != -1" @change="changeMass"> </v-checkbox>
         </td>
 
         <td >
@@ -128,6 +128,7 @@
     import newpost from './NewPost'
     import ClickOutside from 'vue-click-outside'
     import * as moment from 'moment';
+    import { mapMutations, mapGetters } from 'vuex'
 
     export default {
       props: ['item', 'dictionary'],
@@ -161,6 +162,7 @@
         }
       },
      computed: {
+        ...mapGetters(['selected']),
         data () {
           return {item: this.item}
         },
@@ -193,6 +195,17 @@
         newpost
       },
       methods: {
+        ...mapMutations(['massSelection']),
+        changeMass(val) {
+          if (val) {
+            const massItems = Object.assign([], this.selected)
+            massItems.push(this.item)
+            this.massSelection(massItems)
+          } else {
+            const massItems = this.selected.filter(el => el.id != this.item.id)
+            this.massSelection(massItems)
+          }
+        },
         saveTTN() {
           this.ttnSaved = true;
           setTimeout(() => {

@@ -2,13 +2,16 @@
   <v-dialog width="600" v-model="showDialog" persistent @keydown.esc="showDialog = false">
     <div slot="activator" class="my-2">
       <v-icon  :class="{'blue--text text--accent-1': valid}" small>check_circle</v-icon>
-    <v-tooltip v-if="isTtnCreated" top content-class="white black--text" transition="sss" :open-delay="0" :close-delay="0" style="cursor: default;">
+    <v-tooltip v-if="isTtnCreated" left content-class="white black--text" transition="sss" :open-delay="0" :close-delay="0" style="cursor: default;">
       <span slot="activator" v-if="item.ttn">{{item.ttn.full_address}}</span><span v-else>{{item.delivery_address}}</span>
-      <div>{{this.item.ttn.name}}</div>
-      <div>{{this.item.ttn.phone}}</div>
-      <div>{{this.item.ttn.full_address}}</div>
-      <div>Стоимость доставки {{deliveryCost}}</div>
-      <div v-if="this.item.ttn.backdelivery == '1'">Наложенный платеж {{this.item.ttn.backprice}} грн.</div>
+      <div class="body-1" style="width: 250px;">
+        <div>{{this.item.ttn.name}}</div>
+        <div>{{this.item.ttn.phone}}</div>
+        <div>{{this.item.ttn.full_address}}</div>
+        <div>Вес {{(item.ttn.weight > item.ttn.volume_general) ? item.ttn.weight : item.ttn.volume_general}} кг</div>
+        <div>Стоимость доставки {{deliveryCost}}</div>
+        <div v-if="this.item.ttn.backdelivery == '1'">Наложенный платеж {{this.item.ttn.backprice}} грн.</div>
+      </div>
     </v-tooltip>
     <span v-else>
       <span v-if="item.ttn">{{item.ttn.full_address}}</span><span v-else>{{item.delivery_address}}</span>
@@ -22,7 +25,7 @@
           <v-icon small>book</v-icon>
         </a>
       </span>
-      <v-btn v-if="!isTtnCreated && item.statuses.shipment_weight != '-'" @click.native.stop="setDefaults(); send();" flat icon class="mt-0 ml-0"><v-icon small>autorenew</v-icon></v-btn>
+      <v-btn v-if="!isTtnCreated && item.statuses.shipment_weight != '-'" @click.native.stop="setDefaults(); send(false);" flat icon class="mt-0 ml-0"><v-icon small>autorenew</v-icon></v-btn>
     </div>
     <v-card v-if="!editeTtn && isTtnCreated">
       <v-card-title class="primary white--text"><h5>Экспресс накладная</h5></v-card-title>
@@ -132,7 +135,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" flat @click="showDialog = false; editeTtn= false" > Отмена </v-btn>
-          <v-btn color="primary" flat @click="send(false)">Сгенерировать ЭН</v-btn>
+          <v-btn color="primary" flat v-if="isWeightValid" @click="send(false)">Сгенерировать ЭН</v-btn>
           <v-btn color="primary" v-if="!isTtnCreated" flat @click="send(true)"> Сохранить </v-btn>
         </v-card-actions>
     </v-card>
@@ -186,6 +189,15 @@ import { mapGetters } from 'vuex'
         }*/
       },
       computed: {
+        isWeightValid () {
+          let valid = true
+          this.places.map((place) => {
+            if (isNaN(parseFloat(place.weight.replace(',','.')))) {
+              valid = false
+            }
+          })
+          return valid
+        },
         valid () {
           return (this.item.is_address_valid == 1)
         },
@@ -241,6 +253,7 @@ import { mapGetters } from 'vuex'
 
           axios.get('api/newpost/getttn', {params}).then((res) => {
             console.log(res.data)
+            this.item.is_address_valid = 1
             if (onlySave) {
               this.showDialog = false
             }
@@ -250,7 +263,6 @@ import { mapGetters } from 'vuex'
               this.item.statuses.ttn_string = this.item.ttn.int_doc_number
               this.updateStatuses()
             }
-            this.item.is_address_valid = 1
           })
 
         },
@@ -269,6 +281,7 @@ import { mapGetters } from 'vuex'
                 this.data[key] = this.item[key]
               }
             })
+            this.data.client_middle_name = ''
             this.data.phone = (this.item.statuses.custom_phone != null) ? this.item.statuses.custom_phone : this.item.phone
             if (this.item.statuses.payment_status == 'Наложенный') {
               this.data.backdelivery = 1
@@ -285,12 +298,12 @@ import { mapGetters } from 'vuex'
             } else {
               this.places.push(place)
             }
-            this.places[0].weight = this.item.statuses.shipment_weight || 0.1
+            //this.places[0].weight = this.item.statuses.shipment_weight //|| 0.1
             const price = Math.ceil(parseFloat(this.item.statuses.payment_price))
             this.data.backprice = price
             this.data.price = price
             if (this.valid) {
-              const matches = this.item.delivery_address.match(/^([а-яА-ЯёЁ|-|(|)\s]+),(.*)/)
+              const matches = this.item.delivery_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
               this.data.city = matches[1];
               this.data.warehouse = matches[2].trim();
             }
@@ -308,12 +321,13 @@ import { mapGetters } from 'vuex'
             this.data.client_last_name = names[0] || ''
             this.data.client_first_name = names[1] || ''
             this.data.client_middle_name = names[2] || ''
-            this.places[0].weight = (this.places[0].weight == '-') ? this.item.statuses.shipment_weight : this.places[0].weight
+            //this.places[0].weight = //(this.places[0].weight == '-') ? this.item.statuses.shipment_weight : this.places[0].weight
 
-            const matches = this.item.ttn.full_address.match(/^([а-яА-ЯёЁ|-|(|)\s]+),(.*)/)
+            const matches = this.item.ttn.full_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
             this.data.city = matches[1];
             this.data.warehouse = matches[2].trim();
           }
+          this.places[0].weight = this.item.statuses.shipment_weight
         },
         loadWarehouses () {
           let params = {

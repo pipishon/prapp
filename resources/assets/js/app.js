@@ -29,9 +29,14 @@ const store = new Vuex.Store({
       'delivered': 'Выполнен',
       'canceled': 'Отменен',
     },
-    templates: []
+    selected: [],
+    templates: [],
+    orders: [],
   },
   getters: {
+    selected: state => {
+      return state.selected
+    },
     settings: state => {
       return state.settings
     },
@@ -45,6 +50,9 @@ const store = new Vuex.Store({
     }
   },
   mutations: {
+    massSelection (state, data) {
+      state.selected = data
+    },
     setSettings(state, data) {
       state.settings = data
     },
@@ -59,9 +67,29 @@ const store = new Vuex.Store({
     },
     updateSettings(state, data) {
       state.settings[data.name] = data.value
+    },
+    setOrders(state, data) {
+      state.orders = data
+    },
+    setDelivered(state, ids) {
+      state.orders.map((order) => {
+        if (ids.indexOf(order.id) != -1) {
+          order.status = 'delivered'
+        }
+      })
     }
   },
   actions: {
+    massAction ({dispatch, commit}, data) {
+      const ids = data.selected.map((el) => el = el.id)
+      dispatch(data.fnName, ids)
+    },
+    massDelivered ({commit}, ids) {
+      commit('setDelivered', ids)
+      axios.get('api/mass/delivered', {params: {ids}}).then((res) => {
+        console.log(res)
+      })
+    },
     loadDictionary ({commit}) {
       axios.get('api/dictionary', {params: {type: 'payment'}}).then((res) => {
         commit('setDictPayment', res.data)

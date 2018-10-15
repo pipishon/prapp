@@ -5313,7 +5313,7 @@ module.exports = {
 /* unused harmony export Store */
 /* unused harmony export install */
 /* unused harmony export mapState */
-/* unused harmony export mapMutations */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return mapMutations; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return mapGetters; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return mapActions; });
 /* unused harmony export createNamespacedHelpers */
@@ -29877,9 +29877,14 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
       'delivered': 'Выполнен',
       'canceled': 'Отменен'
     },
-    templates: []
+    selected: [],
+    templates: [],
+    orders: []
   },
   getters: {
+    selected: function selected(state) {
+      return state.selected;
+    },
     settings: function settings(state) {
       return state.settings;
     },
@@ -29895,6 +29900,9 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
     }
   },
   mutations: {
+    massSelection: function massSelection(state, data) {
+      state.selected = data;
+    },
     setSettings: function setSettings(state, data) {
       state.settings = data;
     },
@@ -29909,11 +29917,38 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
     },
     updateSettings: function updateSettings(state, data) {
       state.settings[data.name] = data.value;
+    },
+    setOrders: function setOrders(state, data) {
+      state.orders = data;
+    },
+    setDelivered: function setDelivered(state, ids) {
+      state.orders.map(function (order) {
+        if (ids.indexOf(order.id) != -1) {
+          order.status = 'delivered';
+        }
+      });
     }
   },
   actions: {
-    loadDictionary: function loadDictionary(_ref) {
-      var commit = _ref.commit;
+    massAction: function massAction(_ref, data) {
+      var dispatch = _ref.dispatch,
+          commit = _ref.commit;
+
+      var ids = data.selected.map(function (el) {
+        return el = el.id;
+      });
+      dispatch(data.fnName, ids);
+    },
+    massDelivered: function massDelivered(_ref2, ids) {
+      var commit = _ref2.commit;
+
+      commit('setDelivered', ids);
+      axios.get('api/mass/delivered', { params: { ids: ids } }).then(function (res) {
+        console.log(res);
+      });
+    },
+    loadDictionary: function loadDictionary(_ref3) {
+      var commit = _ref3.commit;
 
       axios.get('api/dictionary', { params: { type: 'payment' } }).then(function (res) {
         commit('setDictPayment', res.data);
@@ -29922,23 +29957,23 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
         commit('setDictDelivery', res.data);
       });
     },
-    loadSettings: function loadSettings(_ref2) {
-      var commit = _ref2.commit;
+    loadSettings: function loadSettings(_ref4) {
+      var commit = _ref4.commit;
 
       axios.get('api/settings').then(function (res) {
         commit('setSettings', res.data);
       });
     },
-    loadTemplates: function loadTemplates(_ref3) {
-      var commit = _ref3.commit;
+    loadTemplates: function loadTemplates(_ref5) {
+      var commit = _ref5.commit;
 
       axios.get('api/messagetpl').then(function (res) {
         commit('setTemplates', res.data);
       });
     },
-    updateSettings: function updateSettings(_ref4, data) {
-      var commit = _ref4.commit,
-          state = _ref4.state;
+    updateSettings: function updateSettings(_ref6, data) {
+      var commit = _ref6.commit,
+          state = _ref6.state;
 
       commit('updateSettings', data);
       axios.post('api/settings', state.settings).then(function (res) {
@@ -79935,7 +79970,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n.loader-wrap td {\n    padding: 0px;\n    position: absolute;\n    width: 100%;\n    height: 7px;\n    border: none;\n}\n.fixed {\n  table-layout: fixed;\n}\n", ""]);
+exports.push([module.i, "\n.loader-wrap td {\n    padding: 0px;\n    position: absolute;\n    width: 100%;\n    height: 7px;\n    border: none;\n}\n.fixed {\n  table-layout: fixed;\n}\n.mass-menu {\n  position: absolute;\n  right: -160px;\n  top: 5px;\n  background: white;\n  display: block;\n}\n.mass-menu-activator {\n  width: 160px;\n  background: white;\n  height: 42px;\n  padding: 10px 15px;\n  border: 1px solid lightgray;\n  border-radius: 4px;\n}\n.v-input--selection-controls .v-input__slot {\n  margin-bottom: 0;\n}\n", ""]);
 
 // exports
 
@@ -79979,6 +80014,23 @@ module.exports = function listToStyles (parentId, list) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(5);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -80009,15 +80061,21 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 
+
 /* harmony default export */ __webpack_exports__["default"] = ({
-  props: ['items', 'fields', 'search', 'notstriped', 'rownumber', 'orders', 'widths'],
+  props: ['items', 'fields', 'search', 'notstriped', 'rownumber', 'orders', 'widths', 'selectAll'],
   data: function data() {
     return {
       showWidthAdj: {}
     };
   },
 
-  methods: {
+  computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["c" /* mapGetters */])(['selected'])),
+  methods: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["d" /* mapMutations */])(['massSelection']), Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["b" /* mapActions */])(['massAction']), {
+    massChange: function massChange(val) {
+      var massItems = val ? this.items : [];
+      this.massSelection(massItems);
+    },
     widthStyle: function widthStyle(key) {
       if (typeof this.widths == 'undefined') return {};
       var width = this.widths[key] < 40 ? 40 : this.widths[key];
@@ -80028,7 +80086,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       data[key] = event.target.value;
       this.$emit('search', data);
     }
-  },
+  }),
   mounted: function mounted() {}
 });
 
@@ -80056,6 +80114,10 @@ var render = function() {
           { staticClass: "thead-dark" },
           [
             _vm.rownumber ? _c("th") : _vm._e(),
+            _vm._v(" "),
+            _vm.selectAll
+              ? _c("th", { staticStyle: { width: "40px" } })
+              : _vm._e(),
             _vm._v(" "),
             _vm._l(_vm.fields, function(field, key) {
               return _c(
@@ -80123,33 +80185,117 @@ var render = function() {
             typeof _vm.search != "undefined"
               ? _c(
                   "tr",
-                  _vm._l(_vm.fields, function(field) {
-                    return _c("td", [
-                      _vm.search.indexOf(field.key) != -1
-                        ? _c("input", {
-                            staticClass: "form-control",
-                            attrs: { type: "text", placeholder: "Search" },
-                            on: {
-                              keyup: function($event) {
-                                if (
-                                  !("button" in $event) &&
-                                  _vm._k(
-                                    $event.keyCode,
-                                    "enter",
-                                    13,
-                                    $event.key,
-                                    "Enter"
-                                  )
-                                ) {
-                                  return null
-                                }
-                                _vm.onChange($event, field.key)
-                              }
+                  [
+                    _vm.selectAll
+                      ? _c(
+                          "td",
+                          {
+                            staticStyle: {
+                              position: "relative",
+                              padding: "15px 0px 0px 7px"
                             }
-                          })
-                        : _vm._e()
-                    ])
-                  })
+                          },
+                          [
+                            _c("v-checkbox", {
+                              staticClass: "ma-0 pa-0",
+                              on: { change: _vm.massChange }
+                            }),
+                            _vm._v(" "),
+                            _vm.selected.length
+                              ? _c(
+                                  "v-menu",
+                                  {
+                                    staticClass: "ma-0 mass-menu",
+                                    attrs: { "offset-y": "" }
+                                  },
+                                  [
+                                    _c(
+                                      "div",
+                                      {
+                                        staticClass: "ma-0 mass-menu-activator",
+                                        attrs: { slot: "activator" },
+                                        slot: "activator"
+                                      },
+                                      [
+                                        _c("strong", [
+                                          _vm._v(
+                                            _vm._s(_vm.selected.length) +
+                                              " заказов ↓"
+                                          )
+                                        ])
+                                      ]
+                                    ),
+                                    _vm._v(" "),
+                                    _c(
+                                      "v-list",
+                                      _vm._l(
+                                        {
+                                          massTtn: "Сформировать ТТН",
+                                          massSendTtn: "Разослать ТТН",
+                                          massDelivered: "Установить Выполнен"
+                                        },
+                                        function(item, fnName) {
+                                          return _c(
+                                            "v-list-tile",
+                                            {
+                                              key: fnName,
+                                              on: {
+                                                click: function($event) {
+                                                  _vm.massAction({
+                                                    fnName: fnName,
+                                                    selected: _vm.selected
+                                                  })
+                                                }
+                                              }
+                                            },
+                                            [
+                                              _c("v-list-tile-title", [
+                                                _vm._v(_vm._s(item))
+                                              ])
+                                            ],
+                                            1
+                                          )
+                                        }
+                                      )
+                                    )
+                                  ],
+                                  1
+                                )
+                              : _vm._e()
+                          ],
+                          1
+                        )
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm._l(_vm.fields, function(field) {
+                      return _c("td", [
+                        _vm.search.indexOf(field.key) != -1
+                          ? _c("input", {
+                              staticClass: "form-control",
+                              attrs: { type: "text", placeholder: "Search" },
+                              on: {
+                                keyup: function($event) {
+                                  if (
+                                    !("button" in $event) &&
+                                    _vm._k(
+                                      $event.keyCode,
+                                      "enter",
+                                      13,
+                                      $event.key,
+                                      "Enter"
+                                    )
+                                  ) {
+                                    return null
+                                  }
+                                  _vm.onChange($event, field.key)
+                                }
+                              }
+                            })
+                          : _vm._e()
+                      ])
+                    })
+                  ],
+                  2
                 )
               : _vm._e(),
             _vm._v(" "),
@@ -80166,6 +80312,8 @@ var render = function() {
                     }
                   },
                   [
+                    _vm.selectAll ? _c("td", [_c("v-checkbox")], 1) : _vm._e(),
+                    _vm._v(" "),
                     _vm.rownumber
                       ? _c("td", [_vm._v(_vm._s(key + 1))])
                       : _vm._e(),
@@ -86872,6 +87020,16 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -86889,7 +87047,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
       sTodayDelivered: false,
       payStatus: '',
       massAction: {},
-      fields: [{ key: 'mass', label: '', 'td_class': 'align-middle' }, { key: 'prom_id', label: 'Заказ' }, { key: 'workout', label: 'Обработка' }, { key: 'payment', label: 'Оплата' }, { key: 'comments', label: 'Комментарии' }, { key: 'price', label: 'Цена', 'td_class': ['text-nowrap', 'text-center'] }, { key: 'info', label: 'Информация' }, { key: 'phone', label: 'Клиент' }, { key: 'comment', label: 'Рабочие комментарии', 'th_class': 'text-nowrap' }, { key: 'complete', label: 'Сборка' }, { key: 'status', label: 'Статус' }],
+      fields: [{ key: 'prom_id', label: 'Заказ' }, { key: 'workout', label: 'Обработка' }, { key: 'payment', label: 'Оплата' }, { key: 'comments', label: 'Комментарии' }, { key: 'price', label: 'Цена', 'td_class': ['text-nowrap', 'text-center'] }, { key: 'info', label: 'Информация' }, { key: 'phone', label: 'Клиент' }, { key: 'comment', label: 'Рабочие комментарии', 'th_class': 'text-nowrap' }, { key: 'complete', label: 'Сборка' }, { key: 'status', label: 'Статус' }],
       orderStatuses: {
         'pending': 'Новый',
         'received': 'Принят',
@@ -86923,7 +87081,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     orderline: __WEBPACK_IMPORTED_MODULE_0__OrderLine___default.a,
     autosms: __WEBPACK_IMPORTED_MODULE_1__AutoSms___default.a
   },
-  methods: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_2_vuex__["b" /* mapActions */])(['updateSettings']), {
+  methods: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_2_vuex__["d" /* mapMutations */])(['setOrders']), Object(__WEBPACK_IMPORTED_MODULE_2_vuex__["b" /* mapActions */])(['updateSettings']), {
     updateWidths: function updateWidths() {
       this.updateSettings({ name: 'order_table_widths', value: JSON.stringify(this.tableWidths) });
     },
@@ -86997,6 +87155,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
       params = Object.assign(this.searchQuery, params);
       axios.get('api/orders', { params: params }).then(function (res) {
         _this3.list = res.data.data;
+        _this3.setOrders(_this3.list);
         _this3.curPage = res.data.current_page;
         _this3.lastPage = res.data.last_page;
         _this3.deliveryCollected = res.data.delivery_collected;
@@ -87148,6 +87307,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_vue_click_outside___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_vue_click_outside__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_moment__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_moment__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_vuex__ = __webpack_require__(5);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 //
 //
 //
@@ -87267,6 +87429,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+
 
 
 
@@ -87311,7 +87474,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     };
   },
 
-  computed: {
+  computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_10_vuex__["c" /* mapGetters */])(['selected']), {
     data: function data() {
       return { item: this.item };
     },
@@ -87332,7 +87495,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         return 'Не указан';
       }
     }
-  },
+  }),
   components: {
     order: __WEBPACK_IMPORTED_MODULE_0__Order___default.a,
     customer: __WEBPACK_IMPORTED_MODULE_1__Customer___default.a,
@@ -87343,13 +87506,27 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     workout: __WEBPACK_IMPORTED_MODULE_6__Workout___default.a,
     newpost: __WEBPACK_IMPORTED_MODULE_7__NewPost___default.a
   },
-  methods: {
-    saveTTN: function saveTTN() {
+  methods: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_10_vuex__["d" /* mapMutations */])(['massSelection']), {
+    changeMass: function changeMass(val) {
       var _this = this;
+
+      if (val) {
+        var massItems = Object.assign([], this.selected);
+        massItems.push(this.item);
+        this.massSelection(massItems);
+      } else {
+        var _massItems = this.selected.filter(function (el) {
+          return el.id != _this.item.id;
+        });
+        this.massSelection(_massItems);
+      }
+    },
+    saveTTN: function saveTTN() {
+      var _this2 = this;
 
       this.ttnSaved = true;
       setTimeout(function () {
-        _this.ttnSaved = false;
+        _this2.ttnSaved = false;
       }, 500);
       this.updateStatuses();
     },
@@ -87456,7 +87633,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       };
       return map[name];
     }
-  },
+  }),
   mounted: function mounted() {}
 });
 
@@ -91524,7 +91701,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -91536,6 +91713,9 @@ exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(5);
+//
+//
+//
 //
 //
 //
@@ -91725,6 +91905,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
   },
   computed: {
+    isWeightValid: function isWeightValid() {
+      var valid = true;
+      this.places.map(function (place) {
+        if (isNaN(parseFloat(place.weight.replace(',', '.')))) {
+          valid = false;
+        }
+      });
+      return valid;
+    },
     valid: function valid() {
       return this.item.is_address_valid == 1;
     },
@@ -91783,6 +91972,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
       axios.get('api/newpost/getttn', { params: params }).then(function (res) {
         console.log(res.data);
+        _this.item.is_address_valid = 1;
         if (onlySave) {
           _this.showDialog = false;
         }
@@ -91792,7 +91982,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
           _this.item.statuses.ttn_string = _this.item.ttn.int_doc_number;
           _this.updateStatuses();
         }
-        _this.item.is_address_valid = 1;
       });
     },
     volumeWeight: function volumeWeight(place) {
@@ -91812,6 +92001,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             _this2.data[key] = _this2.item[key];
           }
         });
+        this.data.client_middle_name = '';
         this.data.phone = this.item.statuses.custom_phone != null ? this.item.statuses.custom_phone : this.item.phone;
         if (this.item.statuses.payment_status == 'Наложенный') {
           this.data.backdelivery = 1;
@@ -91828,12 +92018,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         } else {
           this.places.push(place);
         }
-        this.places[0].weight = this.item.statuses.shipment_weight || 0.1;
+        //this.places[0].weight = this.item.statuses.shipment_weight //|| 0.1
         var price = Math.ceil(parseFloat(this.item.statuses.payment_price));
         this.data.backprice = price;
         this.data.price = price;
         if (this.valid) {
-          var matches = this.item.delivery_address.match(/^([а-яА-ЯёЁ|-|(|)\s]+),(.*)/);
+          var matches = this.item.delivery_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/);
           this.data.city = matches[1];
           this.data.warehouse = matches[2].trim();
         }
@@ -91851,12 +92041,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         this.data.client_last_name = names[0] || '';
         this.data.client_first_name = names[1] || '';
         this.data.client_middle_name = names[2] || '';
-        this.places[0].weight = this.places[0].weight == '-' ? this.item.statuses.shipment_weight : this.places[0].weight;
+        //this.places[0].weight = //(this.places[0].weight == '-') ? this.item.statuses.shipment_weight : this.places[0].weight
 
-        var _matches = this.item.ttn.full_address.match(/^([а-яА-ЯёЁ|-|(|)\s]+),(.*)/);
+        var _matches = this.item.ttn.full_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/);
         this.data.city = _matches[1];
         this.data.warehouse = _matches[2].trim();
       }
+      this.places[0].weight = this.item.statuses.shipment_weight;
     },
     loadWarehouses: function loadWarehouses() {
       var _this3 = this;
@@ -91943,7 +92134,7 @@ var render = function() {
                 {
                   staticStyle: { cursor: "default" },
                   attrs: {
-                    top: "",
+                    left: "",
                     "content-class": "white black--text",
                     transition: "sss",
                     "open-delay": 0,
@@ -91959,25 +92150,43 @@ var render = function() {
                       )
                     : _c("span", [_vm._v(_vm._s(_vm.item.delivery_address))]),
                   _vm._v(" "),
-                  _c("div", [_vm._v(_vm._s(this.item.ttn.name))]),
-                  _vm._v(" "),
-                  _c("div", [_vm._v(_vm._s(this.item.ttn.phone))]),
-                  _vm._v(" "),
-                  _c("div", [_vm._v(_vm._s(this.item.ttn.full_address))]),
-                  _vm._v(" "),
-                  _c("div", [
-                    _vm._v("Стоимость доставки " + _vm._s(_vm.deliveryCost))
-                  ]),
-                  _vm._v(" "),
-                  this.item.ttn.backdelivery == "1"
-                    ? _c("div", [
+                  _c(
+                    "div",
+                    { staticClass: "body-1", staticStyle: { width: "250px" } },
+                    [
+                      _c("div", [_vm._v(_vm._s(this.item.ttn.name))]),
+                      _vm._v(" "),
+                      _c("div", [_vm._v(_vm._s(this.item.ttn.phone))]),
+                      _vm._v(" "),
+                      _c("div", [_vm._v(_vm._s(this.item.ttn.full_address))]),
+                      _vm._v(" "),
+                      _c("div", [
                         _vm._v(
-                          "Наложенный платеж " +
-                            _vm._s(this.item.ttn.backprice) +
-                            " грн."
+                          "Вес " +
+                            _vm._s(
+                              _vm.item.ttn.weight > _vm.item.ttn.volume_general
+                                ? _vm.item.ttn.weight
+                                : _vm.item.ttn.volume_general
+                            ) +
+                            " кг"
                         )
-                      ])
-                    : _vm._e()
+                      ]),
+                      _vm._v(" "),
+                      _c("div", [
+                        _vm._v("Стоимость доставки " + _vm._s(_vm.deliveryCost))
+                      ]),
+                      _vm._v(" "),
+                      this.item.ttn.backdelivery == "1"
+                        ? _c("div", [
+                            _vm._v(
+                              "Наложенный платеж " +
+                                _vm._s(this.item.ttn.backprice) +
+                                " грн."
+                            )
+                          ])
+                        : _vm._e()
+                    ]
+                  )
                 ]
               )
             : _c("span", [
@@ -92044,7 +92253,7 @@ var render = function() {
                     click: function($event) {
                       $event.stopPropagation()
                       _vm.setDefaults()
-                      _vm.send()
+                      _vm.send(false)
                     }
                   }
                 },
@@ -92731,18 +92940,20 @@ var render = function() {
                     [_vm._v(" Отмена ")]
                   ),
                   _vm._v(" "),
-                  _c(
-                    "v-btn",
-                    {
-                      attrs: { color: "primary", flat: "" },
-                      on: {
-                        click: function($event) {
-                          _vm.send(false)
-                        }
-                      }
-                    },
-                    [_vm._v("Сгенерировать ЭН")]
-                  ),
+                  _vm.isWeightValid
+                    ? _c(
+                        "v-btn",
+                        {
+                          attrs: { color: "primary", flat: "" },
+                          on: {
+                            click: function($event) {
+                              _vm.send(false)
+                            }
+                          }
+                        },
+                        [_vm._v("Сгенерировать ЭН")]
+                      )
+                    : _vm._e(),
                   _vm._v(" "),
                   !_vm.isTtnCreated
                     ? _c(
@@ -92864,8 +93075,14 @@ var render = function() {
   return _c("tr", { staticClass: "order-line" }, [
     _c(
       "td",
-      { staticClass: "align-middle" },
-      [_c("v-checkbox", { staticClass: "mt-0", attrs: { flat: "" } })],
+      { staticClass: "align-middle", staticStyle: { padding: "7px" } },
+      [
+        _c("v-checkbox", {
+          staticClass: "mt-0",
+          attrs: { flat: "", value: _vm.selected.indexOf(_vm.data.item) != -1 },
+          on: { change: _vm.changeMass }
+        })
+      ],
       1
     ),
     _vm._v(" "),
@@ -93581,6 +93798,7 @@ var render = function() {
       _c("btable", {
         attrs: {
           items: _vm.list,
+          "select-all": true,
           fields: _vm.fields,
           notstriped: true,
           search: ["prom_id", "phone"],
