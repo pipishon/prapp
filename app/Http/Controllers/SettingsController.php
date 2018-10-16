@@ -36,11 +36,10 @@ class SettingsController extends Controller
     public function store(Request $request)
     {
       $settings = $request->all();
-
       foreach ($settings as $name => $value) {
         Settings::updateOrCreate(['name' => $name], ['value' => $value]);
       }
-        //
+      return $settings;
     }
 
     /**

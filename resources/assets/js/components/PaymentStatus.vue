@@ -18,7 +18,8 @@
           <span>Остаток:</span><u class="float-right"><strong>{{parseFloat(item.payment_price - item.payment_partialy).toFixed(2)}} грн</strong></u>
         </div>
         <div class="mt-4" v-if="item.payment_date != null">
-          <span>Оплачено:</span><br />
+          <span v-if="this.payment_status == 'Оплачен'">Оплачено:</span>
+          <span v-else>Обработан:</span><br />
           <span>{{payment_date_string}}</span>
         </div>
       </div>
@@ -152,7 +153,7 @@ import * as moment from 'moment';
           this.item.payment_partialy = this.payment_partialy
           this.item.payment_status = this.payment_status
 
-          if (this.payment_status == 'Оплачен') {
+          if (['Оплачен', 'Наложенный'].indexOf(this.payment_status) != -1) {
             this.item.payment_date = moment().format('YYYY-MM-DD HH:mm:ss')
             this.payment_date = this.item.payment_date
           } else {

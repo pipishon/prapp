@@ -50,7 +50,7 @@ class SputnikEmail extends Model
         curl_setopt($ch, CURLOPT_URL, 'https://esputnik.com/api/v1/'.$path.$query);
         curl_setopt($ch,CURLOPT_USERPWD, $login.':'.$password);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
-        $output = array();//curl_exec($ch);
+        $output = curl_exec($ch);
         return json_decode($output, true);
     }
 

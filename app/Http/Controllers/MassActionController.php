@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Order;
+use App\PromApi;
 use Illuminate\Http\Request;
 
 class MassActionController extends Controller
@@ -12,12 +13,13 @@ class MassActionController extends Controller
     $ids = $request->input('ids');
     $api = new PromApi;
     $orders = Order::whereIn('id', $ids)->get();
+    $responce = array();
     foreach ($orders as $order) {
       $order->status = 'delivered';
       $order->save();
-      $api->setOrderStatus($order->prom_api, 'delivered');
+      $responce[] = $api->setOrderStatus($order->prom_id, 'delivered');
     }
-    return $ids;
+    return $responce;
 
   }
 }

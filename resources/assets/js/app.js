@@ -65,6 +65,15 @@ const store = new Vuex.Store({
     setTemplates(state, data) {
       state.templates = data
     },
+    updateOrder(state, data) {
+      let order = state.orders.filter( order => order.id == data.id )[0]
+      console.log(state.orders, order, data)
+      for (var k in data){
+        if (data.hasOwnProperty(k)) {
+          order[k] = data[k]
+        }
+      }
+    },
     updateSettings(state, data) {
       state.settings[data.name] = data.value
     },
@@ -100,7 +109,8 @@ const store = new Vuex.Store({
     },
     loadSettings ({commit}) {
       axios.get('api/settings').then((res) => {
-        commit('setSettings', res.data)
+        const val = (Array.isArray(res.data)) ? {} : res.data
+        commit('setSettings', val)
       })
     },
     loadTemplates ({commit}) {

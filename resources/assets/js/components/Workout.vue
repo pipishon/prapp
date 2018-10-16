@@ -14,17 +14,9 @@
           <tr v-for="(name, key) in names" >
             <td class="">{{name}}:</td>
             <td class="" @click="onClick(key, item)">
-              <v-checkbox
-                height="10"
-                color="primary"
-                flat
-                v-model="item.statuses[key]"
-                :hide-details="true"
-
-                class="mt-0"
-                disabled
-                >
-              </v-checkbox></td>
+              <v-checkbox height="10" color="primary" flat v-model="item.statuses[key]" :hide-details="true" class="mt-0" disabled v-if="key != 'ttn'" ></v-checkbox>
+              <v-checkbox v-else height="10" color="primary" flat v-model="item.statuses['ttn_status']" :hide-details="true" class="mt-0" disabled ></v-checkbox>
+            </td>
             <td style="line-height: 1;">
               <v-tooltip v-if="!isObjEmpty(smsStatuses[key])" top content-class="white black--text" transition="sss" :open-delay="0" :close-delay="0" style="cursor: default;">
               <v-icon slot="activator" v-if="typeof(item.statuses[key + '_phone']) != 'undefined'" :color="statusColor[item.statuses[key + '_phone']]" small class="">check_circle</v-icon>
@@ -105,13 +97,14 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions, mapGetters, mapMutations } from 'vuex'
 import * as moment from 'moment';
     export default {
       props: ['item'],
       data() {
         return {
           showDialog: false,
+          dialogData: {},
           statusColor: ['gray', 'green', '#82b1ff', 'red'],
           sendSms: true,
           sendEmail: true,
@@ -128,10 +121,11 @@ import * as moment from 'moment';
       watch: {
         showDialog (val) {
           if (val) {
+            this.dialogData = JSON.parse(JSON.stringify(this.item))
             this.sendSms = true
             this.sendEmail = true
-            this.paymentPrice = parseFloat(this.item.statuses.payment_price).toFixed(2)
-            this.ttn = this.item.statuses.ttn_string
+            this.paymentPrice = parseFloat(this.dialogData.statuses.payment_price).toFixed(2)
+            this.ttn = this.dialogData.statuses.ttn_string
             let smsId = this.settings['template_' + this.type + '_sms']
             let emailId = this.settings['template_' + this.type + '_email']
             this.tmplts[this.type + '_sms'] = this.templates.filter( el => el.id == smsId )[0]
@@ -142,7 +136,7 @@ import * as moment from 'moment';
             if (typeof(this.tmplts[this.type + '_email']) != 'undefined') {
               this.msgs.email = this.replaceSpecWords(this.tmplts[this.type + '_email'].template)
             }
-            let phone = this.item.statuses.custom_phone || this.item.phone
+            let phone = this.dialogData.statuses.custom_phone || this.dialogData.phone
             let rx = /^\+\d{12}$/
             this.isPhoneValid = (phone.match(rx) != null)
           }
@@ -204,6 +198,7 @@ import * as moment from 'moment';
         },
       },
       methods: {
+        ...mapMutations(['updateOrder']),
         ...mapActions(['updateSettings']),
         isObjEmpty (obj) {
           if (!obj) return true
@@ -224,16 +219,16 @@ import * as moment from 'moment';
             case 'phoned':
             case 'drop_phone':
               item.statuses[key] = !item.statuses[key]
-              this.updateStatuses()
+              this.updateStatuses(item)
               break
           }
           return true
         },
         send() {
           if (this.sendSms) {
-            let phone = (this.item.statuses.custom_phone) ? this.item.statuses.custom_phone : this.item.phone //'+380679325925'//'380683223527'
+            let phone = (this.dialogData.statuses.custom_phone) ? this.dialogData.statuses.custom_phone : this.dialogData.phone //'+380679325925'//'380683223527'
             let params = {
-              'order_id': this.item.prom_id,
+              'order_id': this.dialogData.prom_id,
               type: this.type,
               message: this.msgs.sms,
               phone
@@ -241,15 +236,15 @@ import * as moment from 'moment';
             axios.get('api/sendsms', {params}).then((res) => {
               console.log(res)
             })
-            this.item.statuses[this.type] = 1
-            this.item.statuses[this.type + '_phone'] = 1
+            this.dialogData.statuses[this.type] = 1
+            this.dialogData.statuses[this.type + '_phone'] = 1
           }
-          if (this.sendEmail && (this.item.email || this.item.statuses.custom_email)) {
-            let email = (this.item.statuses.custom_email) ? this.item.statuses.custom_email : this.item.email
+          if (this.sendEmail && (this.dialogData.email || this.dialogData.statuses.custom_email)) {
+            let email = (this.dialogData.statuses.custom_email) ? this.dialogData.statuses.custom_email : this.dialogData.email
             if (this.type == 'requisites') {
               let params = {
                 email,
-                'order_id': this.item.prom_id,
+                'order_id': this.dialogData.prom_id,
                 type: 'requisites',
                 price: this.paymentPrice
               }
@@ -260,7 +255,7 @@ import * as moment from 'moment';
             if (this.type == 'ttn') {
               let params = {
                 email,
-                'order_id': this.item.prom_id,
+                'order_id': this.dialogData.prom_id,
                 type: 'ttn',
                 ttn: this.ttn
               }
@@ -268,9 +263,10 @@ import * as moment from 'moment';
                 console.log(res)
               })
             }
-            this.item.statuses[this.type + '_email'] = 1
+            this.dialogData.statuses[this.type + '_email'] = 1
           }
-          this.updateStatuses()
+          this.updateOrder(this.dialogData)
+          this.updateStatuses(this.dialogData)
           this.showDialog = false
         },
         replaceSpecWords (template) {
@@ -282,8 +278,8 @@ import * as moment from 'moment';
         },
         init () {
         },
-        updateStatuses() {
-          axios.put('api/orderstatus/' + this.item.statuses.id, this.item.statuses).then((res) => {
+        updateStatuses(order) {
+          axios.put('api/orderstatus/' + order.statuses.id, order.statuses).then((res) => {
             console.log(res.data)
           })
         },

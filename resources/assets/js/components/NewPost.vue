@@ -249,7 +249,6 @@ import { mapGetters } from 'vuex'
           params['volume_general'] = volume
           params['weight'] = weight
           params['backdelivery'] = (this.data.backdelivery) ? '1' : '0'
-          console.log(params)
 
           axios.get('api/newpost/getttn', {params}).then((res) => {
             console.log(res.data)
@@ -305,6 +304,7 @@ import { mapGetters } from 'vuex'
             if (this.valid) {
               const matches = this.item.delivery_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
               this.data.city = matches[1];
+              this.loadWarehouses()
               this.data.warehouse = matches[2].trim();
             }
           } else {
@@ -325,6 +325,7 @@ import { mapGetters } from 'vuex'
 
             const matches = this.item.ttn.full_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
             this.data.city = matches[1];
+            this.loadWarehouses()
             this.data.warehouse = matches[2].trim();
           }
           this.places[0].weight = this.item.statuses.shipment_weight
