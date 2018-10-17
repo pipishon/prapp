@@ -42,6 +42,27 @@ class Order extends Model
     return $this->hasOne('App\Customer', 'id', 'customer_id');
   }
 
+  public function validateOrder() {
+      $errors = array();
+      $new_post = array('Новая Почта', '«Нова пошта» - Покупка без риска');
+      if (in_array($this->delivery_option, $new_post)) {
+          if ($this->client_first_name == '') $errors['Имя'] = 'пустое';
+          if ($this->client_last_name == '') $errors['Фамилия'] = 'пустое';
+          if ((is_object($this->ttn) &&
+              is_null(NewPostCity::isAddressValid($this->ttn->full_address))) ||
+              (!is_object($this->ttn) &&
+              is_null(NewPostCity::isAddressValid($this->delivery_address)))) $errors['Адресс'] = 'не валидный';
+          if (floatval($this->statuses->shipment_weight) == 0) $errors['Вес'] = 'не указан';
+          if ($this->statuses->ttn_string != '') $errors['ТТН'] = 'указан';
+      }
+      if (count($errors)) {
+          $result = array('succes' => false, 'errors' => $errors);
+      } else {
+          $result = array('succes' => true);
+      }
+      return $result;
+  }
+
   public function scopeSearch ($query, $input)
   {
 

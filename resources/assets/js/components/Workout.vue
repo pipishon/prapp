@@ -236,7 +236,8 @@ import * as moment from 'moment';
             axios.get('api/sendsms', {params}).then((res) => {
               console.log(res)
             })
-            this.dialogData.statuses[this.type] = 1
+            let type = (this.type == 'ttn') ? 'ttn_status' : this.type
+            this.dialogData.statuses[type] = 1
             this.dialogData.statuses[this.type + '_phone'] = 1
           }
           if (this.sendEmail && (this.dialogData.email || this.dialogData.statuses.custom_email)) {

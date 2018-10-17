@@ -306,6 +306,9 @@ import { mapGetters } from 'vuex'
               this.data.city = this.item.is_address_valid.city
               this.loadWarehouses()
               this.data.warehouse = this.item.is_address_valid.warehouse;
+            } else {
+              this.data.city = ''
+              this.data.warehouse = ''
             }
           } else {
             keys.map((key) => {
