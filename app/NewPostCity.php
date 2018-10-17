@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\NewPostCity;
+use App\NewPostWarehouse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +18,18 @@ class NewPostCity extends Model
 
     public static function isAddressValid ($address = '')
     {
-        preg_match("/^([\w-()\s\.]+),(.*)/u", $address, $matches);
+        $res = null;
+        $cities = NewPostCity::whereRaw("LOCATE(description, '".$address."') <> 0")->with('warehouses')->get();
+        foreach ($cities as $city) {
+          $warehouse = NewPostWarehouse::whereRaw("LOCATE(description, '".$address."') <> 0")->where('city_ref', $city->ref)->first();
+          if ($warehouse != null) {
+            $res = array('city' => $city->description, 'warehouse' => $warehouse->description);
+          }
+        }
+        return $res;
+
+      /*
+        preg_match("/^([\w\s-]+\s?(?:\(.*\))?)\s?,(.*)/u", $address, $matches);
         $res = null;
         if (count($matches) > 1) {
           $res = DB::table('new_post_cities')
@@ -25,5 +38,6 @@ class NewPostCity extends Model
               ->where('new_post_warehouses.description', '=', trim($matches[2]))->get();
         }
         return ($res != null && count($res) == 1) ? '1' : '0';
+       */
     }
 }

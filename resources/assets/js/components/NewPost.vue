@@ -199,7 +199,7 @@ import { mapGetters } from 'vuex'
           return valid
         },
         valid () {
-          return (this.item.is_address_valid == 1)
+          return (this.item.is_address_valid != null)
         },
         isTtnCreated () {
           return (this.item.ttn != null && this.item.ttn.int_doc_number != null)
@@ -252,7 +252,7 @@ import { mapGetters } from 'vuex'
 
           axios.get('api/newpost/getttn', {params}).then((res) => {
             console.log(res.data)
-            this.item.is_address_valid = 1
+            this.item.is_address_valid = {city: this.data.city, warehouse: this.data.warehouse}
             if (onlySave) {
               this.showDialog = false
             }
@@ -302,10 +302,10 @@ import { mapGetters } from 'vuex'
             this.data.backprice = price
             this.data.price = price
             if (this.valid) {
-              const matches = this.item.delivery_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
-              this.data.city = matches[1];
+              //const matches = this.item.delivery_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
+              this.data.city = this.item.is_address_valid.city
               this.loadWarehouses()
-              this.data.warehouse = matches[2].trim();
+              this.data.warehouse = this.item.is_address_valid.warehouse;
             }
           } else {
             keys.map((key) => {
@@ -323,10 +323,10 @@ import { mapGetters } from 'vuex'
             this.data.client_middle_name = names[2] || ''
             //this.places[0].weight = //(this.places[0].weight == '-') ? this.item.statuses.shipment_weight : this.places[0].weight
 
-            const matches = this.item.ttn.full_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
-            this.data.city = matches[1];
+            //const matches = this.item.ttn.full_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
+            this.data.city = this.item.is_address_valid.city
             this.loadWarehouses()
-            this.data.warehouse = matches[2].trim();
+            this.data.warehouse = this.item.is_address_valid.warehouse;
           }
           this.places[0].weight = this.item.statuses.shipment_weight
         },
