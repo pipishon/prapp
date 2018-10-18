@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Customer;
+use App\Dictionary;
 use App\MessageEmail;
 use App\Sms;
 use Illuminate\Database\Eloquent\Model;
@@ -49,17 +50,55 @@ class Order extends Model
   }
 
   public function validateOrder() {
-      $errors = array();
-      $new_post = array('Новая Почта', '«Нова пошта» - Покупка без риска');
-      if (in_array($this->delivery_option, $new_post)) {
-          if ($this->client_first_name == '') $errors['Имя'] = 'пустое';
-          if ($this->client_last_name == '') $errors['Фамилия'] = 'пустое';
-          if ((is_object($this->ttn) &&
-              is_null(NewPostCity::isAddressValid($this->ttn->full_address))) ||
-              (!is_object($this->ttn) &&
-              is_null(NewPostCity::isAddressValid($this->delivery_address)))) $errors['Адресс'] = 'не валидный';
-          if (floatval(str_replace(',', '.', $this->statuses->shipment_weight)) == 0) $errors['Вес'] = 'не указан';
+      $result = array(
+        'Доставка' => true,
+        'Адрес' => true,
+        'Клиент' => true,
+        'Оплата' => true,
+        'Сборка' => true,
+        'Вес' => true,
+      );
+
+      $delivery = Dictionary::whereIn('from', $this->delivery_option)->first()->to;
+      $payment = Dictionary::whereIn('from', $this->payment_option)->first()->to;
+      switch ($delivery) {
+          case 'Новая Почта':
+          case 'НП без риска':
+              if (in_array($payment, ['не указан', 'Наличные'])) $result['Доставка'] = false;
+              break;
+          case 'Укрпочта':
+              if (in_array($payment, ['не указан', 'Наличные', 'Наложенный платеж'])) $result['Доставка'] = false;
+              break;
+          case 'Самовывоз':
+              if (in_array($payment, ['не указан', 'Наложенный платеж'])) $result['Доставка'] = false;
+              break;
       }
+
+      if ((is_object($this->ttn) &&
+          is_null(NewPostCity::isAddressValid($this->ttn->full_address))) ||
+          (!is_object($this->ttn) &&
+          is_null(NewPostCity::isAddressValid($this->delivery_address)))) {
+              $result['Адресс'] = false;
+      }
+
+      if (in_array($delivery, ['Новая Почта', 'НП без риска', 'Укрпочта']) &&
+          ($this->client_first_name == '' || $this->client_last_name == '')) {
+              $result['Клиент'] = false;
+      }
+      $phone_regexp = /^\+\d{12}$/;
+      $email_regexp = /^\+\d{12}$/;
+      // phone email validation
+      if ($this->status == 'delivered' && $this->satuses->payment_status == 'Не оплачен') {
+              $result['Оплата'] = false;
+      }
+      if ($this->status == 'delivered' && !$this->satuses->collected) {
+              $result['Сборка'] = false;
+      }
+
+      if (floatval(str_replace(',', '.', $this->statuses->shipment_weight)) == 0) {
+              $result['Вес'] = false;
+      }
+
       if (count($errors)) {
           $result = array('succes' => false, 'errors' => $errors);
       } else {
