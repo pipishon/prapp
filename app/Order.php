@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 class Order extends Model
 {
 	protected $guarded = [];
+  protected $appends = ['validet'];
 
   public function statuses()
   {
@@ -30,6 +31,11 @@ class Order extends Model
   public function emailStatuses ()
   {
     return $this->hasMany('App\MessageEmail', 'order_id', 'prom_id');
+  }
+
+  public function getValidetAttribute ()
+  {
+    return $this->validateOrder();
   }
 
   public function smsStatuses ()
@@ -52,14 +58,14 @@ class Order extends Model
               is_null(NewPostCity::isAddressValid($this->ttn->full_address))) ||
               (!is_object($this->ttn) &&
               is_null(NewPostCity::isAddressValid($this->delivery_address)))) $errors['Адресс'] = 'не валидный';
-          if (floatval($this->statuses->shipment_weight) == 0) $errors['Вес'] = 'не указан';
-          if ($this->statuses->ttn_string != '') $errors['ТТН'] = 'указан';
+          if (floatval(str_replace(',', '.', $this->statuses->shipment_weight)) == 0) $errors['Вес'] = 'не указан';
       }
       if (count($errors)) {
           $result = array('succes' => false, 'errors' => $errors);
       } else {
           $result = array('succes' => true);
       }
+      if ($this->statuses->ttn_string != '') $result['ttn'] = true;
       return $result;
   }
 

@@ -11,8 +11,8 @@ class TestController extends Controller
 {
     public function index ()
     {
-        $prom_api = '57345565';
+        $prom_api ='58712118';
         $order = Order::where('prom_id', $prom_api)->first();
-        dd($order->validateOrder());
+        dd($order->validet);
     }
 }

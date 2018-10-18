@@ -2,6 +2,12 @@
   <tr class="order-line" >
         <td class="align-middle" style="padding: 7px;">
             <v-checkbox flat class="mt-0" :value="selected.indexOf(data.item) != -1" @change="changeMass"> </v-checkbox>
+          <v-tooltip v-if="!data.item.validet.succes" right content-class="white black--text" transition="sss" :open-delay="0" :close-delay="0" style="cursor: default;">
+            <span slot="activator"><v-icon color="red">error_outline</v-icon></span>
+            <div class="body-1" style="width: 250px;">
+              <div v-for="(val, name) in data.item.validet.errors">{{name}}: {{val}}</div>
+            </div>
+          </v-tooltip>
         </td>
 
         <td >
