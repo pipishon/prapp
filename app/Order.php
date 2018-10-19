@@ -50,7 +50,7 @@ class Order extends Model
   }
 
   public function validateOrder() {
-      $result = array(
+      $status = array(
         'Доставка' => true,
         'Адрес' => true,
         'Клиент' => true,
@@ -59,51 +59,81 @@ class Order extends Model
         'Вес' => true,
       );
 
-      $delivery = Dictionary::whereIn('from', $this->delivery_option)->first()->to;
-      $payment = Dictionary::whereIn('from', $this->payment_option)->first()->to;
+      $delivery = Dictionary::where('from', trim($this->delivery_option))->first();
+      $delivery = (!is_null($delivery)) ? $delivery->to : 'не указан';
+      $payment = Dictionary::where('from', trim($this->payment_option))->first();
+      $payment = (!is_null($payment)) ? $payment->to : 'не указан';
       switch ($delivery) {
           case 'Новая Почта':
           case 'НП без риска':
-              if (in_array($payment, ['не указан', 'Наличные'])) $result['Доставка'] = false;
+              if (in_array($payment, ['не указан', 'Наличные'])) $status['Доставка'] = false;
               break;
           case 'Укрпочта':
-              if (in_array($payment, ['не указан', 'Наличные', 'Наложенный платеж'])) $result['Доставка'] = false;
+              if (in_array($payment, ['не указан', 'Наличные', 'Наложенный платеж'])) $status['Доставка'] = false;
               break;
           case 'Самовывоз':
-              if (in_array($payment, ['не указан', 'Наложенный платеж'])) $result['Доставка'] = false;
+              if (in_array($payment, ['не указан', 'Наложенный платеж'])) $status['Доставка'] = false;
               break;
       }
 
-      if ((is_object($this->ttn) &&
-          is_null(NewPostCity::isAddressValid($this->ttn->full_address))) ||
-          (!is_object($this->ttn) &&
-          is_null(NewPostCity::isAddressValid($this->delivery_address)))) {
-              $result['Адресс'] = false;
+      if (in_array($delivery, ['Новая Почта', 'НП без риска'])) {
+          if ((is_object($this->ttn) &&
+              is_null(NewPostCity::isAddressValid($this->ttn->full_address))) ||
+              (!is_object($this->ttn) &&
+              is_null(NewPostCity::isAddressValid($this->delivery_address)))) {
+                  $status['Адрес'] = false;
+          }
       }
 
-      if (in_array($delivery, ['Новая Почта', 'НП без риска', 'Укрпочта']) &&
-          ($this->client_first_name == '' || $this->client_last_name == '')) {
-              $result['Клиент'] = false;
+      if ($delivery == 'Укрпочта' && $this->delivery_address == 'Не указан') {
+          $status['Адрес'] = false;
       }
-      $phone_regexp = /^\+\d{12}$/;
-      $email_regexp = /^\+\d{12}$/;
+
+      if (!is_object($this->ttn)) {
+        if (in_array($delivery, ['Новая Почта', 'НП без риска', 'Укрпочта']) &&
+            ($this->client_first_name == '' || $this->client_last_name == '')) {
+                $status['Клиент'] = false;
+        }
+      }
+
+      $phone_regexp = '/^\+\d{12}$/';
+      $email = ($this->statuses->custom_email != null) ? $this->statuses->custom_email : $this->email;
+      $phone = ($this->statuses->custom_phone != null) ? $this->statuses->custom_phone : $this->phone;
+      if (($email != '' && filter_var($email, FILTER_VALIDATE_EMAIL) == false) || !preg_match($phone_regexp, $phone, $matches)) {
+              $status['Клиент'] = false;
+      }
+
+      if (is_object($this->ttn) && !preg_match($phone_regexp, $this->ttn->phone, $matches)) {
+              $status['Клиент'] = false;
+      }
       // phone email validation
-      if ($this->status == 'delivered' && $this->satuses->payment_status == 'Не оплачен') {
-              $result['Оплата'] = false;
+      if ($this->status == 'delivered' && $this->statuses->payment_status == 'Не оплачен') {
+              $status['Оплата'] = false;
       }
-      if ($this->status == 'delivered' && !$this->satuses->collected) {
-              $result['Сборка'] = false;
-      }
-
-      if (floatval(str_replace(',', '.', $this->statuses->shipment_weight)) == 0) {
-              $result['Вес'] = false;
+      if ($this->status == 'delivered' && !$this->statuses->collected) {
+              $status['Сборка'] = false;
       }
 
-      if (count($errors)) {
-          $result = array('succes' => false, 'errors' => $errors);
+      $result = array();
+
+      if (!in_array(false, $status)) {
+        $result['success'] = 'not_weight';
       } else {
-          $result = array('succes' => true);
+        $result['success'] = 'not';
       }
+
+      if (in_array($delivery, ['Новая Почта', 'НП без риска'])) {
+        if (floatval(str_replace(',', '.', $this->statuses->shipment_weight)) == 0) {
+                $status['Вес'] = false;
+        }
+      }
+
+
+      if (!in_array(false, $status)) {
+        $result['success'] = 'all';
+      }
+      $result['statuses'] = $status;
+
       if ($this->statuses->ttn_string != '') $result['ttn'] = true;
       return $result;
   }

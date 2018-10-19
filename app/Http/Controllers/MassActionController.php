@@ -10,7 +10,7 @@ class MassActionController extends Controller
 {
   public function statusDelivered (Request $request)
   {
-    $ids = $request->input('ids');
+    /*$ids = $request->input('ids');
     $api = new PromApi;
     $orders = Order::whereIn('id', $ids)->get();
     $responce = array();
@@ -19,7 +19,8 @@ class MassActionController extends Controller
       $order->save();
       $responce[] = $api->setOrderStatus($order->prom_id, 'delivered');
     }
-    return $responce;
+    return $responce;*/
+    return '';
 
   }
 }

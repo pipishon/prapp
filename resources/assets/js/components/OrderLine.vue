@@ -2,10 +2,22 @@
   <tr class="order-line" >
         <td class="align-middle" style="padding: 7px;">
             <v-checkbox flat class="mt-0" :value="selected.indexOf(data.item) != -1" @change="changeMass"> </v-checkbox>
-          <v-tooltip v-if="!data.item.validet.succes" right content-class="white black--text" transition="sss" :open-delay="0" :close-delay="0" style="cursor: default;">
-            <span slot="activator"><v-icon color="red">error_outline</v-icon></span>
-            <div class="body-1" style="width: 250px;">
-              <div v-for="(val, name) in data.item.validet.errors">{{name}}: {{val}}</div>
+          <v-tooltip right content-class="white black--text" transition="sss" :open-delay="0" :close-delay="0" style="cursor: default;">
+            <span slot="activator" style="padding-left: 3px;">
+              <v-icon style="font-size: 18px;" v-if="data.item.validet.success == 'all'" color="#82b1ff">check_circle</v-icon>
+              <v-icon style="font-size: 18px;" v-if="data.item.validet.success == 'not_weight'" color="#82b1ff">check_circle_outline</v-icon>
+              <v-icon style="font-size: 18px;" v-if="data.item.validet.success == 'not'" color="#EF5350">offline_bolt</v-icon>
+            </span>
+            <div class="body-1">
+              <table>
+              <tr v-for="(val, name) in data.item.validet.statuses">
+                <td> {{name}} </td>
+                <td class="pl-2">
+                  <v-icon small v-if="val" color="#82b1ff">check_circle</v-icon>
+                  <v-icon small v-else color="#EF5350">fiber_manual_record</v-icon>
+                </td>
+              </tr>
+              </table>
             </div>
           </v-tooltip>
         </td>
