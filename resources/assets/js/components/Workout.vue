@@ -100,7 +100,7 @@
 import { mapActions, mapGetters, mapMutations } from 'vuex'
 import * as moment from 'moment';
     export default {
-      props: ['item'],
+      props: ['item', 'delivery'],
       data() {
         return {
           showDialog: false,
@@ -115,7 +115,8 @@ import * as moment from 'moment';
           mapStatuses: {'1': 'Отправлено', '2': 'Доставлено', '3': 'Ошибка', '4': 'Прочтено'},
           payemntPrice: null,
           isPhoneValid: true,
-          ttn: null
+          ttn: null,
+          deliverer: null,
         }
       },
       watch: {
@@ -124,6 +125,7 @@ import * as moment from 'moment';
             this.dialogData = JSON.parse(JSON.stringify(this.item))
             this.sendSms = true
             this.sendEmail = true
+            this.deliverer = this.delivery
             this.paymentPrice = parseFloat(this.dialogData.statuses.payment_price).toFixed(2)
             this.ttn = this.dialogData.statuses.ttn_string
             let smsId = this.settings['template_' + this.type + '_sms']
@@ -258,10 +260,11 @@ import * as moment from 'moment';
                 email,
                 'order_id': this.dialogData.prom_id,
                 type: 'ttn',
-                ttn: this.ttn
+                ttn: this.ttn,
+                deliverer: this.deliverer
               }
               axios.get('api/sendemail', {params}).then((res) => {
-                console.log(res)
+                console.log(res.data)
               })
             }
             this.dialogData.statuses[this.type + '_email'] = 1

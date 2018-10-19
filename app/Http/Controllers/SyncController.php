@@ -300,7 +300,8 @@ class SyncController extends Controller
     $activities = SputnikEmail::getActivity();
     $map_type = array(
         1427460 => 'requisites',
-        1430244 => 'ttn'
+        1430244 => 'ttn',
+        1469445 => 'ttn'
     );
 
     foreach ($activities as $activity) {

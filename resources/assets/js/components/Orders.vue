@@ -13,7 +13,7 @@
        >
 
       <template slot="row" slot-scope="data">
-        <tr is="orderline" v-for="(item, key) in data.items" :dictionary="dictionary" :item="item" :key="key" :class="{'green lighten-5': item.status == 'delivered', 'pink lighten-5': item.status == 'canceled'}"></tr>
+        <tr is="orderline" @updateorder="updateOrder(item, arguments[0])" v-for="(item, key) in data.items" :dictionary="dictionary" :item="item" :key="key" :class="{'green lighten-5': item.status == 'delivered', 'pink lighten-5': item.status == 'canceled'}"></tr>
       </template>
     </btable>
 
@@ -101,6 +101,12 @@
         autosms
       },
       methods: {
+        updateOrder (order, val) {
+          var keys = Object.keys(order);
+          for (let key of keys) {
+            order[key] = val[key]
+          }
+        },
         ...mapMutations(['setOrders']),
         ...mapActions(['updateSettings']),
         updateWidths () {

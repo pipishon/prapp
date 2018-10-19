@@ -34,10 +34,11 @@ class MessageEmailController extends Controller
                 $sputnik_email->sendEvent('api-send-requisites', $params);
                 break;
             case 'ttn':
+                $trigger = ($request->input('deliverer') == 'Укрпочта') ? 'api-send-ttn-ukrpost' : 'api-send-ttn-newpost';
                 $params = array(
                     'ttn' => $request->input('ttn'),
                 );
-                $sputnik_email->sendEvent('api-send-ttn-newpost', $params);
+                $sputnik_email->sendEvent($trigger, $params);
                 break;
         }
     }

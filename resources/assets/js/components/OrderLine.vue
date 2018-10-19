@@ -3,10 +3,10 @@
         <td class="align-middle" style="padding: 7px;">
             <v-checkbox flat class="mt-0" :value="selected.indexOf(data.item) != -1" @change="changeMass"> </v-checkbox>
           <v-tooltip right content-class="white black--text" transition="sss" :open-delay="0" :close-delay="0" style="cursor: default;">
-            <span slot="activator" style="padding-left: 3px;">
-              <v-icon style="font-size: 18px;" v-if="data.item.validet.success == 'all'" color="#82b1ff">check_circle</v-icon>
-              <v-icon style="font-size: 18px;" v-if="data.item.validet.success == 'not_weight'" color="#82b1ff">check_circle_outline</v-icon>
-              <v-icon style="font-size: 18px;" v-if="data.item.validet.success == 'not'" color="#EF5350">offline_bolt</v-icon>
+            <span  slot="activator" style="margin-left: -2px; " @click="onValidate = true; getOrder()">
+              <v-icon class="icon-order-validate" :class="{'on-load': onValidate}" v-if="data.item.validet.success == 'all'" color="#82b1ff">check_circle</v-icon>
+              <v-icon class="icon-order-validate" :class="{'on-load': onValidate}" v-if="data.item.validet.success == 'not_weight'" color="#82b1ff">check_circle_outline</v-icon>
+              <v-icon class="icon-order-validate" :class="{'on-load': onValidate}" v-if="data.item.validet.success == 'not'" color="#EF5350">offline_bolt</v-icon>
             </span>
             <div class="body-1">
               <table>
@@ -32,7 +32,7 @@
         </td>
 
         <td>
-          <workout :item="data.item"></workout>
+          <workout :item="data.item" :delivery="dictionary.delivery[data.item.delivery_option]"></workout>
         </td>
 
 
@@ -155,6 +155,7 @@
       },
       data() {
         return {
+          onValidate: false,
           ttnSaved: false,
           showDeliverySelect: false,
           showPaymentSelect: false,
@@ -304,6 +305,13 @@
             console.log(res.data)
           })
         },
+        getOrder () {
+          axios.get('api/orders/' + this.item.id).then((res) => {
+            console.log(this.onValidate)
+            this.onValidate = false
+            this.$emit('updateorder', res.data)
+          })
+        },
         save () {
           if (this.item.delivery_address == '') { this.item.delivery_address = 'Не указан' }
           axios.put('api/orders/' + this.item.id, this.item).then((res) => {
@@ -382,5 +390,13 @@
 }
 .v-text-field.v-text-field--solo:not(.v-text-field--solo-flat) .v-input__slot {
   height: 170px;
+}
+.icon-order-validate {
+  font-size: 18px;
+  border: 5px solid transparent;
+  border-radius: 50%;
+}
+.icon-order-validate.on-load {
+  border: 5px solid #C8E6C9;
 }
 </style>

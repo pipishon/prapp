@@ -122,7 +122,19 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        //
+        $order->load('smsStatuses')->load('emailStatuses')->load('products')->load('ttn')
+        ->load('statuses')->load('customer')->customer->load('statistic');
+
+        if ($order->statuses->payment_price == 0) {
+          $order->statuses->payment_price = (float) str_replace(',', '.', preg_replace('/\s+/u', '', $order->price));
+        }
+        if (is_object($order->ttn)) {
+            $order->is_address_valid = NewPostCity::isAddressValid($order->ttn->full_address);
+        } else {
+            $order->is_address_valid = NewPostCity::isAddressValid($order->delivery_address);
+        }
+        return $order;
+;
     }
 
     /**
