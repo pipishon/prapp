@@ -86,6 +86,19 @@ const store = new Vuex.Store({
           order.status = 'delivered'
         }
       })
+    },
+    setSendTtn(state, ids) {
+      state.orders.map((order) => {
+        if (ids.phone.indexOf(order.id) != -1 || ids.email.indexOf(order.id) != -1) {
+          order.statuses.statuses.ttn_status = 1
+          if (ids.phone.indexOf(order.id) != -1) {
+            order.statuses.statuses.ttn_phone = 1
+          }
+          if (ids.email.indexOf(order.id) != -1) {
+            order.statuses.statuses.ttn_email = 1
+          }
+        }
+      })
     }
   },
   actions: {
@@ -93,8 +106,18 @@ const store = new Vuex.Store({
       const ids = data.selected.map((el) => el = el.id)
       dispatch(data.fnName, ids)
     },
+    massSendTtn ({commit}, ids) {
+      console.log(ids)
+      axios.get('api/mass/sendttn', {params: {ids}}).then((res) => {
+        let phone = res.data.phone_ids
+        let email = res.data.email_ids
+        //commit('setSendTtn', {phone, email})
+        console.log(res.data)
+      })
+    },
     massDelivered ({commit}, ids) {
       commit('setDelivered', ids)
+      console.log(ids)
       axios.get('api/mass/delivered', {params: {ids}}).then((res) => {
         console.log(res)
       })

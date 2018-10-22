@@ -107,7 +107,7 @@
             order[key] = val[key]
           }
         },
-        ...mapMutations(['setOrders']),
+        ...mapMutations(['setOrders', 'massSelection']),
         ...mapActions(['updateSettings']),
         updateWidths () {
           this.updateSettings({name: 'order_table_widths', value: JSON.stringify(this.tableWidths)})
@@ -177,6 +177,7 @@
           axios.get('api/orders', {params}).then((res) => {
             this.list = res.data.data
             this.setOrders(this.list)
+            this.massSelection([])
             this.curPage = res.data.current_page
             this.lastPage = res.data.last_page
             this.deliveryCollected = res.data.delivery_collected

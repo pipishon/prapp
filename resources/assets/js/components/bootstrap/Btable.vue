@@ -14,7 +14,7 @@
       <tbody>
         <tr v-if="typeof(search) != 'undefined'" >
           <td v-if="selectAll" style="position: relative; padding: 15px 0px 0px 7px;">
-            <v-checkbox class="ma-0 pa-0" @change="massChange"></v-checkbox>
+            <v-checkbox class="ma-0 pa-0" :input-value="this.selected.length" @change="massChange"></v-checkbox>
             <v-menu offset-y v-if="selected.length" class="ma-0 mass-menu" >
               <div  slot="activator" class="ma-0 mass-menu-activator"><strong>{{selected.length}} заказов &#8595;</strong></div>
               <v-list>
