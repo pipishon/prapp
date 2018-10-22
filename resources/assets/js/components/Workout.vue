@@ -70,7 +70,7 @@
                 <v-text-field v-model="paymentPrice" label="К оплате" style="width: 70px;"></v-text-field>
               </div>
               <div v-if="type=='ttn'">
-                Email триггер <strong>api-send-ttn-newpost</strong>
+                Email триггер <strong v-if="deliverer == 'Укрпочта'">api-send-ttn-ukrpost</strong><strong v-else>api-send-ttn-newpost</strong>
                 <v-text-field v-model="ttn" label="ТТН" style="width: 140px;"></v-text-field>
               </div>
             </div>

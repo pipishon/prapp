@@ -19,6 +19,7 @@ class NewPostCity extends Model
     public static function isAddressValid ($address = '')
     {
         $res = null;
+        $address = str_replace('\'', '\'\'', $address);
         $cities = NewPostCity::whereRaw("LOCATE(description, '".$address."') <> 0")->with('warehouses')->get();
         foreach ($cities as $city) {
           $warehouse = NewPostWarehouse::whereRaw("LOCATE(description, '".$address."') <> 0")->where('city_ref', $city->ref)->first();
