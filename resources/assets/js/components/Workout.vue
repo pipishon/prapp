@@ -14,7 +14,7 @@
           <tr v-for="(name, key) in names" >
             <td class="">{{name}}:</td>
             <td class="" @click="onClick(key, item)">
-              <v-checkbox height="10" color="primary" flat v-model="item.statuses[key]" :hide-details="true" class="mt-0" disabled v-if="key != 'ttn'" ></v-checkbox>
+              <v-checkbox height="10" color="primary" :class="{'drop-phone': key == 'drop_phone'}" flat v-model="item.statuses[key]" :hide-details="true" class="mt-0" disabled v-if="key != 'ttn'" ></v-checkbox>
               <v-checkbox v-else height="10" color="primary" flat v-model="item.statuses['ttn_status']" :hide-details="true" class="mt-0" disabled ></v-checkbox>
             </td>
             <td style="line-height: 1;">

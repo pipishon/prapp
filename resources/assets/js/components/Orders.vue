@@ -33,8 +33,10 @@
             {{orderStatuses[name]}} : {{stat}}
           </div>
       </v-tooltip>
-
       <pagination :current="curPage" :last="lastPage" @change="loadPage"/>
+      <span style="width: 50px;">
+        <v-select  v-model="perPage" :items="[20, 30, 50]" @input="searchQuery['per_page'] = arguments[0]; getList()"></v-select>
+      </span>
     </v-footer>
   </div>
 </template>
@@ -47,6 +49,7 @@
     export default {
       data() {
         return {
+          perPage: 20,
           allCollected: {},
           deliveryCollected: {},
           globalStats: {},
@@ -83,7 +86,7 @@
         }
       },
       computed: {
-        ...mapGetters(['settings']),
+        ...mapGetters(['settings', 'selected']),
         dictionary () {
           return this.$store.state.dictionary
         }
@@ -204,7 +207,9 @@
         })
         this.getList()
         setInterval(() => {
-          this.getList()
+          if (this.selected.length == 0) {
+            this.getList()
+          }
           console.log('iterval')
         }, 120000)
       }

@@ -29842,9 +29842,11 @@ module.exports = __webpack_require__(143);
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuetify__ = __webpack_require__(168);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuetify___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vuetify__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vuex__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_bootstrap__ = __webpack_require__(169);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_elements__ = __webpack_require__(191);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_moment__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_moment__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vuex__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_bootstrap__ = __webpack_require__(169);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_elements__ = __webpack_require__(191);
 
 /**
  * First we will load all of this project's JavaScript dependencies which
@@ -29858,12 +29860,14 @@ window.Vue = __webpack_require__(16);
 
 
 
+
+
 Vue.use(__WEBPACK_IMPORTED_MODULE_0_vuetify___default.a);
 
 
-Vue.use(__WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */]);
+Vue.use(__WEBPACK_IMPORTED_MODULE_2_vuex__["a" /* default */]);
 
-var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
+var store = new __WEBPACK_IMPORTED_MODULE_2_vuex__["a" /* default */].Store({
   state: {
     dictionary: {
       payment: {},
@@ -29878,9 +29882,13 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
     },
     selected: [],
     templates: [],
-    orders: []
+    orders: [],
+    isMassBusy: false
   },
   getters: {
+    isMassBusy: function isMassBusy(state) {
+      return state.isMassBusy;
+    },
     selected: function selected(state) {
       return state.selected;
     },
@@ -29899,6 +29907,9 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
     }
   },
   mutations: {
+    setMassBusy: function setMassBusy(state, val) {
+      state.isMassBusy = val;
+    },
     massSelection: function massSelection(state, data) {
       state.selected = data;
     },
@@ -29935,18 +29946,28 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
       state.orders.map(function (order) {
         if (ids.indexOf(order.id) != -1) {
           order.status = 'delivered';
+          order.statuses.delivered = __WEBPACK_IMPORTED_MODULE_1_moment__().format('YYYY-MM-DD HH:mm');
+        }
+      });
+    },
+    setTtn: function setTtn(state, ttns) {
+      state.orders.map(function (order) {
+        if (typeof ttns[order.id] != 'undefined') {
+          order.ttn = ttns[order.id];
+          order.statuses.ttn_string = ttns[order.id].int_doc_number;
+          console.log(order);
         }
       });
     },
     setSendTtn: function setSendTtn(state, ids) {
       state.orders.map(function (order) {
         if (ids.phone.indexOf(order.id) != -1 || ids.email.indexOf(order.id) != -1) {
-          order.statuses.statuses.ttn_status = 1;
+          order.statuses.ttn_status = 1;
           if (ids.phone.indexOf(order.id) != -1) {
-            order.statuses.statuses.ttn_phone = 1;
+            order.statuses.ttn_phone = 1;
           }
           if (ids.email.indexOf(order.id) != -1) {
-            order.statuses.statuses.ttn_email = 1;
+            order.statuses.ttn_email = 1;
           }
         }
       });
@@ -29957,33 +29978,47 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
       var dispatch = _ref.dispatch,
           commit = _ref.commit;
 
+      commit('setMassBusy', true);
       var ids = data.selected.map(function (el) {
         return el = el.id;
       });
       dispatch(data.fnName, ids);
     },
-    massSendTtn: function massSendTtn(_ref2, ids) {
+    massTtn: function massTtn(_ref2, ids) {
       var commit = _ref2.commit;
 
       console.log(ids);
-      axios.get('api/mass/sendttn', { params: { ids: ids } }).then(function (res) {
-        var phone = res.data.phone_ids;
-        var email = res.data.email_ids;
-        //commit('setSendTtn', {phone, email})
+      axios.get('api/mass/createttn', { params: { ids: ids } }).then(function (res) {
+        var ttns = res.data;
+        commit('setTtn', ttns);
+        commit('setMassBusy', false);
         console.log(res.data);
       });
     },
-    massDelivered: function massDelivered(_ref3, ids) {
+    massSendTtn: function massSendTtn(_ref3, ids) {
       var commit = _ref3.commit;
+
+      console.log(ids);
+      axios.get('api/mass/sendttn', { params: { ids: ids } }).then(function (res) {
+        var phone = res.data.phone;
+        var email = res.data.email;
+        commit('setSendTtn', { phone: phone, email: email });
+        commit('setMassBusy', false);
+        console.log(res.data);
+      });
+    },
+    massDelivered: function massDelivered(_ref4, ids) {
+      var commit = _ref4.commit;
 
       commit('setDelivered', ids);
       console.log(ids);
       axios.get('api/mass/delivered', { params: { ids: ids } }).then(function (res) {
         console.log(res);
+        commit('setMassBusy', false);
       });
     },
-    loadDictionary: function loadDictionary(_ref4) {
-      var commit = _ref4.commit;
+    loadDictionary: function loadDictionary(_ref5) {
+      var commit = _ref5.commit;
 
       axios.get('api/dictionary', { params: { type: 'payment' } }).then(function (res) {
         commit('setDictPayment', res.data);
@@ -29992,24 +30027,24 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
         commit('setDictDelivery', res.data);
       });
     },
-    loadSettings: function loadSettings(_ref5) {
-      var commit = _ref5.commit;
+    loadSettings: function loadSettings(_ref6) {
+      var commit = _ref6.commit;
 
       axios.get('api/settings').then(function (res) {
         var val = Array.isArray(res.data) ? {} : res.data;
         commit('setSettings', val);
       });
     },
-    loadTemplates: function loadTemplates(_ref6) {
-      var commit = _ref6.commit;
+    loadTemplates: function loadTemplates(_ref7) {
+      var commit = _ref7.commit;
 
       axios.get('api/messagetpl').then(function (res) {
         commit('setTemplates', res.data);
       });
     },
-    updateSettings: function updateSettings(_ref7, data) {
-      var commit = _ref7.commit,
-          state = _ref7.state;
+    updateSettings: function updateSettings(_ref8, data) {
+      var commit = _ref8.commit,
+          state = _ref8.state;
 
       commit('updateSettings', data);
       axios.post('api/settings', state.settings).then(function (res) {
@@ -30029,14 +30064,14 @@ var store = new __WEBPACK_IMPORTED_MODULE_1_vuex__["a" /* default */].Store({
 
 
 
-for (var component in __WEBPACK_IMPORTED_MODULE_2__components_bootstrap__) {
-  Vue.component(component, __WEBPACK_IMPORTED_MODULE_2__components_bootstrap__[component]);
+for (var component in __WEBPACK_IMPORTED_MODULE_3__components_bootstrap__) {
+  Vue.component(component, __WEBPACK_IMPORTED_MODULE_3__components_bootstrap__[component]);
 }
 
 
 
-for (var element in __WEBPACK_IMPORTED_MODULE_3__components_elements__) {
-  Vue.component(element, __WEBPACK_IMPORTED_MODULE_3__components_elements__[element]);
+for (var element in __WEBPACK_IMPORTED_MODULE_4__components_elements__) {
+  Vue.component(element, __WEBPACK_IMPORTED_MODULE_4__components_elements__[element]);
 }
 //Vue.use(BootstrapVue);
 
@@ -80151,7 +80186,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n.loader-wrap td {\r\n    padding: 0px;\r\n    position: absolute;\r\n    width: 100%;\r\n    height: 7px;\r\n    border: none;\n}\n.fixed {\r\n  table-layout: fixed;\n}\n.mass-menu {\r\n  position: absolute;\r\n  right: -160px;\r\n  top: 5px;\r\n  background: white;\r\n  display: block;\n}\n.mass-menu-activator {\r\n  width: 160px;\r\n  background: white;\r\n  height: 42px;\r\n  padding: 10px 15px;\r\n  border: 1px solid lightgray;\r\n  border-radius: 4px;\n}\n.v-input--selection-controls .v-input__slot {\r\n  margin-bottom: 0;\n}\r\n", ""]);
+exports.push([module.i, "\n.loader-wrap td {\r\n    padding: 0px;\r\n    position: absolute;\r\n    width: 100%;\r\n    height: 7px;\r\n    border: none;\n}\n.fixed {\r\n  table-layout: fixed;\n}\n.mass-menu {\r\n  position: absolute;\r\n  right: -160px;\r\n  top: 5px;\r\n  background: white;\r\n  display: block;\n}\n.mass-menu-activator {\r\n  width: 160px;\r\n  background: white;\r\n  height: 42px;\r\n  padding: 10px 15px;\r\n  border: 1px solid lightgray;\r\n  border-radius: 4px;\n}\n.mass-loader {\r\n  position: absolute;\r\n  right: -190px;\r\n  top: 14px;\n}\n.v-input--selection-controls .v-input__slot {\r\n  margin-bottom: 0;\n}\r\n", ""]);
 
 // exports
 
@@ -80241,6 +80276,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -80251,7 +80287,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     };
   },
 
-  computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["c" /* mapGetters */])(['selected'])),
+  computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["c" /* mapGetters */])(['selected', 'isMassBusy'])),
   methods: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["d" /* mapMutations */])(['massSelection']), Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["b" /* mapActions */])(['massAction']), {
     massChange: function massChange(val) {
       var massItems = val ? this.items : [];
@@ -80443,6 +80479,12 @@ var render = function() {
                                   ],
                                   1
                                 )
+                              : _vm._e(),
+                            _vm._v(" "),
+                            _vm.selected.length && _vm.isMassBusy
+                              ? _c("v-icon", { staticClass: "mass-loader" }, [
+                                  _vm._v("hourglass_empty")
+                                ])
                               : _vm._e()
                           ],
                           1
@@ -87152,6 +87194,8 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
+//
 
 
 
@@ -87160,6 +87204,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
+      perPage: 20,
       allCollected: {},
       deliveryCollected: {},
       globalStats: {},
@@ -87185,7 +87230,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     };
   },
 
-  computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_2_vuex__["c" /* mapGetters */])(['settings']), {
+  computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_2_vuex__["c" /* mapGetters */])(['settings', 'selected']), {
     dictionary: function dictionary() {
       return this.$store.state.dictionary;
     }
@@ -87335,7 +87380,9 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     });
     this.getList();
     setInterval(function () {
-      _this4.getList();
+      if (_this4.selected.length == 0) {
+        _this4.getList();
+      }
       console.log('iterval');
     }, 120000);
   }
@@ -87427,7 +87474,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n.order-line .comments {\r\n  width: 15rem;\r\n  position: relative;\r\n  padding: 0;\n}\n.modal-lg {\r\n  max-width: 80vw;\n}\n.order-line .comments .content {\r\n  max-height: 12rem;\r\n  padding: 0.75rem;\r\n  overflow: hidden;\r\n  background-color: #FAFAFA;\r\n  width: 100%;\n}\n.order-line.pink .comments .content {\r\n  background-color: #fce4ec!important;\n}\n.order-line.green .comments .content {\r\n  background-color: #e8f5e9;\n}\n.order-line .comments .content:hover {\r\n  position: absolute;\r\n  z-index: 2;\r\n  min-height: 100%;\r\n  max-height: 100vh;\r\n  border-bottom: 1px solid #dee2e6;\n}\n.order-line .blink {\r\n  animation: blink 500ms infinite;  /* IE 10+, Fx 29+ */\n}\n@-webkit-keyframes blink {\n0%, 49% {\r\n    background-color: #e8f5e9;\n}\n50%, 100% {\r\n    background-color: white;\n}\n}\n.order-line .v-input--selection-controls.v-input--is-disabled.v-input--is-label-active .v-icon {\r\n  color: #82b1ff !important;\n}\n.v-textarea.v-text-field--box.v-text-field--single-line .v-text-field__prefix, .v-textarea.v-text-field--box.v-text-field--single-line textarea, .v-textarea.v-text-field--enclosed.v-text-field--single-line .v-text-field__prefix, .v-textarea.v-text-field--enclosed.v-text-field--single-line textarea {\r\n  margin-top: 0;\r\n  height: 170px !important;\n}\n.v-text-field.v-text-field--solo:not(.v-text-field--solo-flat) .v-input__slot {\r\n  height: 170px;\n}\n.icon-order-validate {\r\n  font-size: 18px;\r\n  border: 5px solid transparent;\r\n  border-radius: 50%;\n}\n.icon-order-validate.on-load {\r\n  border: 5px solid #C8E6C9;\n}\r\n", ""]);
+exports.push([module.i, "\n.order-line .comments {\r\n  width: 15rem;\r\n  position: relative;\r\n  padding: 0;\n}\n.modal-lg {\r\n  max-width: 80vw;\n}\n.order-line .comments .content {\r\n  max-height: 12rem;\r\n  padding: 0.75rem;\r\n  overflow: hidden;\r\n  background-color: #FAFAFA;\r\n  width: 100%;\n}\n.order-line.pink .comments .content {\r\n  background-color: #fce4ec!important;\n}\n.order-line.green .comments .content {\r\n  background-color: #e8f5e9;\n}\n.order-line .comments .content:hover {\r\n  position: absolute;\r\n  z-index: 2;\r\n  min-height: 100%;\r\n  max-height: 100vh;\r\n  border-bottom: 1px solid #dee2e6;\n}\n.order-line .blink {\r\n  animation: blink 500ms infinite;  /* IE 10+, Fx 29+ */\n}\n@-webkit-keyframes blink {\n0%, 49% {\r\n    background-color: #e8f5e9;\n}\n50%, 100% {\r\n    background-color: white;\n}\n}\n.order-line .v-input--selection-controls.v-input--is-disabled.v-input--is-label-active .v-icon {\r\n  color: #82b1ff !important;\n}\n.order-line .drop-phone.v-input--selection-controls.v-input--is-disabled.v-input--is-label-active .v-icon {\r\n  color: #EF5350 !important;\n}\n.v-textarea.v-text-field--box.v-text-field--single-line .v-text-field__prefix, .v-textarea.v-text-field--box.v-text-field--single-line textarea, .v-textarea.v-text-field--enclosed.v-text-field--single-line .v-text-field__prefix, .v-textarea.v-text-field--enclosed.v-text-field--single-line textarea {\r\n  margin-top: 0;\r\n  height: 170px !important;\n}\n.v-text-field.v-text-field--solo:not(.v-text-field--solo-flat) .v-input__slot {\r\n  height: 170px;\n}\n.icon-order-validate {\r\n  font-size: 18px;\r\n  border: 5px solid transparent;\r\n  border-radius: 50%;\n}\n.icon-order-validate.on-load {\r\n  border: 5px solid #C8E6C9;\n}\r\n", ""]);
 
 // exports
 
@@ -91333,6 +91380,7 @@ var render = function() {
                   key != "ttn"
                     ? _c("v-checkbox", {
                         staticClass: "mt-0",
+                        class: { "drop-phone": key == "drop_phone" },
                         attrs: {
                           height: "10",
                           color: "primary",
@@ -91904,7 +91952,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -92205,11 +92253,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         });
         this.data.client_middle_name = '';
         this.data.phone = this.item.statuses.custom_phone != null ? this.item.statuses.custom_phone : this.item.phone;
-        if (this.item.statuses.payment_status == 'Наложенный') {
-          this.data.backdelivery = 1;
-        } else {
-          this.data.backdelivery = 0;
-        }
         this.places = [];
         var place = { weight: '0.1', length: '5', width: '5', height: '5' };
         if (this.item.statuses.shipment_place && this.item.statuses.shipment_place > 1) {
@@ -92239,10 +92282,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             _this2.data[key] = _this2.item.ttn[key];
           }
         });
-
-        this.data.backdelivery = this.item.ttn.backdelivery == '1';
         this.places = JSON.parse(this.item.ttn.crm_places);
-
         var names = this.item.ttn.name.split(' ');
         this.data.client_last_name = names[0] || '';
         this.data.client_first_name = names[1] || '';
@@ -92253,6 +92293,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         this.data.city = this.item.is_address_valid.city;
         this.loadWarehouses();
         this.data.warehouse = this.item.is_address_valid.warehouse;
+      }
+      if (this.item.statuses.payment_status == 'Наложенный') {
+        this.data.backdelivery = 1;
+      } else {
+        this.data.backdelivery = 0;
       }
       this.places[0].weight = this.item.statuses.shipment_weight;
     },
@@ -94311,7 +94356,31 @@ var render = function() {
           _c("pagination", {
             attrs: { current: _vm.curPage, last: _vm.lastPage },
             on: { change: _vm.loadPage }
-          })
+          }),
+          _vm._v(" "),
+          _c(
+            "span",
+            { staticStyle: { width: "50px" } },
+            [
+              _c("v-select", {
+                attrs: { items: [20, 30, 50] },
+                on: {
+                  input: function($event) {
+                    _vm.searchQuery["per_page"] = arguments[0]
+                    _vm.getList()
+                  }
+                },
+                model: {
+                  value: _vm.perPage,
+                  callback: function($$v) {
+                    _vm.perPage = $$v
+                  },
+                  expression: "perPage"
+                }
+              })
+            ],
+            1
+          )
         ],
         2
       )

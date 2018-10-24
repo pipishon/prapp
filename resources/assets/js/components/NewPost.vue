@@ -282,11 +282,6 @@ import { mapGetters } from 'vuex'
             })
             this.data.client_middle_name = ''
             this.data.phone = (this.item.statuses.custom_phone != null) ? this.item.statuses.custom_phone : this.item.phone
-            if (this.item.statuses.payment_status == 'Наложенный') {
-              this.data.backdelivery = 1
-            } else {
-              this.data.backdelivery = 0
-            }
             this.places = []
             const place = { weight: '0.1', length: '5', width: '5', height: '5' }
             if (this.item.statuses.shipment_place && this.item.statuses.shipment_place > 1) {
@@ -316,10 +311,7 @@ import { mapGetters } from 'vuex'
                 this.data[key] = this.item.ttn[key]
               }
             })
-
-            this.data.backdelivery = (this.item.ttn.backdelivery == '1')
             this.places = JSON.parse(this.item.ttn.crm_places)
-
             const names = this.item.ttn.name.split(' ')
             this.data.client_last_name = names[0] || ''
             this.data.client_first_name = names[1] || ''
@@ -330,6 +322,11 @@ import { mapGetters } from 'vuex'
             this.data.city = this.item.is_address_valid.city
             this.loadWarehouses()
             this.data.warehouse = this.item.is_address_valid.warehouse;
+          }
+          if (this.item.statuses.payment_status == 'Наложенный') {
+            this.data.backdelivery = 1
+          } else {
+            this.data.backdelivery = 0
           }
           this.places[0].weight = this.item.statuses.shipment_weight
         },

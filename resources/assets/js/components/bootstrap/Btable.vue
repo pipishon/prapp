@@ -23,6 +23,7 @@
                 </v-list-tile>
               </v-list>
             </v-menu>
+              <v-icon v-if="selected.length && isMassBusy" class="mass-loader">hourglass_empty</v-icon>
           </td>
 
           <td v-for="field in fields" >
@@ -51,7 +52,7 @@
         }
       },
       computed: {
-        ...mapGetters(['selected'])
+        ...mapGetters(['selected', 'isMassBusy'])
       },
       methods: {
         ...mapMutations(['massSelection']),
@@ -100,6 +101,11 @@
   padding: 10px 15px;
   border: 1px solid lightgray;
   border-radius: 4px;
+}
+.mass-loader {
+  position: absolute;
+  right: -190px;
+  top: 14px;
 }
 .v-input--selection-controls .v-input__slot {
   margin-bottom: 0;

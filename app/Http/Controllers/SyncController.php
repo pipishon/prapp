@@ -221,7 +221,12 @@ class SyncController extends Controller
       'MESSAGE_NOT_DELIVERED',
       'MESSAGE_IS_DELIVERED'
     );
-    $smses = Sms::whereNotIn('status', $statuses)->orWhereNull('status')->get();
+    //$smses = Sms::whereNotIn('status', $statuses)->orWhereNull('status')->get();
+    $smses = Sms::whereDate('created_at', Carbon::today())->where(function($q) {
+        $q->where('status', '!=', 'MESSAGE_IS_DELIVERED')
+            ->orWhereNull('status');
+      })->get();
+        //->where('status', '!=', 'MESSAGE_IS_DELIVERED')->get();
     foreach ($smses as $sms) {
       $old_status = $sms->status;
       $sms->checkSmsStatus();

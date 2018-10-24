@@ -26,6 +26,8 @@ class SputnikEmail extends Model
         curl_setopt($ch, CURLOPT_URL, 'https://esputnik.com/api/v2/contacts/activity'.$query);
         curl_setopt($ch,CURLOPT_USERPWD, $login.':'.$password);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($rCurl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($rCurl, CURLOPT_SSL_VERIFYHOST, 0);
         $output = curl_exec($ch);
         return json_decode($output, true);
     }
@@ -50,6 +52,8 @@ class SputnikEmail extends Model
         curl_setopt($ch, CURLOPT_URL, 'https://esputnik.com/api/v1/'.$path.$query);
         curl_setopt($ch,CURLOPT_USERPWD, $login.':'.$password);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         $output = curl_exec($ch);
         return json_decode($output, true);
     }

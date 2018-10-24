@@ -81,6 +81,6 @@ class Sms extends Model
     $xml = simplexml_load_string($sAnswer, "SimpleXMLElement", LIBXML_NOCDATA);
     $json = json_encode($xml);
     $array = json_decode($json, TRUE);
-    return $sAnswer;
+    return $array;
   }
 }

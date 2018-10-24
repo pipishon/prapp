@@ -65,6 +65,7 @@ Route::prefix('sync')->group(function () {
 Route::prefix('mass')->group(function () {
   Route::get('delivered', 'MassActionController@statusDelivered');
   Route::get('sendttn', 'MassActionController@sendTtn');
+  Route::get('createttn', 'MassActionController@createTtn');
 });
 
 Route::get('import', 'ImportController@import');

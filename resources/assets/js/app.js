@@ -11,6 +11,8 @@ window.Vue = require('vue');
 
 import Vuetify from 'vuetify'
 
+import * as moment from 'moment';
+
 Vue.use(Vuetify)
 
 import Vuex from 'vuex'
@@ -32,8 +34,12 @@ const store = new Vuex.Store({
     selected: [],
     templates: [],
     orders: [],
+    isMassBusy: false
   },
   getters: {
+    isMassBusy: state => {
+      return state.isMassBusy
+    },
     selected: state => {
       return state.selected
     },
@@ -50,6 +56,9 @@ const store = new Vuex.Store({
     }
   },
   mutations: {
+    setMassBusy (state, val) {
+      state.isMassBusy = val
+    },
     massSelection (state, data) {
       state.selected = data
     },
@@ -84,18 +93,28 @@ const store = new Vuex.Store({
       state.orders.map((order) => {
         if (ids.indexOf(order.id) != -1) {
           order.status = 'delivered'
+          order.statuses.delivered = moment().format('YYYY-MM-DD HH:mm')
+        }
+      })
+    },
+    setTtn(state, ttns) {
+      state.orders.map((order) => {
+        if (typeof(ttns[order.id]) != 'undefined') {
+          order.ttn = ttns[order.id]
+          order.statuses.ttn_string = ttns[order.id].int_doc_number
+          console.log(order)
         }
       })
     },
     setSendTtn(state, ids) {
       state.orders.map((order) => {
         if (ids.phone.indexOf(order.id) != -1 || ids.email.indexOf(order.id) != -1) {
-          order.statuses.statuses.ttn_status = 1
+          order.statuses.ttn_status = 1
           if (ids.phone.indexOf(order.id) != -1) {
-            order.statuses.statuses.ttn_phone = 1
+            order.statuses.ttn_phone = 1
           }
           if (ids.email.indexOf(order.id) != -1) {
-            order.statuses.statuses.ttn_email = 1
+            order.statuses.ttn_email = 1
           }
         }
       })
@@ -103,15 +122,26 @@ const store = new Vuex.Store({
   },
   actions: {
     massAction ({dispatch, commit}, data) {
+      commit('setMassBusy', true)
       const ids = data.selected.map((el) => el = el.id)
       dispatch(data.fnName, ids)
+    },
+    massTtn ({commit}, ids) {
+      console.log(ids)
+      axios.get('api/mass/createttn', {params: {ids}}).then((res) => {
+        let ttns = res.data
+        commit('setTtn', ttns)
+        commit('setMassBusy', false)
+        console.log(res.data)
+      })
     },
     massSendTtn ({commit}, ids) {
       console.log(ids)
       axios.get('api/mass/sendttn', {params: {ids}}).then((res) => {
-        let phone = res.data.phone_ids
-        let email = res.data.email_ids
-        //commit('setSendTtn', {phone, email})
+        let phone = res.data.phone
+        let email = res.data.email
+        commit('setSendTtn', {phone, email})
+        commit('setMassBusy', false)
         console.log(res.data)
       })
     },
@@ -120,6 +150,7 @@ const store = new Vuex.Store({
       console.log(ids)
       axios.get('api/mass/delivered', {params: {ids}}).then((res) => {
         console.log(res)
+        commit('setMassBusy', false)
       })
     },
     loadDictionary ({commit}) {

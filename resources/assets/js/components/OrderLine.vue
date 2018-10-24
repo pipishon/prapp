@@ -382,7 +382,9 @@
 }
 .order-line .v-input--selection-controls.v-input--is-disabled.v-input--is-label-active .v-icon {
   color: #82b1ff !important;
-
+}
+.order-line .drop-phone.v-input--selection-controls.v-input--is-disabled.v-input--is-label-active .v-icon {
+  color: #EF5350 !important;
 }
 .v-textarea.v-text-field--box.v-text-field--single-line .v-text-field__prefix, .v-textarea.v-text-field--box.v-text-field--single-line textarea, .v-textarea.v-text-field--enclosed.v-text-field--single-line .v-text-field__prefix, .v-textarea.v-text-field--enclosed.v-text-field--single-line textarea {
   margin-top: 0;
