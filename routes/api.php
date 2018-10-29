@@ -48,9 +48,12 @@ Route::resource('settings', 'SettingsController');
 Route::resource('autoreceive', 'AutoReceiveController');
 Route::resource('dictionary', 'DictionaryController');
 
+Route::resource('orderdaystatistic', 'OrderDayStatisticController');
+
 Route::prefix('statistics')->group(function () {
   Route::get('recalc/customers', 'CustomerController@recalcStatistics');
 });
+
 
 
 Route::prefix('sync')->group(function () {

@@ -1,7 +1,7 @@
 <template>
           <div class="collected">
             <div>
-              <v-select menu-props="offsetY" :style="{width: '125px'}" @input="changeCollected" :hide-details="true" class="mt-0 pt-0" v-model="collectedString" :items="['Не собран', 'Собран']" :append-icon="(item.statuses.collected_string != 'Собран') ? 'hourglass_empty' : 'check_circle'" ></v-select>
+              <perfselect menu-props="offsetY" :style="{width: '125px'}" @input="changeCollected" :hide-details="true" class="mt-0 pt-0" v-model="collectedString" :items="['Не собран', 'Собран']" :append-icon="(item.statuses.collected_string != 'Собран') ? 'hourglass_empty' : 'check_circle'" ></perfselect>
             </div>
             <div class="mt-1 w-75 text-nowrap">
               <span v-if="['Пункты самовывоза', 'Доставка Укрпочтой (25-55 грн, оплачивается вместе с заказом)'].indexOf(item.delivery_option) == -1">
@@ -18,7 +18,7 @@
               </tbody>
             </table>
             <v-text-field class="mt-1 mb-0" :hide-details="true" :class="{blink: giftSaved}" label="Подарок" v-model="gift" @keyup.enter.native="saveGift" />
-              <v-dialog v-model="showDialog" width="350" persistent @keydown.esc="showDialog = false">
+              <v-dialog v-if="showDialog" v-model="showDialog" width="350" persistent @keydown.esc="showDialog = false">
                 <v-card class="p-2">
                   <v-container fluid v-if="['Пункты самовывоза', 'Доставка Укрпочтой (25-55 грн, оплачивается вместе с заказом)'].indexOf(item.delivery_option) == -1">
                       <v-layout row>
@@ -152,7 +152,7 @@ import * as moment from 'moment';
     background-color: #e8f5e9;
   }
   50%, 100% {
-    background-color: white;
+    background-color: #fafafa;
   }
 }
 </style>

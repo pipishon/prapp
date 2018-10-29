@@ -77,7 +77,14 @@
               <span @click="showAddressTextarea = true" v-if="!showAddressTextarea">{{data.item.delivery_address}}</span>
               <v-textarea class="m-0" @blur="showAddressTextarea = false; save()" rows="2" auto-grow v-if="showAddressTextarea" v-model="data.item.delivery_address" @focus="checkDeliveryAdress"></v-textarea>
             </div>
-            <v-text-field v-if="dictionary.delivery[data.item.delivery_option] != 'Самовывоз'" class="my-0" v-model="data.item.statuses.ttn_string"  label="ТТН" @keyup.enter.native="saveTTN" :class="{blink: ttnSaved}"></v-text-field>
+            <v-text-field
+              v-if="dictionary.delivery[data.item.delivery_option] != 'Самовывоз'"
+              class="my-0"
+              v-model="data.item.statuses.ttn_string"
+              label="ТТН"
+              @keyup.enter.native="saveTTN"
+              :class="{blink: ttnSaved, 'ttn-created': ttnCreated}">
+            </v-text-field>
           </div>
         </td>
 
@@ -105,8 +112,8 @@
                 {{data.item.customer.statistic.count_orders_received}}:
                 {{data.item.customer.statistic.count_orders_canceled}}
                 }</strong>,
-              {{data.item.customer.statistic.days_after_last_order}}
-              {{daysString(data.item.customer.statistic.days_after_last_order)}}
+              {{data.item.statuses.days_prev_order}}
+              {{daysString(data.item.statuses.days_prev_order)}}
             </div>
           </div>
           <div>
@@ -157,27 +164,24 @@
         return {
           onValidate: false,
           ttnSaved: false,
+          ttnCreated: false,
           showDeliverySelect: false,
           showPaymentSelect: false,
           showAddressTextarea: false,
           sNotDelivered: false,
           payStatus: '',
-          /*delivery: {
-            'Пункты самовывоза': 'Самовывоз',
-            'Новая Почта': 'Новая Почта',
-            'Доставка Укрпочтой (25-55 грн, оплачивается вместе с заказом)': 'Укрпочта',
-            'Доставка "Ин тайм" (отправки – по средам)': 'Ин тайм'
+          itemId: null
+        }
+      },
+      watch: {
+        item: {
+          handler (val) {
+            if (this.itemId != val.id) {
+              this.itemId = val.id
+              this.ttnCreated = !(this.item.statuses.ttn_string == null || this.item.statuses.ttn_string == '')
+            }
           },
-          payment: {
-            'Покупка без риска': 'Покупка без риска',
-            'Наличными при самовывозе из офиса (Киев, Урловская)': 'Наличные',
-            'Приват24': 'Приват24',
-            'не указан': 'не указан',
-            'Платёжный терминал ПриватБанка (комиссия от 2 грн)': 'Терминал ПриватБанка',
-            'Платёжный терминал ПриватБанка (комиссия от 2 грн)': 'Терминал ПриватБанка',
-            'Платёжные терминалы типа IBox или карты других банков (НЕ рекомендуем!)': 'Терминал IBox',
-            'Наложенный платеж (для заказов от 200 грн до 1000 грн, только Новая Почта)': 'Наложенный платеж'
-          },*/
+          deep: true
         }
       },
      computed: {
@@ -227,6 +231,7 @@
         },
         saveTTN() {
           this.ttnSaved = true;
+          this.ttnCreated = (this.item.statuses.ttn_string != '')
           setTimeout(() => {
             this.ttnSaved = false;
           }, 500)
@@ -331,6 +336,8 @@
         },
       },
       mounted() {
+        this.ttnCreated = !(this.item.statuses.ttn_string == null || this.item.statuses.ttn_string == '')
+        this.itemId = this.item.id
       }
 
     }
@@ -377,7 +384,7 @@
     background-color: #e8f5e9;
   }
   50%, 100% {
-    background-color: white;
+    background-color: #fafafa;
   }
 }
 .order-line .v-input--selection-controls.v-input--is-disabled.v-input--is-label-active .v-icon {
@@ -401,4 +408,8 @@
 .icon-order-validate.on-load {
   border: 5px solid #C8E6C9;
 }
+.ttn-created .v-text-field__slot {
+    background-color: #e8f5e9!important;
+}
+
 </style>

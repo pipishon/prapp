@@ -51,7 +51,7 @@
           </tr>
         </tbody>
       </table>
-      <v-dialog v-model="showDialog" width="400" persistent @keydown.esc="showDialog = false">
+      <v-dialog v-if="showDialog" v-model="showDialog" width="400" persistent @keydown.esc="showDialog = false">
         <v-card >
           <v-card-title class="primary white--text"><h5>{{names[type]}}</h5></v-card-title>
           <div class="px-3">
@@ -129,15 +129,15 @@ import * as moment from 'moment';
             this.paymentPrice = parseFloat(this.dialogData.statuses.payment_price).toFixed(2)
             this.ttn = this.dialogData.statuses.ttn_string
             let smsId = this.settings['template_' + this.type + '_sms']
-            let emailId = this.settings['template_' + this.type + '_email']
+            //let emailId = this.settings['template_' + this.type + '_email']
             this.tmplts[this.type + '_sms'] = this.templates.filter( el => el.id == smsId )[0]
-            this.tmplts[this.type + '_email'] = this.templates.filter( el => el.id == emailId )[0]
+            //this.tmplts[this.type + '_email'] = this.templates.filter( el => el.id == emailId )[0]
             if (typeof(this.tmplts[this.type + '_sms']) != 'undefined') {
               this.msgs.sms = this.replaceSpecWords(this.tmplts[this.type + '_sms'].template)
             }
-            if (typeof(this.tmplts[this.type + '_email']) != 'undefined') {
+            /*if (typeof(this.tmplts[this.type + '_email']) != 'undefined') {
               this.msgs.email = this.replaceSpecWords(this.tmplts[this.type + '_email'].template)
-            }
+            }*/
             let phone = this.dialogData.statuses.custom_phone || this.dialogData.phone
             let rx = /^\+\d{12}$/
             this.isPhoneValid = (phone.match(rx) != null)

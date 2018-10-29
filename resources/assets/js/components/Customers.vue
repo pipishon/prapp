@@ -1,44 +1,77 @@
 <template>
   <div>
-    <btable :items="list" :fields="fields" :search="['name', 'phone', 'email']" @search="onSearch"  >
+    <btable :items="list"
+      :fields="fields"
+      :search="['name', 'phone', 'email']"
+      @search="onSearch"
+    >
 
-        <template slot="name" slot-scope="data">
-          <a href="#" data-toggle="modal" data-target="#customerModal" @click.prevet="curCustomer = data.item">{{data.item.name[0]}}</a>
-        </template>
+      <template slot="row" slot-scope="data">
+        <tr v-for="item in data.items">
+          <td>
+            <customer :item="item" :id="item.id">{{item.name[0]}}</customer>
+          </td>
+          <td>
+            <span v-if="typeof(item.phones[0]) != 'undefined'">{{item.phones[0].phone}}</span>
+          </td>
+          <td>
+            <span v-if="typeof(item.emails[0]) != 'undefined'">{{item.emails[0].email}}</span>
+          </td>
+          <td>
+            {{item.manual_status}}
+          </td>
+          <td>
+            {{item.comment}}
+          </td>
+          <td>
+            {{daysFromNow(item.statistic.first_order)}}
+          </td>
+          <td>
+            {{daysFromNow(item.statistic.last_order)}}
+          </td>
+          <td>
+            {{item.statistic.count_orders}}
+          </td>
+          <td>
+            {{item.statistic.total_price}}
+          </td>
+          <td>
+            {{item.statistic.aver_price}}
+          </td>
+          <td>
+            {{averOrderDays(item)}}
+          </td>
+        </tr>
+      </template>
 
-        <template slot="phone" slot-scope="data">
-          <span v-if="typeof(data.item.phones[0]) != 'undefined'">{{data.item.phones[0].phone}}</span>
-        </template>
-
-        <template slot="email" slot-scope="data">
-          <span v-if="typeof(data.item.emails[0]) != 'undefined'">{{data.item.emails[0].email}}</span>
-        </template>
 
     </btable>
 
+
     <pagination :current="curPage" :last="lastPage" @change="loadPage"/>
-    <customer :customer="curCustomer" @updated="customerUpdated"/>
   </div>
 </template>
 
 <script>
     import customer from './Customer'
+    import * as moment from 'moment';
+    import { mapGetters } from 'vuex'
 
     export default {
       data() {
         return {
           fields: [
             { key: 'name', label: 'ФИО' },
-            { key: 'phone', label: 'Телефон Дата' },
+            { key: 'phone', label: 'Телефон' },
             { key: 'email', label: 'email' },
             { key: 'manual_status', label: 'Статус' },
-            { key: 'auto_status', label: 'Авто статус' },
             { key: 'comment', label: 'Комментарий' },
             { key: 'first_order', label: 'Дата первой покупки' },
             { key: 'last_order', label: 'Дата последней покупки' },
             { key: 'count_orders', label: 'Кол-во заказов' },
             { key: 'total_price', label: 'Всего денег' },
             { key: 'aver_price', label: 'Средний чек' },
+            { key: 'aver_days', label: 'Период заказов' },
           ],
           list: [],
           groups: [],
@@ -51,7 +84,18 @@
       components: {
         customer
       },
+      computed: {
+        ...mapGetters(['settings']),
+      },
       methods: {
+        averOrderDays (item) {
+          return Math.round(this.daysFromNow(item.statistic.first_order) / item.statistic.count_orders)
+        },
+        daysFromNow (d) {
+          const from = moment(d);
+          const today = moment();
+          return today.diff(from, 'days');
+        },
         customerUpdated (id) {
           axios.get('api/customers/' + id).then((res) => {
             this.curCustomer = res.data.data

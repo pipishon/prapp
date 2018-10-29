@@ -1,5 +1,10 @@
 <template>
   <div class="orders">
+    <div class="loader-overlay" v-if="listLoading">
+      <div class="loader" >
+        <img src="imgs/loader.svg">
+      </div>
+    </div>
     <btable
        :items="list"
        :select-all="true"
@@ -13,7 +18,7 @@
        >
 
       <template slot="row" slot-scope="data">
-        <tr is="orderline" @updateorder="updateOrder(item, arguments[0])" v-for="(item, key) in data.items" :dictionary="dictionary" :item="item" :key="key" :class="{'green lighten-5': item.status == 'delivered', 'pink lighten-5': item.status == 'canceled'}"></tr>
+        <tr is="orderline" @updateorder="updateOrder(item, arguments[0])" v-for="(item, key) in data.items" :dictionary="dictionary" :item="item" :key="item.id" :class="{'green lighten-5': item.status == 'delivered', 'pink lighten-5': item.status == 'canceled'}"></tr>
       </template>
     </btable>
 
@@ -49,6 +54,7 @@
     export default {
       data() {
         return {
+          listLoading: false,
           perPage: 20,
           allCollected: {},
           deliveryCollected: {},
@@ -171,12 +177,14 @@
           }
         },
         refresh () {
+          this.listLoading = true
           axios.get('api/sync/orders').then((res) => {
             this.getList()
           })
         },
         getList (params) {
           params = Object.assign(this.searchQuery, params)
+          this.listLoading = true
           axios.get('api/orders', {params}).then((res) => {
             this.list = res.data.data
             this.setOrders(this.list)
@@ -186,6 +194,7 @@
             this.deliveryCollected = res.data.delivery_collected
             this.globalStats = res.data.stats
             this.allCollected = res.data.all_collected
+            this.listLoading = false
           })
         },
         loadPage(page) {
@@ -289,6 +298,21 @@ cursor: pointer;
 .v-ripple__animation {
   transition: none;
   display: none;
+}
+.loader-overlay {
+  left: -30px;
+  right: 0;
+  width: 100vw;
+  height: 100%;
+  z-index: 100;
+  position: fixed;
+}
+.loader {
+  width: 200px;
+  height: 200px;
+  position: fixed;
+  left: calc(50vw - 100px);
+  top: calc(50vh - 100px);
 }
 
 </style>

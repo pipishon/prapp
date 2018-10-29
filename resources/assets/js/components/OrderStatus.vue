@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-dialog v-model="showDialog" width="350" persistent @keydown.esc="showDialog = false">
+    <v-dialog v-if="showDialog" v-model="showDialog" width="350" persistent @keydown.esc="showDialog = false">
       <v-card class="p-2">
         <v-container fluid>
               <v-select class="m-0" v-model="reason" label="Причина отмены заказа" :items="reasons"></v-select>
@@ -13,7 +13,7 @@
             </v-card-actions>
       </v-card>
     </v-dialog>
-      <v-select class="mt-0 pt-0" v-model="item.status" :items="statuses" @input="changeStatus"></v-select>
+      <perfselect class="mt-0 pt-0" v-model="item.status" :items="statuses" @input="changeStatus"></perfselect>
       <div class="mt-5" v-if="item.statuses.delivered != null">
         Выполнен:
         <v-menu :close-on-content-click="false" v-model="menuDate" offset-y full-width >

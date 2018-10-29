@@ -23,11 +23,15 @@
       </div>
       <div class="form-group col">
         <div class="row">
-          <div class="col-9">
-            <v-text-field v-model="phoneToAdd" label="Добавить телефон"></v-text-field>
+          <div class="col-8">
+            <v-text-field v-model="phoneToAdd" @input="startEditPhone = true" label="Добавить телефон"></v-text-field>
           </div>
-          <div class="col-3">
+          <div class="col-4">
             <v-btn @click="addPhone" icon color="primary" flat><v-icon>add_box</v-icon></v-btn>
+            <template v-if="startEditPhone">
+              <v-icon class="phone-valid-icon" v-if="isPhoneValid" color="#82b1ff">check_circle</v-icon>
+              <v-icon class="phone-valid-icon" v-else color="#EF5350">offline_bolt</v-icon>
+            </template>
           </div>
         </div>
         <template v-for="customer in customersToMerge">
@@ -110,6 +114,7 @@ import draggable from 'vuedraggable'
         return {
           customer: {},
           showDialog: false,
+          startEditPhone: false,
           orderFields: [
             { key: 'prom_id', label: 'Prom id' },
             { key: 'status', label: 'Status' },
@@ -137,10 +142,17 @@ import draggable from 'vuedraggable'
           }
         }
       },
+      computed: {
+        isPhoneValid () {
+          const rx = /^\+\d{12}$/
+          return (this.phoneToAdd.match(rx) != null)
+        }
+      },
       methods: {
         initValues () {
           this.emailToAdd = ''
-          this.phoneToAdd = ''
+          this.phoneToAdd = '+380'
+          this.startEditPhone = false
           this.customersToMerge = []
         },
         onStatusChange (val) {
@@ -212,5 +224,9 @@ import draggable from 'vuedraggable'
 }
 .customer label {
   margin-bottom: 0;
+}
+.phone-valid-icon {
+  font-size: 21px;
+  vertical-align: middle;
 }
 </style>

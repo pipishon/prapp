@@ -9,6 +9,7 @@ use App\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\NewPostCity;
+use App\OrderStatus;
 use Carbon\Carbon;
 
 class OrderController extends Controller
@@ -53,6 +54,7 @@ class OrderController extends Controller
       foreach ($delivery_collected['Новая Почта'] as $name => $val) {
         $delivery_collected['Новая Почта'][$name] = $val + $delivery_collected['«Нова пошта» - Покупка без риска'][$name];
       }
+      unset($delivery_collected['«Нова пошта» - Покупка без риска']);
 
 
       $name = 'Пункты самовывоза';

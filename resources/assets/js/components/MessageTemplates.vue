@@ -96,7 +96,7 @@ import autosms from './AutoSms'
     background-color: #e8f5e9;
   }
   50%, 100% {
-    background-color: white;
+    background-color: #fafafa;
   }
 }
 </style>

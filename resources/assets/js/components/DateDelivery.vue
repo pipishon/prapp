@@ -3,9 +3,9 @@
 
   <div >
   <div class="text-nowrap">Отгрузка:
-  <v-dialog v-model="showDialog" width="300" persistent @keydown.esc="showDialog = false">
+  <v-dialog  v-model="showDialog" width="300" persistent @keydown.esc="showDialog = false">
       <v-icon slot="activator" small>event</v-icon>
-    <v-card v-if="showDialog">
+    <v-card v-if="showDialog" >
       <v-container fluid>
           <v-layout row>
             <v-flex xs12 md12 >

@@ -16,7 +16,7 @@ class Order extends Model
 
   public function statuses()
   {
-    return $this->hasOne('App\OrderStatus');
+    return $this->hasOne('App\OrderStatus', 'order_id', 'id');
   }
 
   public function ttn()
@@ -95,7 +95,6 @@ class Order extends Model
                 $status['Клиент'] = false;
         }
       }
-
       $phone_regexp = '/^\+\d{12}$/';
       $email = ($this->statuses->custom_email != null) ? $this->statuses->custom_email : $this->email;
       $phone = ($this->statuses->custom_phone != null) ? $this->statuses->custom_phone : $this->phone;
@@ -164,7 +163,7 @@ class Order extends Model
           }
       }
       if (isset($input['status']) || isset($input['today_delivery']) || isset($input['not_payed'])) {
-        $query = $query->join('order_statuses', 'orders.id', '=', 'order_statuses.order_id');
+        $query = $query->select('orders.*')->join('order_statuses', 'orders.id', '=', 'order_statuses.order_id');
       }
 
       if (isset($input['payment_status'])) {
@@ -173,7 +172,11 @@ class Order extends Model
 
       if (isset($input['today_delivery'])) {
         if ($input['today_delivery'] == '1') {
-            $query = $query->where('shipment_date', DB::raw('CURDATE()'));
+            $query = $query->where(function ($query) {
+                $query->where('delivery_option', '!=', 'Пункты самовывоза')->where('shipment_date', DB::raw('CURDATE()'));
+            })->orWhere(function ($query) {
+                $query->where('delivery_option', 'Пункты самовывоза')->whereNotIn('orders.status', ['delivered', 'canceled'])->where('shipment_date', '<=', DB::raw('CURDATE()'));
+            });
         }
       }
 

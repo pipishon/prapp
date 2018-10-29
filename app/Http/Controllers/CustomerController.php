@@ -19,7 +19,7 @@ class CustomerController extends Controller
       $input = $request->all();
 
       $per_page = (isset($input['per_page'])) ? (int) $input['per_page'] : 20;
-      $customer = Customer::with('orders');
+      $customer = Customer::join('customer_statistics as st', 'st.customer_id', '=', 'customers.id')->select('customers.*')->with('statistic');
       if (isset($input['email']) && $input['email'] != '') {
         $customer->whereIn('customers.id', function($query) use ($input) {
           $query->from('email')->select('emails.customer_id')->where('emails.email', 'like', '%'.$input['email'].'%');
@@ -32,8 +32,7 @@ class CustomerController extends Controller
         });
         //$customer->whereHas('phones', function($query) use ($input) { $query->where('phone', 'like', '%'.$input['phone'].'%');});
       }
-
-      return $customer->with('emails')->with('phones')->search($input)->paginate($per_page);
+      return $customer->with('emails')->with('phones')->search($input)->orderBy('last_order', 'desc')->paginate($per_page);
     }
 
     /**
@@ -209,7 +208,9 @@ class CustomerController extends Controller
     public function recalcStatistics (Request $request)
     {
       $per_page = 200;
-      $customers = Customer::with('orders')->paginate($per_page);
+
+      $customers = Customer::paginate($per_page);
+      //$customers = Customer::paginate($per_page);
       foreach ($customers as $customer) {
         $customer->recalcStatistics();
       }

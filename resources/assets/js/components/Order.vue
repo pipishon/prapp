@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="showDialog" fullscreen transition="dialog-bottom-transition" >
+  <v-dialog  v-model="showDialog" fullscreen transition="dialog-bottom-transition" >
     <a href="#" slot="activator"><slot></slot></a>
     <v-card v-if="showDialog">
       <v-toolbar flat card dense fixed>

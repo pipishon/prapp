@@ -92,21 +92,26 @@ class Customer extends Model
     $statistic->count_orders_canceled = 0;
     $statistic->total_price = 0;
     $statistic->aver_price = 0;
-    if ($customer->orders->first()) {
-      $statistic->first_order = $customer->orders->last()->prom_date_created;
-      $statistic->last_order = $customer->orders->first()->prom_date_created;
-      $num_rows = count($customer->orders);
-      if ($num_rows > 1) {
-        $prelast = $customer->orders()->offset(1)->limit(1)->get()->first()->prom_date_created;
-      } else {
-        $prelast = $customer->orders()->first()->prom_date_created;
+    $statistic->days_after_last_order = 1;
+    if (count($customer->orders) > 0) {//->first()) {
+      $orders = $customer->orders->sortBy(function($order) {
+        return Carbon::parse($order->prom_date_created)->timestamp;
+      });
+      $orders = $orders->values()->all();
+      $statistic->first_order = $orders[0]->prom_date_created;
+      $statistic->last_order = $orders[count($orders) - 1]->prom_date_created;
+
+      $prev_order = $orders[0];
+      $stats = array();
+      foreach ($orders as $key => $order) {
+        $pre_date = Carbon::parse($prev_order->prom_date_created);
+        $order->statuses->days_prev_order = Carbon::parse($order->prom_date_created)->diffInDays($pre_date);
+        $stats[$order->prom_date_created] = $order->statuses->days_prev_order;
+        $prev_order = $order;
       }
-      $prelast_date = Carbon::parse($prelast);
-      $length = Carbon::parse($statistic->last_order)->diffInDays($prelast_date);
-      $statistic->days_after_last_order = $length;
+
     } else {
       $statistic->first_order = $statistic->last_order = $customer->created_at;
-      $statistic->days_after_last_order = 1;
     }
     foreach ($customer->orders as $order) {
       $statistic->count_orders = $statistic->count_orders + 1;
@@ -127,11 +132,12 @@ class Customer extends Model
       if ($order->status != 'canceled') {
         $price = (int) preg_replace('/\s+/u', '', $order->price);
         $statistic->total_price = $statistic->total_price + $price;
-        $statistic->aver_price = ($statistic->aver_price == 0) ? (int) ($statistic->aver_price + $price) / 2 : $price;
+        $statistic->aver_price = ($statistic->aver_price == 0) ? (int) $price : (int) ($statistic->aver_price + $price) / 2;
       }
 
     }
     $statistic->save();
+    $customer->push();
   }
 /*
   public function getFirstOrderAttribute () {

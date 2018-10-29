@@ -4,7 +4,7 @@
     <div class="payment">
       <div>
         <span class="status">
-          <v-select :style="{width: '135px'}" class="mt-0 pt-0" menu-props="offsetY" v-model="payment_status" :items="['Не оплачен', 'Частично', 'Наложенный', 'Оплачен']"  :append-icon="(item.payment_status != 'Оплачен') ? 'hourglass_empty' : 'check_circle'" @input="setStatus"></v-select>
+          <perfselect :style="{width: '135px'}" class="mt-0 pt-0" menu-props="offsetY" v-model="payment_status" :items="['Не оплачен', 'Частично', 'Наложенный', 'Оплачен']"  :append-icon="(item.payment_status != 'Оплачен') ? 'hourglass_empty' : 'check_circle'" @input="setStatus"></perfselect>
         </span>
       </div>
       <div @click="showDialog = true">
@@ -24,7 +24,7 @@
         </div>
       </div>
     </div>
-  <v-dialog width="400" v-model="showDialog" persistent @keydown.esc="showDialog = false" >
+  <v-dialog width="400" v-if="showDialog" v-model="showDialog" persistent @keydown.esc="showDialog = false" >
     <v-card>
       <v-container fluid>
           <v-layout row>
