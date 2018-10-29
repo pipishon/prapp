@@ -173,9 +173,11 @@ class Order extends Model
       if (isset($input['today_delivery'])) {
         if ($input['today_delivery'] == '1') {
             $query = $query->where(function ($query) {
-                $query->where('delivery_option', '!=', 'Пункты самовывоза')->where('shipment_date', DB::raw('CURDATE()'));
-            })->orWhere(function ($query) {
-                $query->where('delivery_option', 'Пункты самовывоза')->whereNotIn('orders.status', ['delivered', 'canceled'])->where('shipment_date', '<=', DB::raw('CURDATE()'));
+                $query->where(function ($query) {
+                    $query->where('delivery_option', '!=', 'Пункты самовывоза')->where('shipment_date', DB::raw('CURDATE()'));
+                })->orWhere(function ($query) {
+                    $query->where('delivery_option', 'Пункты самовывоза')->whereNotIn('orders.status', ['delivered', 'canceled'])->where('shipment_date', '<=', DB::raw('CURDATE()'));
+                });
             });
         }
       }
