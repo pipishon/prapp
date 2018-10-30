@@ -36,7 +36,7 @@ import settings from './components/Settings'
     export default {
       data () {
         return {
-          mode: 'orders'
+          mode: 'statistics'
         }
       },
       components: {

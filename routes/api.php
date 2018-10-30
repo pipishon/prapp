@@ -52,6 +52,7 @@ Route::resource('orderdaystatistic', 'OrderDayStatisticController');
 
 Route::prefix('statistics')->group(function () {
   Route::get('recalc/customers', 'CustomerController@recalcStatistics');
+  Route::get('recalc/orders', 'OrderDayStatisticController@recalcStatistics');
 });
 
 
