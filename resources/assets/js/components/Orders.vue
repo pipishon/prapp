@@ -54,6 +54,7 @@
     export default {
       data() {
         return {
+          autoUpdate: false,
           listLoading: false,
           perPage: 20,
           allCollected: {},
@@ -184,7 +185,12 @@
         },
         getList (params) {
           params = Object.assign(this.searchQuery, params)
+
           this.listLoading = true
+          if (this.autoUpdate) {
+            this.listLoading = false
+            this.autoUpdate = false
+          }
           axios.get('api/orders', {params}).then((res) => {
             this.list = res.data.data
             this.setOrders(this.list)
@@ -217,6 +223,7 @@
         this.getList()
         setInterval(() => {
           if (this.selected.length == 0) {
+            this.autoUpdate = true
             this.getList()
           }
           console.log('iterval')

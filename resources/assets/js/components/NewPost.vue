@@ -25,7 +25,7 @@
           <v-icon small>book</v-icon>
         </a>
       </span>
-      <v-btn v-if="!isTtnCreated && item.statuses.shipment_weight != '-'" @click.native.stop="setDefaults(); send(false);" flat icon class="mt-0 ml-0"><v-icon small>autorenew</v-icon></v-btn>
+      <v-btn v-if="!isTtnCreated && item.statuses.shipment_weight != '-' && valid" @click.native.stop="setDefaults(); send(false);" flat icon class="mt-0 ml-0"><v-icon small>autorenew</v-icon></v-btn>
     </div>
     <v-card v-if="!editeTtn && isTtnCreated">
       <v-card-title class="primary white--text"><h5>Экспресс накладная</h5></v-card-title>

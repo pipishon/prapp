@@ -174,6 +174,12 @@
         }
       },
       watch: {
+        showDeliverySelect (val) {
+          if (val) {
+            this.item.statuses.shipment_weight = '-'
+            this.item.statuses.shipment_place = '-'
+          }
+        },
         item: {
           handler (val) {
             if (this.itemId != val.id) {
