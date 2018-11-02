@@ -22,6 +22,7 @@ class NewPostApi {
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_PROXY, '10.0.0.80:3128');
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
         $result = curl_exec($ch);
@@ -144,6 +145,25 @@ class NewPostApi {
         $params = array(
             'CounterpartyProperty' => 'Sender',
             'Page'=> '1'
+        );
+        return $this->request($model, $method, $params);
+    }
+
+    public function track ($ttn)
+    {
+        //$en_nums = array('20450097375195', '20450097375229', '20450097375932', '20450097215336', '20450097215346', '20450095168254', '20450097215342');
+        $en_nums = array($ttn);
+        $documents = array();
+        foreach ($en_nums as $num) {
+            $documents[] = array(
+                    "DocumentNumber" => $num,
+                    "Phone" => "+380679325925"
+                );
+        }
+        $model = 'TrackingDocument';
+        $method = 'getStatusDocuments';
+        $params = array(
+            "Documents" => $documents
         );
         return $this->request($model, $method, $params);
     }

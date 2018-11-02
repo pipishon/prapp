@@ -24,7 +24,8 @@
             'receipt': 'templates',
             'done_outline': 'autoreceive',
             'library_books': 'dictionary',
-            'settings': 'settings'
+            'settings': 'settings',
+            'directions_car': 'nptrack'
           }
         }
       },

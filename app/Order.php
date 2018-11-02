@@ -95,7 +95,7 @@ class Order extends Model
                 $status['Клиент'] = false;
         }
       }
-      $phone_regexp = '/^\+\d{12}$/';
+      $phone_regexp = '/^\+380\d{9}$/';
       $email = ($this->statuses->custom_email != null) ? $this->statuses->custom_email : $this->email;
       $phone = ($this->statuses->custom_phone != null) ? $this->statuses->custom_phone : $this->phone;
       if (($email != '' && filter_var($email, FILTER_VALIDATE_EMAIL) == false) || !preg_match($phone_regexp, $phone, $matches)) {

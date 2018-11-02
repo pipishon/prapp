@@ -14,6 +14,7 @@
         <autoreceive v-if="mode == 'autoreceive'"/>
         <dictionary v-if="mode == 'dictionary'"/>
         <settings v-if="mode == 'settings'"/>
+        <nptrack v-if="mode == 'nptrack'"/>
       </div>
     </v-app>
   </div>
@@ -33,10 +34,11 @@ import templates from './components/MessageTemplates'
 import autoreceive from './components/AutoReceive'
 import dictionary from './components/Dictionary'
 import settings from './components/Settings'
+import nptrack from './components/NpTrack'
     export default {
       data () {
         return {
-          mode: 'orders'
+          mode: 'nptrack'
         }
       },
       components: {
@@ -50,7 +52,8 @@ import settings from './components/Settings'
         statistics,
         autoreceive,
         dictionary,
-        settings
+        settings,
+        nptrack
       },
       mounted() {
         this.$store.dispatch('loadDictionary')

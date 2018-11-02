@@ -179,18 +179,9 @@
             this.item.statuses.shipment_weight = '-'
             this.item.statuses.shipment_place = '-'
           }
-        },
-        item: {
-          handler (val) {
-            if (this.itemId != val.id) {
-              this.itemId = val.id
-              this.ttnCreated = !(this.item.statuses.ttn_string == null || this.item.statuses.ttn_string == '')
-            }
-          },
-          deep: true
         }
       },
-     computed: {
+      computed: {
         ...mapGetters(['selected']),
         data () {
           return {item: this.item}

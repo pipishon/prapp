@@ -58,7 +58,7 @@
             <span class="mr-4" :class="{'red--text': !isPhoneValid}">
               <strong v-if="item.statuses.custom_phone" >{{item.statuses.custom_phone}}</strong><strong v-else>{{item.phone}}</strong>
             </span>
-            <span>
+            <span :class="{'red--text': !isEmailValid}">
               <strong v-if="item.statuses.custom_email">{{item.statuses.custom_email}}</strong><strong v-else>{{item.email}}</strong>
             </span>
             <div>
@@ -78,10 +78,10 @@
 
               <v-layout class="px-5" row>
                 <v-flex xs6 md6 >
-                  <v-checkbox v-model="sendSms" label="СМС"></v-checkbox>
+                  <v-checkbox :disabled="!isPhoneValid" v-model="sendSms" label="СМС"></v-checkbox>
                 </v-flex>
                 <v-flex xs6 md6 >
-                  <v-checkbox  v-if="item.email!='' || item.statuses.custom_email != null" v-model="sendEmail" label="Email"></v-checkbox>
+                  <v-checkbox :disabled="!isEmailValid" v-if="(item.email!='' || item.statuses.custom_email != null)" v-model="sendEmail" label="Email"></v-checkbox>
                 </v-flex>
               </v-layout>
             </div>
@@ -115,6 +115,7 @@ import * as moment from 'moment';
           mapStatuses: {'1': 'Отправлено', '2': 'Доставлено', '3': 'Ошибка', '4': 'Прочтено'},
           payemntPrice: null,
           isPhoneValid: true,
+          isEmailValid: true,
           ttn: null,
           deliverer: null,
         }
@@ -123,8 +124,6 @@ import * as moment from 'moment';
         showDialog (val) {
           if (val) {
             this.dialogData = JSON.parse(JSON.stringify(this.item))
-            this.sendSms = true
-            this.sendEmail = true
             this.deliverer = this.delivery
             this.paymentPrice = parseFloat(this.dialogData.statuses.payment_price).toFixed(2)
             this.ttn = this.dialogData.statuses.ttn_string
@@ -139,8 +138,12 @@ import * as moment from 'moment';
               this.msgs.email = this.replaceSpecWords(this.tmplts[this.type + '_email'].template)
             }*/
             let phone = this.dialogData.statuses.custom_phone || this.dialogData.phone
-            let rx = /^\+\d{12}$/
+            const email = this.dialogData.statuses.custom_email || this.dialogData.email
+            let rx = /^\+380\d{9}$/
             this.isPhoneValid = (phone.match(rx) != null)
+            this.isEmailValid = this.validateEmail(email)
+            this.sendSms = this.isPhoneValid
+            this.sendEmail = this.isEmailValid
           }
         }
       },
@@ -202,6 +205,10 @@ import * as moment from 'moment';
       methods: {
         ...mapMutations(['updateOrder']),
         ...mapActions(['updateSettings']),
+        validateEmail (email) {
+            var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(String(email).toLowerCase());
+        },
         isObjEmpty (obj) {
           if (!obj) return true
           return Object.keys(obj).length == 0
