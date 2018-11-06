@@ -38,7 +38,7 @@ import nptrack from './components/NpTrack'
     export default {
       data () {
         return {
-          mode: 'nptrack'
+          mode: 'orders'
         }
       },
       components: {
@@ -56,7 +56,7 @@ import nptrack from './components/NpTrack'
         nptrack
       },
       mounted() {
-        this.$store.dispatch('loadDictionary')
+        //this.$store.dispatch('loadDictionary')
         this.$store.dispatch('loadSettings')
         this.$store.dispatch('loadTemplates')
       }

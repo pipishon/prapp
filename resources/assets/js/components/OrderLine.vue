@@ -28,16 +28,16 @@
           </span>
           <div v-html="orderDate(data)" class="text-nowrap"></div>
           <order :order="data.item"><span>Товаров {{data.item.products.length}} шт</span></order>
-          <datedelivery :delivery="dictionary.delivery[data.item.delivery_option]" :item="data.item.statuses" :id="data.item.id" />
+          <datedelivery :delivery="data.item.delivery_option" :item="data.item.statuses" :id="data.item.id" />
         </td>
 
         <td>
-          <workout :item="data.item" :delivery="dictionary.delivery[data.item.delivery_option]"></workout>
+          <workout :item="data.item" :delivery="data.item.delivery_option"></workout>
         </td>
 
 
         <td :class="{'green lighten-5': data.item.statuses.payment_status == 'Оплачен', 'pink lighten-5': data.item.statuses.payment_status == 'Наложенный'}">
-          <paymentstatus :delivery="dictionary.delivery[data.item.delivery_option]" :item="data.item.statuses" />
+          <paymentstatus :delivery="data.item.delivery_option" :item="data.item.statuses" />
         </td>
 
         <td class="comments">
@@ -61,24 +61,24 @@
             <div>
               <template v-if="!showDeliverySelect">
                 <v-icon class="mr-2 " small>local_shipping</v-icon>
-                <u @click="showDeliverySelect = true"><span v-if="data.item.delivery_option != null" > {{mapDelivery}}</span><span v-else>Не указан</span></u>
+                <u @click="showDeliverySelect = true"><span v-if="data.item.delivery_option != null" >{{data.item.delivery_option}}</span><span v-else>Не указан</span></u>
                 </template>
               <v-select @blur="showDeliverySelect = false" v-if="showDeliverySelect" class="m-0 p-0 text-nowrap" :items="Object.values(dictionary.delivery)" :value="mapDelivery" @input="saveDelivery" prepend-icon="local_shipping" small></v-select>
             </div>
             <div class="text-nowrap" >
               <template v-if="!showPaymentSelect">
-                <v-icon class="mr-2 " small>credit_card</v-icon><u @click="showPaymentSelect = true"><span v-if="data.item.payment_option != ''">{{mapPayment}}</span><span v-else>Не указан</span></u>
+                <v-icon class="mr-2 " small>credit_card</v-icon><u @click="showPaymentSelect = true"><span v-if="data.item.payment_option != ''">{{data.item.payment_option}}</span><span v-else>Не указан</span></u>
               </template>
               <v-select v-if="showPaymentSelect" class="m-0 p-0 text-nowrap" :items="Object.values(dictionary.payment)" :value="mapPayment"
                   @blur="showPaymentSelect = false" @input="savePayment" prepend-icon="credit_card" small></v-select>
             </div>
-            <newpost :item="data.item" v-if="dictionary.delivery[data.item.delivery_option] == 'Новая Почта'"/>
+            <newpost :item="data.item" v-if="data.item.delivery_option == 'Новая Почта'"/>
             <div class="my-2" v-else>
               <span @click="showAddressTextarea = true" v-if="!showAddressTextarea">{{data.item.delivery_address}}</span>
               <v-textarea class="m-0" @blur="showAddressTextarea = false; save()" rows="2" auto-grow v-if="showAddressTextarea" v-model="data.item.delivery_address" @focus="checkDeliveryAdress"></v-textarea>
             </div>
             <v-text-field
-              v-if="dictionary.delivery[data.item.delivery_option] != 'Самовывоз'"
+              v-if="data.item.delivery_option != 'Самовывоз'"
               class="my-0"
               v-model="data.item.statuses.ttn_string"
               label="ТТН"
@@ -189,20 +189,6 @@
         deliveryArr () {
           return Object.values(this.delivery)
         },
-        mapDelivery () {
-          if (this.data.item.delivery_option != null) {
-            return this.dictionary.delivery[this.data.item.delivery_option.trim()]
-          } else {
-            return 'Не указан'
-          }
-        },
-        mapPayment () {
-          if (this.data.item.payment_option != null) {
-            return this.dictionary.payment[this.data.item.payment_option.trim()]
-          } else {
-            return 'Не указан'
-          }
-        },
       },
       components: {
         order,
@@ -245,21 +231,13 @@
           this.showAddressTextarea = true
         },
         saveDelivery (val) {
-          for (let name in this.dictionary.delivery) {
-            if (this.dictionary.delivery[name] == val) {
-              this.item.delivery_option = name
-              this.save()
-            }
-          }
+          this.item.delivery_option = val
+          this.save()
           this.showDeliverySelect = false
         },
         savePayment (val) {
-          for (let name in this.dictionary.payment) {
-            if (this.dictionary.payment[name] == val) {
-              this.item.payment_option = name
-              this.save()
-            }
-          }
+          this.item.payment_option = val
+          this.save()
           this.showPaymentSelect = false
         },
         showNotDelivered (val) {

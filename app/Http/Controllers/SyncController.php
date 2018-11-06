@@ -178,6 +178,7 @@ class SyncController extends Controller
 
     foreach ($new_orders_id as $id) {
         $order = Order::where('prom_id', $id)->first();
+        $order->mapDeliveryPayment();
         OrderStatus::firstOrCreate(array('order_id' => $order->id));
         $customer_id = $order->customer_id;
         $customer = Customer::find($customer_id);

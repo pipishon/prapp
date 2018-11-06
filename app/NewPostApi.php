@@ -149,10 +149,9 @@ class NewPostApi {
         return $this->request($model, $method, $params);
     }
 
-    public function track ($ttn)
+    public function track ($ttns)
     {
-        //$en_nums = array('20450097375195', '20450097375229', '20450097375932', '20450097215336', '20450097215346', '20450095168254', '20450097215342');
-        $en_nums = array($ttn);
+        $en_nums = $ttns;
         $documents = array();
         foreach ($en_nums as $num) {
             $documents[] = array(

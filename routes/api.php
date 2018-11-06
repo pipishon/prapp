@@ -48,6 +48,9 @@ Route::resource('settings', 'SettingsController');
 Route::resource('autoreceive', 'AutoReceiveController');
 Route::resource('dictionary', 'DictionaryController');
 
+Route::resource('nptrack', 'NewPostTtnTrackController');
+Route::get('nptrackcheck', 'NewPostTtnTrackController@checkStatus');
+
 Route::resource('orderdaystatistic', 'OrderDayStatisticController');
 
 Route::prefix('statistics')->group(function () {

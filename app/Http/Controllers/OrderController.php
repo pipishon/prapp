@@ -41,7 +41,7 @@ class OrderController extends Controller
       }
 
       $delivery_collected = array();
-      foreach (['Новая Почта', 'Доставка Укрпочтой (25-55 грн, оплачивается вместе с заказом)',  'Доставка "Ин тайм" (отправки – по средам)', '«Нова пошта» - Покупка без риска'] as $name) {
+      foreach (['Новая Почта', 'Укрпочта',  'НП без риска'] as $name) {
         $total =  DB::table('orders')->join('order_statuses', 'orders.id', '=', 'order_statuses.order_id')
             ->where('orders.delivery_option', $name)->where('orders.status', '!=', 'canceled')
             ->whereDate('order_statuses.shipment_date', '=', Db::Raw('CURDATE()'))->count();
@@ -52,12 +52,12 @@ class OrderController extends Controller
         $delivery_collected[$name] = array('collected' => $collected, 'total' => $total);
       }
       foreach ($delivery_collected['Новая Почта'] as $name => $val) {
-        $delivery_collected['Новая Почта'][$name] = $val + $delivery_collected['«Нова пошта» - Покупка без риска'][$name];
+        $delivery_collected['Новая Почта'][$name] = $val + $delivery_collected['НП без риска'][$name];
       }
-      unset($delivery_collected['«Нова пошта» - Покупка без риска']);
+      unset($delivery_collected['НП без риска']);
 
 
-      $name = 'Пункты самовывоза';
+      $name = 'Самовывоз';
       $total =  DB::table('orders')->join('order_statuses', 'orders.id', '=', 'order_statuses.order_id')
           ->where('orders.delivery_option', $name)->whereNotIn('orders.status', ['delivered', 'canceled'])
           ->whereDate('order_statuses.shipment_date', '<=', Db::Raw('CURDATE()'))->count();

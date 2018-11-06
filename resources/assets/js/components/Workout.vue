@@ -183,9 +183,6 @@ import * as moment from 'moment';
           }*/
           return result
         },
-        dictionary () {
-          return this.$store.state.dictionary
-        },
         settings () {
           return this.$store.state.settings
         },

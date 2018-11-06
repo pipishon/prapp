@@ -24,6 +24,11 @@ class Order extends Model
     return $this->hasOne('App\NewPostTtn');
   }
 
+  public function ttntrack()
+  {
+    return $this->hasOne('App\NewPostTtnTrack');
+  }
+
   public function products()
   {
     return $this->hasMany('App\OrderProduct');
@@ -49,6 +54,15 @@ class Order extends Model
     return $this->hasOne('App\Customer', 'id', 'customer_id');
   }
 
+  public function mapDeliveryPayment()
+  {
+      $payments = Dictionary::where('payment', '1')->get()->pluck('to', 'from');
+      $deliveries = Dictionary::where('delivery', '1')->get()->pluck('to', 'from');
+      $this->delivery_option = isset($deliveries[$this->delivery_option]) ? $deliveries[$this->delivery_option] : 'не указан';
+      $this->payment_option = isset($payments[$this->payment_option]) ? $payments[$this->payment_option] : 'не указан';
+      $this->save();
+  }
+
   public function validateOrder() {
       $status = array(
         'Доставка' => true,
@@ -59,10 +73,8 @@ class Order extends Model
         'Вес' => true,
       );
 
-      $delivery = Dictionary::where('from', trim($this->delivery_option))->first();
-      $delivery = (!is_null($delivery)) ? $delivery->to : 'не указан';
-      $payment = Dictionary::where('from', trim($this->payment_option))->first();
-      $payment = (!is_null($payment)) ? $payment->to : 'не указан';
+      $delivery = $this->delivery_option;
+      $payment = $this->payment_option;
       switch ($delivery) {
           case 'Новая Почта':
           case 'НП без риска':
@@ -143,7 +155,7 @@ class Order extends Model
       foreach (['email', 'client_first_name', 'prom_id', 'delivery_option'] as $type) {
         if (isset($input[$type])) {
           if ($type == 'delivery_option' && $input[$type] == 'Новая Почта') {
-            $query = $query->whereIn('delivery_option', ['Новая Почта', '«Нова пошта» - Покупка без риска']);
+            $query = $query->whereIn('delivery_option', ['Новая Почта', 'НП без риска']);
           } else {
             $query = $query->where($type, 'LIKE', '%'.$input[$type].'%');
           }
@@ -174,9 +186,9 @@ class Order extends Model
         if ($input['today_delivery'] == '1') {
             $query = $query->where(function ($query) {
                 $query->where(function ($query) {
-                    $query->where('delivery_option', '!=', 'Пункты самовывоза')->where('shipment_date', DB::raw('CURDATE()'));
+                    $query->where('delivery_option', '!=', 'Самовывоз')->where('shipment_date', DB::raw('CURDATE()'));
                 })->orWhere(function ($query) {
-                    $query->where('delivery_option', 'Пункты самовывоза')->whereNotIn('orders.status', ['delivered', 'canceled'])->where('shipment_date', '<=', DB::raw('CURDATE()'));
+                    $query->where('delivery_option', 'Самовывоз')->whereNotIn('orders.status', ['delivered', 'canceled'])->where('shipment_date', '<=', DB::raw('CURDATE()'));
                 });
             });
         }

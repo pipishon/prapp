@@ -18,7 +18,7 @@
        >
 
       <template slot="row" slot-scope="data">
-        <tr is="orderline" @updateorder="updateOrder(item, arguments[0])" v-for="(item, key) in data.items" :dictionary="dictionary" :item="item" :key="item.id" :class="{'green lighten-5': item.status == 'delivered', 'pink lighten-5': item.status == 'canceled'}"></tr>
+        <tr is="orderline" @updateorder="updateOrder(item, arguments[0])" v-for="(item, key) in data.items" :item="item" :key="item.id" :class="{'green lighten-5': item.status == 'delivered', 'pink lighten-5': item.status == 'canceled'}"></tr>
       </template>
     </btable>
 
@@ -94,9 +94,6 @@
       },
       computed: {
         ...mapGetters(['settings', 'selected']),
-        dictionary () {
-          return this.$store.state.dictionary
-        }
       },
       watch: {
         settings: {
@@ -123,7 +120,7 @@
           this.updateSettings({name: 'order_table_widths', value: JSON.stringify(this.tableWidths)})
         },
         getDeliveryCollectedString(name) {
-           let n = Object.keys(this.dictionary.delivery).reduce((obj,key) => {
+           /*let n = Object.keys(this.dictionary.delivery).reduce((obj,key) => {
                obj[ this.dictionary.delivery[key] ] = key;
                return obj;
             },{});
@@ -133,8 +130,10 @@
              if (typeof(m) != 'undefined') {
                return '(' + m.total + ' / ' + m.collected + ')'
              }
-           }
-           return ''
+           }*/
+           //return ''
+          const m = this.deliveryCollected[name]
+           return '(' + m.total + ' / ' + m.collected + ')'
         },
         showNotPayed (val) {
           this.searchQuery['not_payed'] = (typeof(this.searchQuery['not_payed']) == 'undefined' || this.searchQuery['not_payed'] == '0' ) ? '1' : '0';
@@ -167,15 +166,11 @@
         },
         getSpecDeliveryOrders (delivery) {
           delete this.searchQuery['payment_status']
-          for (let d in this.dictionary.delivery) {
-            if (this.dictionary.delivery[d] == delivery) {
-              this.footerButton = delivery
-              this.sNotDelivered = true
-              this.searchQuery['status'] = 'not-delivered'
-              this.searchQuery['delivery_option'] = d
-              this.getList()
-            }
-          }
+          this.footerButton = delivery
+          this.sNotDelivered = true
+          this.searchQuery['status'] = 'not-delivered'
+          this.searchQuery['delivery_option'] = delivery
+          this.getList()
         },
         refresh () {
           this.listLoading = true
@@ -214,12 +209,6 @@
       },
       mounted() {
         this.tableWidths = (typeof(this.settings.order_table_widths) != 'undefined') ? JSON.parse(this.settings.order_table_widths) : {}
-        axios.get('api/dictionary', {params: {type: 'payment'}}).then((res) => {
-          this.dictionary.payment = res.data
-        })
-        axios.get('api/dictionary', {params: {type: 'delivery'}}).then((res) => {
-          this.dictionary.delivery = res.data
-        })
         this.getList()
         setInterval(() => {
           if (this.selected.length == 0) {

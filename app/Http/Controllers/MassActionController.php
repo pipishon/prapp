@@ -68,8 +68,8 @@ class MassActionController extends Controller
                     'type' => 'ttn',
                     'send_at' => Carbon::now()
                 ));
-                $ukr_post_str = Dictionary::where('to', 'Укрпочта')->first()->from;
-                $trigger = ($order->delivery_option == $ukr_post_str) ? 'api-send-ttn-ukrpost' : 'api-send-ttn-newpost';
+                //$ukr_post_str = Dictionary::where('to', 'Укрпочта')->first()->from;
+                $trigger = ($order->delivery_option == 'Укрпочта') ? 'api-send-ttn-ukrpost' : 'api-send-ttn-newpost';
                 $params = array(
                     'ttn' => $order->statuses->ttn_string,
                 );
