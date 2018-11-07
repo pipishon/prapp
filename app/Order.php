@@ -58,8 +58,14 @@ class Order extends Model
   {
       $payments = Dictionary::where('payment', '1')->get()->pluck('to', 'from');
       $deliveries = Dictionary::where('delivery', '1')->get()->pluck('to', 'from');
-      $this->delivery_option = isset($deliveries[$this->delivery_option]) ? $deliveries[$this->delivery_option] : 'не указан';
-      $this->payment_option = isset($payments[$this->payment_option]) ? $payments[$this->payment_option] : 'не указан';
+      if (!in_array($this->delivery_option, array_values($deliveries->toArray()))) {
+        $delivery = trim($this->delivery_option);
+        $this->delivery_option = isset($deliveries[$delivery]) ? $deliveries[$delivery] : 'не указан';
+      }
+      if (!in_array($this->payment_option, array_values($payments->toArray()))) {
+        $payment = trim($this->payment_option);
+        $this->payment_option = isset($payments[$payment]) ? $payments[$payment] : 'не указан';
+      }
       $this->save();
   }
 
@@ -174,7 +180,7 @@ class Order extends Model
              $query = $query->whereIn('customer_id', $ids);//$query->orWhere('client_last_name', 'LIKE', '%'.$input[$type].'%')->orWhere('client_first_name', 'LIKE', '%'.$input[$type].'%');
           }
       }
-      if (isset($input['status']) || isset($input['today_delivery']) || isset($input['not_payed'])) {
+      if (isset($input['status']) || isset($input['payment_status']) || isset($input['today_delivery']) || isset($input['not_payed'])) {
         $query = $query->select('orders.*')->join('order_statuses', 'orders.id', '=', 'order_statuses.order_id');
       }
 

@@ -132,7 +132,7 @@
              }
            }*/
            //return ''
-          const m = this.deliveryCollected[name]
+           const m = this.deliveryCollected[name] || {total: 0, collected: 0}
            return '(' + m.total + ' / ' + m.collected + ')'
         },
         showNotPayed (val) {

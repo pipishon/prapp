@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 use App\NewPostApi;
 use App\NewPostCity;
 use App\NewPostWarehouse;
+use App\Dictionary;
 
 use App\AutoReply;
 
@@ -57,7 +58,6 @@ class SyncController extends Controller
         $ord->save();
         continue;
       }
-
       $customer_id = 0;
 
       $phone = Phone::where('phone', $order['phone'])->first();
@@ -99,15 +99,23 @@ class SyncController extends Controller
         ));
       }
 
+      $payments = Dictionary::where('payment', '1')->get()->pluck('to', 'from');
+      $deliveries = Dictionary::where('delivery', '1')->get()->pluck('to', 'from');
+
+      $delivery = trim((string) $order['delivery_option']['name']);
+      $delivery = isset($deliveries[$delivery]) ? $deliveries[$delivery] : 'не указан';
+
+      $payment = trim((string) $order['payment_option']['name']);
+      $payment = isset($payments[$payment]) ? $payments[$payment] : 'не указан';
 
       $O_order = Order::firstOrCreate(array('prom_id' => $order['id']),
         array(
           'prom_id' => $order['id'],
           'status' => $order['status'],
           'customer_id' => $customer->id,
-          'delivery_option' => (string) $order['delivery_option']['name'],
+          'delivery_option' => $delivery,
           'delivery_address' =>(string) $order['delivery_address'],
-          'payment_option' => (string) $order['payment_option']['name'],
+          'payment_option' => $payment,
           'price' => $order['price'],
           'phone' => (string) $order['phone'],
           'email' => (string) $order['email'],
@@ -178,7 +186,7 @@ class SyncController extends Controller
 
     foreach ($new_orders_id as $id) {
         $order = Order::where('prom_id', $id)->first();
-        $order->mapDeliveryPayment();
+        //$order->mapDeliveryPayment();
         OrderStatus::firstOrCreate(array('order_id' => $order->id));
         $customer_id = $order->customer_id;
         $customer = Customer::find($customer_id);

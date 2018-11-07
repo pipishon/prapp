@@ -63,13 +63,13 @@
                 <v-icon class="mr-2 " small>local_shipping</v-icon>
                 <u @click="showDeliverySelect = true"><span v-if="data.item.delivery_option != null" >{{data.item.delivery_option}}</span><span v-else>Не указан</span></u>
                 </template>
-              <v-select @blur="showDeliverySelect = false" v-if="showDeliverySelect" class="m-0 p-0 text-nowrap" :items="Object.values(dictionary.delivery)" :value="mapDelivery" @input="saveDelivery" prepend-icon="local_shipping" small></v-select>
+              <v-select @blur="showDeliverySelect = false" v-if="showDeliverySelect" class="m-0 p-0 text-nowrap" :items="deliveries" :value="data.item.delivery_option" @input="saveDelivery" prepend-icon="local_shipping" small></v-select>
             </div>
             <div class="text-nowrap" >
               <template v-if="!showPaymentSelect">
                 <v-icon class="mr-2 " small>credit_card</v-icon><u @click="showPaymentSelect = true"><span v-if="data.item.payment_option != ''">{{data.item.payment_option}}</span><span v-else>Не указан</span></u>
               </template>
-              <v-select v-if="showPaymentSelect" class="m-0 p-0 text-nowrap" :items="Object.values(dictionary.payment)" :value="mapPayment"
+              <v-select v-if="showPaymentSelect" class="m-0 p-0 text-nowrap" :items="payments" :value="data.item.payment_option"
                   @blur="showPaymentSelect = false" @input="savePayment" prepend-icon="credit_card" small></v-select>
             </div>
             <newpost :item="data.item" v-if="data.item.delivery_option == 'Новая Почта'"/>
@@ -170,7 +170,9 @@
           showAddressTextarea: false,
           sNotDelivered: false,
           payStatus: '',
-          itemId: null
+          itemId: null,
+          deliveries: ['Новая Почта', 'Укрпочта',  'НП без риска', 'Самовывоз', 'не указан'],
+          payments: ['Покупка без риска', 'Наличные', 'Терминал ПриватБанка', 'Терминал IBox', 'Наложенный платеж', 'не указан']
         }
       },
       watch: {

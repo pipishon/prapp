@@ -27,7 +27,7 @@ class NewPostTtnTrackController extends Controller
       $np_track->orderByRaw('ISNULL(date_first_day_storage), date_first_day_storage', 'asc');
       $np_track->orderBy('date_created', 'asc');
 
-      return $np_track->search($input)->paginate($per_page);
+      return $np_track->search($input)->with('ttn')->paginate($per_page);
     }
 
     public function checkStatus()
@@ -49,7 +49,7 @@ class NewPostTtnTrackController extends Controller
                 $np_track = NewPostTtnTrack::where('int_doc_number', $track['Number'])->first();
                 if ($np_track == null) continue;
                 $np_track->update(array(
-                    'estimate_delivery_date' => isset($track['ScheduledDeliveryDate']),
+                    'estimate_delivery_date' => Carbon::parse($track['ScheduledDeliveryDate']),
                     'status' => $track['Status'],
                     'status_code' => (int) $track['StatusCode'],
                     'redelivery' => $track['Redelivery'],

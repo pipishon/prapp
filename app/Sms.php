@@ -76,7 +76,7 @@ class Sms extends Model
     curl_setopt($rCurl, CURLOPT_POSTFIELDS, $xml);
     curl_setopt($rCurl, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($rCurl, CURLOPT_POST, 1);
-    $sAnswer = curl_exec($rCurl);
+    //$sAnswer = curl_exec($rCurl);
     curl_close($rCurl);
     $xml = simplexml_load_string($sAnswer, "SimpleXMLElement", LIBXML_NOCDATA);
     $json = json_encode($xml);

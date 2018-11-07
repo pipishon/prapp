@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class NewPostTtnTrack extends Model
 {
-	protected $guarded = [];
+    protected $guarded = [];
 
     public function scopeSearch ($query, $input)
     {
@@ -22,5 +22,10 @@ class NewPostTtnTrack extends Model
                     ->orWhere('phone', 'LIKE', '%'.$input['name'].'%');
           });
       }
+    }
+
+    public function ttn()
+    {
+      return $this->hasOne('App\NewPostTtn', 'order_id', 'order_id');
     }
 }

@@ -137,6 +137,30 @@ class MassActionController extends Controller
                 $new_post_ttn->save();
                 $order->statuses->ttn_string = $np_data['IntDocNumber'];
                 $order->push();
+                NewPostTtnTrack::updateOrCreate(array('order_id' => $order->id),
+                    array(
+                        'customer_id' => $order->customer->id,
+                        'prom_id' => $order->prom_id,
+                        'ref' => $np_data['Ref'],
+                        'int_doc_number' => $np_data['IntDocNumber'],
+                        'estimate_delivery_date' => $new_post_ttn->estimated_delivery_date,
+                        'status' => '',
+                        'status_code' => 0,
+                        'redelivery' => $new_post_ttn->backdelivery,
+                        'redelivery_sum' => $new_post_ttn->backprice,
+                        'phone' => $new_post_ttn->phone,
+                        'full_name' => $new_post_ttn->name,
+                        'city' => $new_post_ttn->city,
+                        'warehouse' => '',
+                        'warehouse_ref' => $new_post_ttn->warehouse,
+                        'recipient_address' => $new_post_ttn->full_address,
+                        'date_created' => $new_post_ttn->date,
+                        'date_first_day_storage' => null,
+                        'document_weight' => $new_post_ttn->weight,
+                        'check_weight' => 0,
+                        'document_cost' => $new_post_ttn->cost_on_site,
+                    )
+                );
                 $result[$order->id] = $new_post_ttn;
             }
         }

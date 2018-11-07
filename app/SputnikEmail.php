@@ -28,7 +28,7 @@ class SputnikEmail extends Model
         curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($rCurl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($rCurl, CURLOPT_SSL_VERIFYHOST, 0);
-        $output = curl_exec($ch);
+       // $output = curl_exec($ch);
         return json_decode($output, true);
     }
 
@@ -54,7 +54,7 @@ class SputnikEmail extends Model
         curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        $output = curl_exec($ch);
+        // $output = curl_exec($ch);
         return json_decode($output, true);
     }
 

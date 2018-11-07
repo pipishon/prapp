@@ -25,6 +25,7 @@
           </td>
           <td>
             {{item.int_doc_number}}
+            <a :href="'https://novaposhta.ua/tracking/?cargo_number=' + item.int_doc_number" target="_blank"><v-icon small>open_in_new</v-icon></a>
             <div class="my-2">
               <a target="_blank" @click.stop :href="'https://my.novaposhta.ua/orders/printDocument/orders[]/'+item.int_doc_number+'/type/html/apiKey/b2aa728b253bc10bbb33e79c30d6498d'">
                 <v-icon small>description</v-icon>
@@ -128,10 +129,11 @@
             </table>
           </td>
           <td class="text-no-wrap">
+            <div v-if="item.ttn != null && item.ttn.weight != 'NaN' && item.document_weight != item.ttn.weight">{{item.ttn.weight}} кг</div>
             {{item.document_weight}} кг
-            <div v-if="item.check_weight != 0">{{item.check_weight}} кг</div>
           </td>
           <td class="text-no-wrap">
+            <div v-if="item.ttn != null && item.document_cost != item.ttn.cost_on_site">{{item.ttn.cost_on_site}} грн</div>
             {{item.document_cost}} грн
           </td>
         </tr>
