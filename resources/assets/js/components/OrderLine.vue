@@ -80,7 +80,7 @@
             <v-text-field
               v-if="data.item.delivery_option != 'Самовывоз'"
               class="my-0"
-              v-model="data.item.statuses.ttn_string"
+              :value="data.item.statuses.ttn_string"
               label="ТТН"
               @keyup.enter.native="saveTTN"
               :class="{blink: ttnSaved, 'ttn-created': ttnCreated}">
@@ -164,7 +164,6 @@
         return {
           onValidate: false,
           ttnSaved: false,
-          ttnCreated: false,
           showDeliverySelect: false,
           showPaymentSelect: false,
           showAddressTextarea: false,
@@ -185,6 +184,9 @@
       },
       computed: {
         ...mapGetters(['selected']),
+        ttnCreated () {
+         return !(this.item.statuses.ttn_string == null || this.item.statuses.ttn_string == '')
+        },
         data () {
           return {item: this.item}
         },
@@ -214,9 +216,9 @@
             this.massSelection(massItems)
           }
         },
-        saveTTN() {
+        saveTTN(e) {
           this.ttnSaved = true;
-          this.ttnCreated = (this.item.statuses.ttn_string != '')
+          this.item.statuses.ttn_string = e.target.value
           setTimeout(() => {
             this.ttnSaved = false;
           }, 500)
@@ -313,7 +315,7 @@
         },
       },
       mounted() {
-        this.ttnCreated = !(this.item.statuses.ttn_string == null || this.item.statuses.ttn_string == '')
+        //this.ttnCreated = !(this.item.statuses.ttn_string == null || this.item.statuses.ttn_string == '')
         this.itemId = this.item.id
       }
 

@@ -18,7 +18,15 @@ class NewPostTtnTrackController extends Controller
       $np_track = new NewPostTtnTrack;
 
       if (!$request->has('all')) {
-          $np_track = $np_track->whereNotIn('status_code', array(9, 11));
+          //$np_track = $np_track->whereNotIn('status_code', array(9, 11));
+
+          $np_track = $np_track->where(function ($query) {
+              $query->where(function ($query) {
+                  $query->where('status_code', '!=', '9')->where('redelivery', 0);
+              })->orWhere(function ($query) {
+                  $query->where('status_code', '!=', '11')->where('redelivery', 1);
+              });
+          });
       }
       if ($request->has('today')) {
           $np_track = $np_track->whereDate('date_created', '=', Db::Raw('CURDATE()'));
@@ -42,7 +50,14 @@ class NewPostTtnTrackController extends Controller
 
     public function checkStatus()
     {
-        $np_tracks = NewPostTtnTrack::whereNotIn('status_code', array(9, 11))->get();
+        //$np_tracks = NewPostTtnTrack::whereNotIn('status_code', array(9, 11))->get();
+        $np_tracks = NewPostTtnTrack::where(function ($query) {
+            $query->where(function ($query) {
+                $query->where('status_code', '!=', '9')->where('redelivery', 0);
+            })->orWhere(function ($query) {
+                $query->where('status_code', '!=', '11')->where('redelivery', 1);
+            });
+        });
         $ttns = $np_tracks->pluck('int_doc_number');
         $np = new NewPostApi;
         $tracks = $np->track($ttns)['data'];
