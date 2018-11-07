@@ -1,5 +1,10 @@
 <template>
   <div class="ttn-track">
+    <div class="loader-overlay" v-if="listLoading">
+      <div class="loader" >
+        <img src="imgs/loader.svg">
+      </div>
+    </div>
     <btable :items="list"
       :fields="fields"
       :search="['prom_id', 'int_doc_number', 'name']"
@@ -144,9 +149,9 @@
 
     <v-footer fixed class="pa-3">
     <v-btn flat @click="refresh">Отследить</v-btn>
-    <v-btn flat @click="getUsualTracks" :class="{primary: footerButtons == 'usual'}">Текущие ТТН</v-btn>
-    <v-btn flat @click="getTodayTracks" :class="{primary: footerButtons == 'today'}">Сегодня ТТН</v-btn>
-    <v-btn flat @click="getAllTracks" :class="{primary: footerButtons == 'all'}">Все ТТН</v-btn>
+    <v-btn flat @click="getUsualTracks" :class="{primary: footerButtons == 'usual'}">Текущие ТТН ({{nums.usual}})</v-btn>
+    <v-btn flat @click="getTodayTracks" :class="{primary: footerButtons == 'today'}">Сегодня ТТН ({{nums.today}})</v-btn>
+    <v-btn flat @click="getAllTracks" :class="{primary: footerButtons == 'all'}">Все ТТН ({{nums.all}})</v-btn>
     <pagination :current="curPage" :last="lastPage" @change="loadPage"/>
     </v-footer>
 
@@ -161,6 +166,8 @@
     export default {
       data() {
         return {
+          nums: {},
+          listLoading: false,
           footerButtons: 'usual',
           fields: [
             { key: 'valid', label: '' },
@@ -206,6 +213,7 @@
           this.getList()
         },
         refresh () {
+          this.listLoading = true
           axios.get('api/nptrackcheck').then((res) => {
             console.log(res.data)
             this.getList()
@@ -224,9 +232,12 @@
           return today.diff(from, 'days');
         },
         getList (params) {
+          this.listLoading = true
           params = Object.assign(this.searchQuery, params)
           axios.get('api/nptrack', {params}).then((res) => {
+            this.listLoading = false
             this.list = res.data.data
+            this.nums = res.data.nums
             if (this.list.length > 0) {
               this.curCustomer = this.list[0]
               this.curPage = res.data.current_page

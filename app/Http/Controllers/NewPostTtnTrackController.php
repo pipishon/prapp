@@ -18,21 +18,31 @@ class NewPostTtnTrackController extends Controller
       $np_track = new NewPostTtnTrack;
 
       if (!$request->has('all')) {
-          $np_track = $np_track->whereNotIn('status_code', array(9, 10, 11));
+          $np_track = $np_track->whereNotIn('status_code', array(9, 11));
       }
       if ($request->has('today')) {
           $np_track = $np_track->whereDate('date_created', '=', Db::Raw('CURDATE()'));
       }
 
-      $np_track->orderByRaw('ISNULL(date_first_day_storage), date_first_day_storage', 'asc');
-      $np_track->orderBy('date_created', 'asc');
+      $np_track = $np_track->orderByRaw('ISNULL(date_first_day_storage), date_first_day_storage', 'asc');
+      $np_track = $np_track->orderBy('date_created', 'asc');
 
-      return $np_track->search($input)->with('ttn')->paginate($per_page);
+      $custom = collect(array(
+          'nums' => array(
+            'all' => NewPostTtnTrack::all()->count(),
+            'today' => NewPostTtnTrack::whereDate('date_created', '=', Db::Raw('CURDATE()'))->count(),
+            'usual' => NewPostTtnTrack::whereNotIn('status_code', array(9, 11))->count()
+        )
+      ));
+
+      $np_track = $np_track->search($input)->with('ttn')->paginate($per_page);
+      $np_track = $custom->merge($np_track);
+      return $np_track;
     }
 
     public function checkStatus()
     {
-        $np_tracks = NewPostTtnTrack::whereNotIn('status_code', array(9, 10, 11))->get();
+        $np_tracks = NewPostTtnTrack::whereNotIn('status_code', array(9, 11))->get();
         $ttns = $np_tracks->pluck('int_doc_number');
         $np = new NewPostApi;
         $tracks = $np->track($ttns)['data'];
@@ -76,6 +86,10 @@ class NewPostTtnTrackController extends Controller
                     case 9:
                     case 10:
                     case 11:
+                        if ($np_track->date_delivered == null) {
+                            $np_track->delivery_days = 0;
+                            $np_track->date_delivered = Carbon::now();
+                        }
                         if ($np_track->date_received == null) {
                             $np_track->date_received = Carbon::now();
                         }
@@ -85,10 +99,10 @@ class NewPostTtnTrackController extends Controller
             }
             $today = Carbon::now();
             if ($np_track->date_delivered == null) {
-                $np_track->send_days = $today->diffInDays(Carbon::parse($np_track->date_created));
+                $np_track->send_days = $today->diffInDays(Carbon::parse($np_track->date_created)->startOfDay());
             }
             if ($np_track->date_received == null && $np_track->date_delivered != null) {
-                $np_track->delivery_days = $today->diffInDays(Carbon::parse($np_track->date_delivered));
+                $np_track->delivery_days = $today->diffInDays(Carbon::parse($np_track->date_delivered)->startOfDay());
             }
             $np_track->save();
         }
