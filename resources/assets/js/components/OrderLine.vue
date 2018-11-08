@@ -72,7 +72,7 @@
               <v-select v-if="showPaymentSelect" class="m-0 p-0 text-nowrap" :items="payments" :value="data.item.payment_option"
                   @blur="showPaymentSelect = false" @input="savePayment" prepend-icon="credit_card" small></v-select>
             </div>
-            <newpost :item="data.item" v-if="data.item.delivery_option == 'Новая Почта'"/>
+            <newpost :item="data.item" v-if="['Новая Почта', 'НП без риска'].indexOf(data.item.delivery_option) != -1"/>
             <div class="my-2" v-else>
               <span @click="showAddressTextarea = true" v-if="!showAddressTextarea">{{data.item.delivery_address}}</span>
               <v-textarea class="m-0" @blur="showAddressTextarea = false; save()" rows="2" auto-grow v-if="showAddressTextarea" v-model="data.item.delivery_address" @focus="checkDeliveryAdress"></v-textarea>

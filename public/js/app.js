@@ -109068,7 +109068,9 @@ var render = function() {
             2
           ),
           _vm._v(" "),
-          _vm.data.item.delivery_option == "Новая Почта"
+          ["Новая Почта", "НП без риска"].indexOf(
+            _vm.data.item.delivery_option
+          ) != -1
             ? _c("newpost", { attrs: { item: _vm.data.item } })
             : _c(
                 "div",
