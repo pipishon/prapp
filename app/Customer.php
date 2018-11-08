@@ -39,10 +39,39 @@ class Customer extends Model
   public function scopeSearch ($query, $input)
   {
 
-      foreach (['id'] as $type) {
+      foreach (['name', 'manual_status'] as $type) {
         if (isset($input[$type])) {
           $query = $query->where($type, 'LIKE', '%'.$input[$type].'%');
         }
+      }
+
+      if (isset($input['filter'])) {
+          foreach ($input['filter'] as $filter) {
+              $filter = json_decode($filter, true);
+              switch ($filter['name']) {
+                  case 'total_price':
+                  case 'aver_price':
+                  case 'count_orders':
+                      if ($filter['from']) {
+                          $query = $query->where('st.'.$filter['name'], '>=', $filter['from']);
+                      }
+                      if ($filter['to']) {
+                          $query = $query->where('st.'.$filter['name'], '<=', $filter['to']);
+                      }
+                      break;
+                  case 'first_order':
+                  case 'last_order':
+                      if ($filter['from']) {
+                          $from = Carbon::now()->subDays($filter['from']);
+                          $query = $query->whereDate('st.'.$filter['name'], '<=', $from);
+                      }
+                      if ($filter['to']) {
+                          $to = Carbon::now()->subDays($filter['to']);
+                          $query = $query->whereDate('st.'.$filter['name'], '<=', $to);
+                      }
+                      break;
+              }
+          }
       }
 
       if (isset($input['order_by'])) {
