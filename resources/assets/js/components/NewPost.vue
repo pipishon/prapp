@@ -313,6 +313,7 @@ import { mapGetters } from 'vuex'
             })
             this.places = JSON.parse(this.item.ttn.crm_places)
             const names = this.item.ttn.name.split(' ')
+            // this.data.phone = (this.item.statuses.custom_phone != null) ? this.item.statuses.custom_phone : this.item.ttn.phone
             this.data.client_last_name = names[0] || ''
             this.data.client_first_name = names[1] || ''
             this.data.client_middle_name = names[2] || ''
@@ -331,11 +332,7 @@ import { mapGetters } from 'vuex'
           if (this.places == null) {
             this.places = [{ weight: '0.1', length: '5', width: '5', height: '5' }]
           }
-          if (!isNaN(parseFloat(this.item.statuses.shipment_weight.replace(',','.')))) {
-            this.places[0].weight = 1*(parseFloat(this.item.statuses.shipment_weight.replace(',','.'))).toFixed(2)
-          } else {
-            this.places[0].weight = this.item.statuses.shipment_weight
-          }
+          this.places[0].weight = this.item.statuses.shipment_weight
           console.log(this.places)
         },
         loadWarehouses () {

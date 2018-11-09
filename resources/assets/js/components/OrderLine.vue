@@ -219,6 +219,18 @@
         saveTTN(e) {
           this.ttnSaved = true;
           this.item.statuses.ttn_string = e.target.value
+          if (['Новая Почта', 'НП без риска'].indexOf(this.item.delivery_option) != -1 &&
+              e.target.value != ''
+          ) {
+            const params = {
+              ttn: e.target.value,
+              order_id: this.item.id,
+              redelivery: (this.item.statuses.payment_status == 'Наложенный') ? 1 : 0
+            }
+            axios.get('api/addttntotrack', {params}).then((res) => {
+              console.log('addtrack', res.data)
+            })
+          }
           setTimeout(() => {
             this.ttnSaved = false;
           }, 500)

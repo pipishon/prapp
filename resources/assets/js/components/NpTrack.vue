@@ -220,6 +220,7 @@
           })
         },
         getWarehouseNum (w) {
+          if (w == null) return ''
           const match = w.match(/№(\d+)/u)
           return (match != null) ? '&mdash; ' + match[1] : ''
         },

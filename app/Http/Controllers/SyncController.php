@@ -368,19 +368,23 @@ class SyncController extends Controller
       $np = new NewPostApi;
       $privatPost = '95dc212d-479c-4ffb-a8ab-8c1b9073d0bc';
       $warehouses = $np->getWarehouses()['data'];
+      $warehouses_refs = array_column($warehouses, 'Ref');
       foreach ($warehouses as $warehouse) {
           if ($warehouse['TypeOfWarehouse'] == $privatPost ) continue;
           NewPostWarehouse::updateOrCreate(array('ref'=>$warehouse['Ref']), array(
               'description' => $warehouse['DescriptionRu'],
+              'description_ua' => $warehouse['Description'],
               'site_id' => $warehouse['SiteKey'],
               'city_ref' => $warehouse['CityRef'],
               'city_description' => $warehouse['CityDescriptionRu'],
           ));
       }
+      NewPostWarehouse::whereNotIn('ref', $warehouses_refs)->delete();
       $cities = $np->getCities()['data'];
       foreach ($cities as $city) {
           NewPostCity::updateOrCreate(array('ref'=>$city['Ref']), array(
               'description' => $city['DescriptionRu'],
+              'description_ua' => $city['Description'],
               'city_id' => $city['CityID'],
           ));
       }
