@@ -4,7 +4,7 @@
               <perfselect menu-props="offsetY" :style="{width: '125px'}" @input="changeCollected" :hide-details="true" class="mt-0 pt-0" v-model="collectedString" :items="['Не собран', 'Собран']" :append-icon="(item.statuses.collected_string != 'Собран') ? 'hourglass_empty' : 'check_circle'" ></perfselect>
             </div>
             <div class="mt-1 w-75 text-nowrap">
-              <span v-if="['Пункты самовывоза', 'Доставка Укрпочтой (25-55 грн, оплачивается вместе с заказом)'].indexOf(item.delivery_option) == -1">
+              <span v-if="['Самовывоз', 'Укрпочта'].indexOf(item.delivery_option) == -1">
                 Вес: <strong ><u @click="showDialog = true" >{{item.statuses.shipment_weight.replace('-', '&mdash;')}}</u></strong><span class="ml-2"> Место: <strong>{{item.statuses.shipment_place}}</strong></span>
               </span>
               <span v-else><br /></span>
@@ -20,7 +20,7 @@
             <v-text-field class="mt-1 mb-0" :hide-details="true" :class="{blink: giftSaved}" label="Подарок" v-model="gift" @keyup.enter.native="saveGift" />
               <v-dialog v-if="showDialog" v-model="showDialog" width="350" persistent @keydown.esc="showDialog = false">
                 <v-card class="p-2">
-                  <v-container fluid v-if="['Пункты самовывоза', 'Доставка Укрпочтой (25-55 грн, оплачивается вместе с заказом)'].indexOf(item.delivery_option) == -1">
+                  <v-container fluid v-if="['Самовывоз', 'Укрпочта'].indexOf(item.delivery_option) == -1">
                       <v-layout row>
                         <v-flex xs12 md6 class="px-2" >
                           <v-select class="m-0" v-model="weight " label="Вес посылки" :items="['0,5 кг', '1 кг', '2 кг', '3 кг', '4 кг', '5 кг', '6 кг', '7 кг', '8 кг', '9 кг', '10 кг', '>10 кг', '0,1 кг', '-']"></v-select>

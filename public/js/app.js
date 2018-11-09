@@ -106046,10 +106046,7 @@ var render = function() {
       ),
       _vm._v(" "),
       _c("div", { staticClass: "mt-1 w-75 text-nowrap" }, [
-        [
-          "Пункты самовывоза",
-          "Доставка Укрпочтой (25-55 грн, оплачивается вместе с заказом)"
-        ].indexOf(_vm.item.delivery_option) == -1
+        ["Самовывоз", "Укрпочта"].indexOf(_vm.item.delivery_option) == -1
           ? _c("span", [
               _vm._v("\n      Вес: "),
               _c("strong", [
@@ -106177,10 +106174,8 @@ var render = function() {
                 "v-card",
                 { staticClass: "p-2" },
                 [
-                  [
-                    "Пункты самовывоза",
-                    "Доставка Укрпочтой (25-55 грн, оплачивается вместе с заказом)"
-                  ].indexOf(_vm.item.delivery_option) == -1
+                  ["Самовывоз", "Укрпочта"].indexOf(_vm.item.delivery_option) ==
+                  -1
                     ? _c(
                         "v-container",
                         { attrs: { fluid: "" } },
@@ -109906,7 +109901,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -109978,6 +109973,33 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -109986,6 +110008,19 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
+      showAddFilterDialog: false,
+      selectedFilter: null,
+      filterFrom: null,
+      filterTo: null,
+      filters: [],
+      filterChips: {},
+      filterMap: {
+        'Дата первой покупки': 'first_order',
+        'Дата последней покупки': 'last_order',
+        'Кол-во заказов': 'count_orders',
+        'Всего денег': 'total_price',
+        'Средний чек': 'aver_price'
+      },
       fields: [{ key: 'name', label: 'ФИО' }, { key: 'phone', label: 'Телефон' }, { key: 'email', label: 'email' }, { key: 'manual_status', label: 'Статус' }, { key: 'comment', label: 'Комментарий' }, { key: 'first_order', label: 'Дата первой покупки' }, { key: 'last_order', label: 'Дата последней покупки' }, { key: 'count_orders', label: 'Кол-во заказов' }, { key: 'total_price', label: 'Всего денег' }, { key: 'aver_price', label: 'Средний чек' }, { key: 'aver_days', label: 'Период заказов' }],
       list: [],
       groups: [],
@@ -110000,7 +110035,71 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     customer: __WEBPACK_IMPORTED_MODULE_0__Customer___default.a
   },
   computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_2_vuex__["c" /* mapGetters */])(['settings'])),
+  watch: {
+    filterChips: {
+      handler: 'sendFilter',
+      deep: true
+    }
+  },
   methods: {
+    setFilter: function setFilter() {
+      var _this = this;
+
+      var oldFilter = this.filters.filter(function (el) {
+        return el.filter == _this.selectedFilter;
+      })[0];
+      if (typeof oldFilter != 'undefined') {
+        oldFilter.from = this.filterFrom;
+        oldFilter.to = this.filterTo;
+        this.filterChips[oldFilter.filter] = true;
+      } else {
+        this.filters.push({
+          filter: this.selectedFilter,
+          from: this.filterFrom,
+          to: this.filterTo
+        });
+      }
+      this.filterFrom = null;
+      this.filterTo = null;
+      this.sendFilter();
+      this.showAddFilterDialog = false;
+    },
+    sendFilter: function sendFilter() {
+      var toFilter = [];
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = this.filters[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var f = _step.value;
+
+          if (typeof this.filterChips[f.filter] == 'undefined' || this.filterChips[f.filter]) {
+            var m = {
+              to: f.to,
+              from: f.from,
+              name: this.filterMap[f.filter]
+            };
+            toFilter.push(m);
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      this.getList({ filter: toFilter });
+    },
     averOrderDays: function averOrderDays(item) {
       return Math.round(this.daysFromNow(item.statistic.first_order) / item.statistic.count_orders);
     },
@@ -110010,26 +110109,26 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
       return today.diff(from, 'days');
     },
     customerUpdated: function customerUpdated(id) {
-      var _this = this;
+      var _this2 = this;
 
       axios.get('api/customers/' + id).then(function (res) {
-        _this.curCustomer = res.data.data;
+        _this2.curCustomer = res.data.data;
       });
     },
     getList: function getList(params) {
-      var _this2 = this;
+      var _this3 = this;
 
       params = Object.assign(this.searchQuery, params);
       axios.get('api/customers', { params: params }).then(function (res) {
-        _this2.list = res.data.data;
-        if (_this2.list.length > 0) {
-          _this2.curCustomer = _this2.list[0];
-          _this2.curPage = res.data.current_page;
-          _this2.lastPage = res.data.last_page;
+        _this3.list = res.data.data;
+        if (_this3.list.length > 0) {
+          _this3.curCustomer = _this3.list[0];
+          _this3.curPage = res.data.current_page;
+          _this3.lastPage = res.data.last_page;
         } else {
-          _this2.curCustomer = {};
-          _this2.curPage = 1;
-          _this2.lastPage = 1;
+          _this3.curCustomer = {};
+          _this3.curPage = 1;
+          _this3.lastPage = 1;
         }
       });
     },
@@ -110046,6 +110145,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     this.getList();
   }
 });
+/*Тоесть сверху будет выпадающее меню с параметрами фильтрации, например: Количество заказов, Общая сумма, Средний чек, Дней последней покупки. При нажатии на нужный фильтр будет появляться диалоговое окно с заданием значений, будет два поля: От и До, и кнопка Применить. После нажатия кнопки Применить данный фильтр в виде тега ?как в примере) отображается справа от выпадающего фильтра, следующий, будет ещё правее его. Вид текста в теге: "Количество заказов от 10 до 20" и крестик для удаления данного фильтра. Тоесть мне нужно иметь возможность отфильтровать клиентом по заданому диапазону значений, а также иметь возможность задать несколько таких фильтров в любой комбинации.*/
 
 /***/ }),
 /* 376 */
@@ -110058,11 +110158,79 @@ var render = function() {
   return _c(
     "div",
     [
+      _c(
+        "v-container",
+        { staticClass: "my-0 py-0", attrs: { fluid: "" } },
+        [
+          _c(
+            "v-layout",
+            { attrs: { row: "" } },
+            [
+              _c(
+                "v-flex",
+                { attrs: { md3: "" } },
+                [
+                  _c("v-select", {
+                    attrs: {
+                      "hide-details": true,
+                      label: "Фильтер",
+                      items: Object.keys(_vm.filterMap)
+                    },
+                    on: {
+                      input: function($event) {
+                        _vm.showAddFilterDialog = true
+                      }
+                    },
+                    model: {
+                      value: _vm.selectedFilter,
+                      callback: function($$v) {
+                        _vm.selectedFilter = $$v
+                      },
+                      expression: "selectedFilter"
+                    }
+                  })
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _vm._l(_vm.filters, function(item) {
+                return _c(
+                  "v-chip",
+                  {
+                    key: item.filter,
+                    attrs: { close: "" },
+                    model: {
+                      value: _vm.filterChips[item.filter],
+                      callback: function($$v) {
+                        _vm.$set(_vm.filterChips, item.filter, $$v)
+                      },
+                      expression: "filterChips[item.filter]"
+                    }
+                  },
+                  [
+                    _vm._v(_vm._s(item.filter) + "\n              "),
+                    item.from
+                      ? _c("span", [_vm._v(" от " + _vm._s(item.from))])
+                      : _vm._e(),
+                    _vm._v(" "),
+                    item.to
+                      ? _c("span", [_vm._v(" до " + _vm._s(item.to))])
+                      : _vm._e()
+                  ]
+                )
+              })
+            ],
+            2
+          )
+        ],
+        1
+      ),
+      _vm._v(" "),
       _c("btable", {
         attrs: {
           items: _vm.list,
           fields: _vm.fields,
-          search: ["name", "phone", "email"]
+          search: ["name", "phone", "email", "manual_status"]
         },
         on: { search: _vm.onSearch },
         scopedSlots: _vm._u([
@@ -110157,10 +110325,115 @@ var render = function() {
         ])
       }),
       _vm._v(" "),
-      _c("pagination", {
-        attrs: { current: _vm.curPage, last: _vm.lastPage },
-        on: { change: _vm.loadPage }
-      })
+      _c(
+        "v-dialog",
+        {
+          attrs: { width: "300", persistent: "" },
+          on: {
+            keydown: function($event) {
+              if (
+                !("button" in $event) &&
+                _vm._k($event.keyCode, "esc", 27, $event.key, "Escape")
+              ) {
+                return null
+              }
+              _vm.showAddFilterDialog = false
+            }
+          },
+          model: {
+            value: _vm.showAddFilterDialog,
+            callback: function($$v) {
+              _vm.showAddFilterDialog = $$v
+            },
+            expression: "showAddFilterDialog"
+          }
+        },
+        [
+          _vm.showAddFilterDialog
+            ? _c(
+                "v-card",
+                [
+                  _c("v-card-title", { staticClass: "primary white--text" }, [
+                    _c("h5", [_vm._v(_vm._s(_vm.selectedFilter))])
+                  ]),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    { staticClass: "px-3" },
+                    [
+                      _c("v-text-field", {
+                        attrs: { label: "От" },
+                        model: {
+                          value: _vm.filterFrom,
+                          callback: function($$v) {
+                            _vm.filterFrom = $$v
+                          },
+                          expression: "filterFrom"
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("v-text-field", {
+                        attrs: { label: "До" },
+                        model: {
+                          value: _vm.filterTo,
+                          callback: function($$v) {
+                            _vm.filterTo = $$v
+                          },
+                          expression: "filterTo"
+                        }
+                      })
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "v-card-actions",
+                    [
+                      _c("v-spacer"),
+                      _vm._v(" "),
+                      _c(
+                        "v-btn",
+                        {
+                          attrs: { color: "primary", flat: "" },
+                          on: {
+                            click: function($event) {
+                              _vm.showAddFilterDialog = false
+                            }
+                          }
+                        },
+                        [_vm._v(" Отмена ")]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-btn",
+                        {
+                          attrs: { color: "primary", flat: "" },
+                          on: { click: _vm.setFilter }
+                        },
+                        [_vm._v(" Установить ")]
+                      )
+                    ],
+                    1
+                  )
+                ],
+                1
+              )
+            : _vm._e()
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "v-footer",
+        { staticClass: "pa-3", attrs: { fixed: "" } },
+        [
+          _c("pagination", {
+            attrs: { current: _vm.curPage, last: _vm.lastPage },
+            on: { change: _vm.loadPage }
+          })
+        ],
+        1
+      )
     ],
     1
   )

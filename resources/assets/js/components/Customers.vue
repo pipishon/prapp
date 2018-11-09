@@ -1,8 +1,20 @@
 <template>
   <div>
+
+    <v-container fluid class="my-0 py-0">
+        <v-layout row>
+            <v-flex md3 >
+          <v-select  :hide-details="true" label="Фильтер" :items="Object.keys(filterMap)" v-model="selectedFilter" @input="showAddFilterDialog = true" ></v-select>
+            </v-flex>
+              <v-chip v-model="filterChips[item.filter]" v-for="item in filters" :key="item.filter" close>{{item.filter}}
+                <span v-if="item.from"> от {{item.from}}</span>
+                <span v-if="item.to"> до {{item.to}}</span>
+              </v-chip>
+        </v-layout>
+    </v-container>
     <btable :items="list"
       :fields="fields"
-      :search="['name', 'phone', 'email']"
+      :search="['name', 'phone', 'email', 'manual_status']"
       @search="onSearch"
     >
 
@@ -46,9 +58,24 @@
 
 
     </btable>
+    <v-dialog  v-model="showAddFilterDialog" width="300" persistent @keydown.esc="showAddFilterDialog = false">
 
-
+      <v-card v-if="showAddFilterDialog" >
+          <v-card-title class="primary white--text"><h5>{{selectedFilter}}</h5></v-card-title>
+          <div class="px-3">
+            <v-text-field label="От" v-model="filterFrom"></v-text-field>
+            <v-text-field label="До" v-model="filterTo"></v-text-field>
+          </div>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" flat @click="showAddFilterDialog = false" > Отмена </v-btn>
+            <v-btn color="primary" flat @click="setFilter" > Установить </v-btn>
+          </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-footer fixed class="pa-3">
     <pagination :current="curPage" :last="lastPage" @change="loadPage"/>
+    </v-footer>
   </div>
 </template>
 
@@ -60,6 +87,19 @@
     export default {
       data() {
         return {
+          showAddFilterDialog: false,
+          selectedFilter: null,
+          filterFrom: null,
+          filterTo: null,
+          filters: [],
+          filterChips: {},
+          filterMap: {
+             'Дата первой покупки': 'first_order',
+             'Дата последней покупки': 'last_order',
+             'Кол-во заказов': 'count_orders',
+             'Всего денег': 'total_price',
+             'Средний чек': 'aver_price',
+          },
           fields: [
             { key: 'name', label: 'ФИО' },
             { key: 'phone', label: 'Телефон' },
@@ -87,7 +127,45 @@
       computed: {
         ...mapGetters(['settings']),
       },
+      watch: {
+        filterChips: {
+          handler: 'sendFilter',
+          deep: true
+        }
+      },
       methods: {
+        setFilter () {
+          let oldFilter = this.filters.filter( el => el.filter == this.selectedFilter )[0]
+          if (typeof(oldFilter) != 'undefined') {
+            oldFilter.from = this.filterFrom
+            oldFilter.to = this.filterTo
+            this.filterChips[oldFilter.filter] = true
+          } else {
+            this.filters.push({
+              filter: this.selectedFilter,
+              from: this.filterFrom,
+              to: this.filterTo
+            })
+          }
+          this.filterFrom = null
+          this.filterTo = null
+          this.sendFilter()
+          this.showAddFilterDialog = false
+        },
+        sendFilter () {
+          let toFilter = []
+          for (let f of this.filters) {
+            if (typeof(this.filterChips[f.filter]) == 'undefined' || this.filterChips[f.filter]) {
+              const m = {
+                to: f.to,
+                from: f.from,
+                name: this.filterMap[f.filter]
+              }
+              toFilter.push(m)
+            }
+          }
+          this.getList({filter: toFilter})
+        },
         averOrderDays (item) {
           return Math.round(this.daysFromNow(item.statistic.first_order) / item.statistic.count_orders)
         },
@@ -129,6 +207,7 @@
         this.getList()
       }
     }
+/*Тоесть сверху будет выпадающее меню с параметрами фильтрации, например: Количество заказов, Общая сумма, Средний чек, Дней последней покупки. При нажатии на нужный фильтр будет появляться диалоговое окно с заданием значений, будет два поля: От и До, и кнопка Применить. После нажатия кнопки Применить данный фильтр в виде тега ?как в примере) отображается справа от выпадающего фильтра, следующий, будет ещё правее его. Вид текста в теге: "Количество заказов от 10 до 20" и крестик для удаления данного фильтра. Тоесть мне нужно иметь возможность отфильтровать клиентом по заданому диапазону значений, а также иметь возможность задать несколько таких фильтров в любой комбинации.*/
 </script>
 <style scope>
 </style>
