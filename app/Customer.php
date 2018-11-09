@@ -67,7 +67,7 @@ class Customer extends Model
                       }
                       if ($filter['to']) {
                           $to = Carbon::now()->subDays($filter['to']);
-                          $query = $query->whereDate('st.'.$filter['name'], '<=', $to);
+                          $query = $query->whereDate('st.'.$filter['name'], '>=', $to);
                       }
                       break;
               }

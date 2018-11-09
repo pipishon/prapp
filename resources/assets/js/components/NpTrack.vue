@@ -13,7 +13,7 @@
     >
 
       <template slot="row" slot-scope="data">
-        <tr v-for="item in data.items" :class="{'green lighten-5': item.redelivery && item.status_code == 11}">
+        <tr v-for="item in data.items" :class="{'green lighten-5': (item.redelivery && item.status_code == 11) || (!item.redelivery && item.status_code == 9)}">
           <td>
 
           </td>

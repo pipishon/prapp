@@ -7,6 +7,7 @@ use App\PromApi;
 use App\Sms;
 use App\Settings;
 use App\MessageTemplate;
+use App\NewPostTtnTrack;
 use App\Dictionary;
 use App\SputnikEmail;
 use App\MessageEmail;
@@ -124,6 +125,7 @@ class MassActionController extends Controller
                 $data['warehouse'] = $new_post_ttn->warehouse;
                 $data['name'] = $new_post_ttn->name;
             }
+            $new_post_ttn->update($data);
             $data['date'] = Carbon::now()->format('d.m.Y');
             $data['places'] = 1;
             $np = new NewPostApi();

@@ -331,7 +331,12 @@ import { mapGetters } from 'vuex'
           if (this.places == null) {
             this.places = [{ weight: '0.1', length: '5', width: '5', height: '5' }]
           }
-          this.places[0].weight = this.item.statuses.shipment_weight
+          if (!isNaN(parseFloat(this.item.statuses.shipment_weight.replace(',','.')))) {
+            this.places[0].weight = 1*(parseFloat(this.item.statuses.shipment_weight.replace(',','.'))).toFixed(2)
+          } else {
+            this.places[0].weight = this.item.statuses.shipment_weight
+          }
+          console.log(this.places)
         },
         loadWarehouses () {
           let params = {
