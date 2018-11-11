@@ -204,6 +204,10 @@
         onSearch (data) {
           let key = Object.keys(data)[0]
           this.searchQuery[key] = data[key]
+          this.footerButton = 'all'
+          this.sNotDelivered = false
+          delete this.searchQuery.delivery_option
+          delete this.searchQuery.status
           this.getList({page: 1})
         }
       },

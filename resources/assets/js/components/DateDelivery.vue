@@ -11,7 +11,7 @@
             <v-flex xs12 md12 >
               <v-menu :close-on-content-click="false" v-model="menuDate" offset-y full-width >
                 <v-text-field slot="activator" v-model="date"  readonly label="Дата отгрузки" prepend-icon="event" append-icon="close" @click:append="date = null"></v-text-field>
-                <v-date-picker locale="ru-Ru" v-model="date" @input="menuDate = false"  no-title scrollable></v-date-picker>
+                <v-date-picker locale="ru-Ru" first-day-of-week="1" v-model="date" @input="menuDate = false"  no-title scrollable></v-date-picker>
               </v-menu>
               <v-btn small flat @click="setDate(0)" class="my-0">Сегодня</v-btn> <v-btn class="my-0" small flat @click="setDate(1)">Завтра</v-btn>
             </v-flex>

@@ -18,7 +18,7 @@
         Выполнен:
         <v-menu :close-on-content-click="false" v-model="menuDate" offset-y full-width >
           <strong slot="activator">{{delivered}}<v-icon small class="ml-1">event</v-icon></strong>
-          <v-date-picker locale="ru-Ru" :value="delivered"  @input="changeDate"  no-title scrollable></v-date-picker>
+          <v-date-picker locale="ru-Ru" first-day-of-week="1" :value="delivered"  @input="changeDate"  no-title scrollable></v-date-picker>
         </v-menu>
       </div>
 

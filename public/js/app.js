@@ -103026,6 +103026,10 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     onSearch: function onSearch(data) {
       var key = Object.keys(data)[0];
       this.searchQuery[key] = data[key];
+      this.footerButton = 'all';
+      this.sNotDelivered = false;
+      delete this.searchQuery.delivery_option;
+      delete this.searchQuery.status;
       this.getList({ page: 1 });
     }
   }),
@@ -104283,6 +104287,7 @@ var render = function() {
                   _c("v-date-picker", {
                     attrs: {
                       locale: "ru-Ru",
+                      "first-day-of-week": "1",
                       value: _vm.delivered,
                       "no-title": "",
                       scrollable: ""
@@ -104652,6 +104657,7 @@ var render = function() {
                                         _c("v-date-picker", {
                                           attrs: {
                                             locale: "ru-Ru",
+                                            "first-day-of-week": "1",
                                             "no-title": "",
                                             scrollable: ""
                                           },
@@ -105475,6 +105481,7 @@ var render = function() {
                                       _vm._v(" "),
                                       _c("v-date-picker", {
                                         attrs: {
+                                          "first-day-of-week": "1",
                                           locale: "ru-Ru",
                                           "no-title": "",
                                           scrollable: ""
@@ -109901,7 +109908,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -110000,6 +110007,8 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
+//
 
 
 
@@ -110008,6 +110017,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
+      tableWidths: {},
       showAddFilterDialog: false,
       selectedFilter: null,
       filterFrom: null,
@@ -110039,9 +110049,19 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     filterChips: {
       handler: 'sendFilter',
       deep: true
+    },
+    settings: {
+      handler: function handler() {
+        this.tableWidths = typeof this.settings.customer_table_widths != 'undefined' ? JSON.parse(this.settings.customer_table_widths) : {};
+      },
+
+      deep: true
     }
   },
-  methods: {
+  methods: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_2_vuex__["b" /* mapActions */])(['updateSettings']), {
+    updateWidths: function updateWidths() {
+      this.updateSettings({ name: 'customer_table_widths', value: JSON.stringify(this.tableWidths) });
+    },
     setFilter: function setFilter() {
       var _this = this;
 
@@ -110140,12 +110160,12 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
       this.searchQuery[key] = data[key];
       this.getList({ page: 1 });
     }
-  },
+  }),
   mounted: function mounted() {
+    this.tableWidths = typeof this.settings.customer_table_widths != 'undefined' ? JSON.parse(this.settings.customer_table_widths) : {};
     this.getList();
   }
 });
-/*Тоесть сверху будет выпадающее меню с параметрами фильтрации, например: Количество заказов, Общая сумма, Средний чек, Дней последней покупки. При нажатии на нужный фильтр будет появляться диалоговое окно с заданием значений, будет два поля: От и До, и кнопка Применить. После нажатия кнопки Применить данный фильтр в виде тега ?как в примере) отображается справа от выпадающего фильтра, следующий, будет ещё правее его. Вид текста в теге: "Количество заказов от 10 до 20" и крестик для удаления данного фильтра. Тоесть мне нужно иметь возможность отфильтровать клиентом по заданому диапазону значений, а также иметь возможность задать несколько таких фильтров в любой комбинации.*/
 
 /***/ }),
 /* 376 */
@@ -110230,9 +110250,10 @@ var render = function() {
         attrs: {
           items: _vm.list,
           fields: _vm.fields,
-          search: ["name", "phone", "email", "manual_status"]
+          search: ["name", "phone", "email", "manual_status"],
+          widths: _vm.tableWidths
         },
-        on: { search: _vm.onSearch },
+        on: { updatewidth: _vm.updateWidths, search: _vm.onSearch },
         scopedSlots: _vm._u([
           {
             key: "row",
@@ -112618,6 +112639,8 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
+//
 
 
 
@@ -112626,6 +112649,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
+      tableWidths: {},
       nums: {},
       listLoading: false,
       footerButtons: 'usual',
@@ -112641,7 +112665,31 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     customer: __WEBPACK_IMPORTED_MODULE_0__Customer___default.a
   },
   computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_2_vuex__["c" /* mapGetters */])(['settings'])),
-  methods: {
+  watch: {
+    settings: {
+      handler: function handler() {
+        this.tableWidths = typeof this.settings.nptrack_table_widths != 'undefined' ? JSON.parse(this.settings.nptrack_table_widths) : {};
+      },
+
+      deep: true
+    }
+  },
+  methods: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_2_vuex__["b" /* mapActions */])(['updateSettings']), {
+    updateWidths: function updateWidths() {
+      this.updateSettings({ name: 'nptrack_table_widths', value: JSON.stringify(this.tableWidths) });
+    },
+    deliveryCost: function deliveryCost(item, p) {
+      if (item.redelivery == 1) {
+        var npPrice = 1 * parseFloat(p).toFixed(2);
+        var price = 1 * parseFloat(item.redelivery_sum).toFixed(2);
+        var backPrice = (0.02 * price + 20).toFixed(2);
+        var wholePrice = (npPrice + 1 * backPrice).toFixed(2);
+        return wholePrice + ' грн.'; // + npPrice + ' грн. + ' + backPrice + ' грн.'
+      } else {
+        var _npPrice = 1 * parseFloat(p).toFixed(2);
+        return _npPrice + ' грн.';
+      }
+    },
     getAllTracks: function getAllTracks() {
       this.footerButtons = 'all';
       this.searchQuery.all = true;
@@ -112709,8 +112757,9 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
       this.searchQuery[key] = data[key];
       this.getList({ page: 1 });
     }
-  },
+  }),
   mounted: function mounted() {
+    this.tableWidths = typeof this.settings.nptrack_table_widths != 'undefined' ? JSON.parse(this.settings.nptrack_table_widths) : {};
     this.getList();
   }
 });
@@ -112736,9 +112785,10 @@ var render = function() {
           items: _vm.list,
           fields: _vm.fields,
           search: ["prom_id", "int_doc_number", "name"],
-          notstriped: true
+          notstriped: true,
+          widths: _vm.tableWidths
         },
-        on: { search: _vm.onSearch },
+        on: { updatewidth: _vm.updateWidths, search: _vm.onSearch },
         scopedSlots: _vm._u([
           {
             key: "row",
@@ -113210,13 +113260,17 @@ var render = function() {
                       item.ttn != null &&
                       item.document_cost != item.ttn.cost_on_site
                         ? _c("div", [
-                            _vm._v(_vm._s(item.ttn.cost_on_site) + " грн")
+                            _vm._v(
+                              _vm._s(
+                                _vm.deliveryCost(item, item.ttn.cost_on_site)
+                              )
+                            )
                           ])
                         : _vm._e(),
                       _vm._v(
                         "\n          " +
-                          _vm._s(item.document_cost) +
-                          " грн\n        "
+                          _vm._s(_vm.deliveryCost(item, item.document_cost)) +
+                          "\n        "
                       )
                     ])
                   ]

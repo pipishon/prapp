@@ -15,6 +15,8 @@
     <btable :items="list"
       :fields="fields"
       :search="['name', 'phone', 'email', 'manual_status']"
+      :widths="tableWidths"
+      @updatewidth="updateWidths"
       @search="onSearch"
     >
 
@@ -82,11 +84,12 @@
 <script>
     import customer from './Customer'
     import * as moment from 'moment';
-    import { mapGetters } from 'vuex'
+    import { mapGetters, mapActions } from 'vuex'
 
     export default {
       data() {
         return {
+          tableWidths: {},
           showAddFilterDialog: false,
           selectedFilter: null,
           filterFrom: null,
@@ -131,9 +134,19 @@
         filterChips: {
           handler: 'sendFilter',
           deep: true
+        },
+        settings: {
+          handler () {
+            this.tableWidths = (typeof(this.settings.customer_table_widths) != 'undefined') ? JSON.parse(this.settings.customer_table_widths) : {}
+          },
+          deep: true
         }
       },
       methods: {
+        ...mapActions(['updateSettings']),
+        updateWidths () {
+          this.updateSettings({name: 'customer_table_widths', value: JSON.stringify(this.tableWidths)})
+        },
         setFilter () {
           let oldFilter = this.filters.filter( el => el.filter == this.selectedFilter )[0]
           if (typeof(oldFilter) != 'undefined') {
@@ -204,10 +217,10 @@
         }
       },
       mounted() {
+        this.tableWidths = (typeof(this.settings.customer_table_widths) != 'undefined') ? JSON.parse(this.settings.customer_table_widths) : {}
         this.getList()
       }
     }
-/*Тоесть сверху будет выпадающее меню с параметрами фильтрации, например: Количество заказов, Общая сумма, Средний чек, Дней последней покупки. При нажатии на нужный фильтр будет появляться диалоговое окно с заданием значений, будет два поля: От и До, и кнопка Применить. После нажатия кнопки Применить данный фильтр в виде тега ?как в примере) отображается справа от выпадающего фильтра, следующий, будет ещё правее его. Вид текста в теге: "Количество заказов от 10 до 20" и крестик для удаления данного фильтра. Тоесть мне нужно иметь возможность отфильтровать клиентом по заданому диапазону значений, а также иметь возможность задать несколько таких фильтров в любой комбинации.*/
 </script>
 <style scope>
 </style>

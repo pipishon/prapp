@@ -9,6 +9,8 @@
       :fields="fields"
       :search="['prom_id', 'int_doc_number', 'name']"
       :notstriped="true"
+      :widths="tableWidths"
+      @updatewidth="updateWidths"
       @search="onSearch"
     >
 
@@ -138,8 +140,8 @@
             {{item.document_weight}} кг
           </td>
           <td class="text-no-wrap">
-            <div v-if="item.ttn != null && item.document_cost != item.ttn.cost_on_site">{{item.ttn.cost_on_site}} грн</div>
-            {{item.document_cost}} грн
+            <div v-if="item.ttn != null && item.document_cost != item.ttn.cost_on_site">{{deliveryCost(item, item.ttn.cost_on_site)}}</div>
+            {{deliveryCost(item, item.document_cost)}}
           </td>
         </tr>
       </template>
@@ -161,11 +163,12 @@
 <script>
     import customer from './Customer'
     import * as moment from 'moment';
-    import { mapGetters } from 'vuex'
+    import { mapGetters, mapActions } from 'vuex'
 
     export default {
       data() {
         return {
+          tableWidths: {},
           nums: {},
           listLoading: false,
           footerButtons: 'usual',
@@ -193,7 +196,31 @@
       computed: {
         ...mapGetters(['settings']),
       },
+      watch: {
+        settings: {
+          handler () {
+            this.tableWidths = (typeof(this.settings.nptrack_table_widths) != 'undefined') ? JSON.parse(this.settings.nptrack_table_widths) : {}
+          },
+          deep: true
+        }
+      },
       methods: {
+        ...mapActions(['updateSettings']),
+        updateWidths () {
+          this.updateSettings({name: 'nptrack_table_widths', value: JSON.stringify(this.tableWidths)})
+        },
+        deliveryCost (item, p) {
+          if (item.redelivery == 1) {
+            const npPrice = 1*(parseFloat(p).toFixed(2))
+            const price = 1*(parseFloat(item.redelivery_sum).toFixed(2))
+            const backPrice = (0.02 * price + 20).toFixed(2)
+            const wholePrice = (npPrice + 1*backPrice).toFixed(2)
+            return wholePrice + ' грн.'// + npPrice + ' грн. + ' + backPrice + ' грн.'
+          } else {
+            const npPrice = 1*(parseFloat(p).toFixed(2))
+            return npPrice + ' грн.'
+          }
+        },
         getAllTracks () {
           this.footerButtons = 'all'
           this.searchQuery.all = true
@@ -259,6 +286,7 @@
         }
       },
       mounted() {
+        this.tableWidths = (typeof(this.settings.nptrack_table_widths) != 'undefined') ? JSON.parse(this.settings.nptrack_table_widths) : {}
         this.getList()
       }
     }
