@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\NewPostTtnTrack;
 use App\NewPostApi;
+use App\Order;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -48,6 +49,27 @@ class NewPostTtnTrackController extends Controller
       return $np_track;
     }
 
+    public function addTtn(Request $request)
+    {
+        $ttn = $request->input('ttn');
+        $order_id = $request->input('order_id');
+        $redelivery = $request->input('redelivery');
+        $order = Order::find($order_id);
+        $np = new NewPostApi;
+        $track = $np->track(array($ttn))['data'][0];
+        NewPostTtnTrack::updateOrCreate(array('order_id' => $order->id),
+            array(
+                'customer_id' => $order->customer->id,
+                'prom_id' => $order->prom_id,
+                'int_doc_number' => $ttn,
+                'status' => $track['Status'],
+                'status_code' => (int) $track['StatusCode'],
+                'ref' => '',
+                'redelivery' => $redelivery
+            )
+        );
+        return $track;
+    }
     public function checkStatus()
     {
         //$np_tracks = NewPostTtnTrack::whereNotIn('status_code', array(9, 11))->get();
@@ -71,6 +93,7 @@ class NewPostTtnTrackController extends Controller
                 ));
             } else {
                 $status = $track['StatusCode'];
+
                 $np_track = NewPostTtnTrack::where('int_doc_number', $track['Number'])->first();
                 if ($np_track == null) continue;
                 $np_track->update(array(
@@ -115,6 +138,9 @@ class NewPostTtnTrackController extends Controller
             $today = Carbon::now();
             if ($np_track->date_delivered == null) {
                 $np_track->send_days = $today->diffInDays(Carbon::parse($np_track->date_created)->startOfDay());
+            }
+            if ($np_track->send_days == null) {
+                $np_track->send_days = 0;
             }
             if ($np_track->date_received == null && $np_track->date_delivered != null) {
                 $np_track->delivery_days = $today->diffInDays(Carbon::parse($np_track->date_delivered)->startOfDay());

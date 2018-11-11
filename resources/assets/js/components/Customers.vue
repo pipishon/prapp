@@ -7,8 +7,8 @@
           <v-select  :hide-details="true" label="Фильтер" :items="Object.keys(filterMap)" v-model="selectedFilter" @input="showAddFilterDialog = true" ></v-select>
             </v-flex>
               <v-chip v-model="filterChips[item.filter]" v-for="item in filters" :key="item.filter" close>{{item.filter}}
-                <span v-if="item.from"> от {{item.from}}</span>
-                <span v-if="item.to"> до {{item.to}}</span>
+                <span v-if="item.from">&nbsp;от {{item.from}}</span>
+                <span v-if="item.to">&nbsp;до {{item.to}}</span>
               </v-chip>
         </v-layout>
     </v-container>

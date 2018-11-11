@@ -50,6 +50,7 @@ Route::resource('dictionary', 'DictionaryController');
 
 Route::resource('nptrack', 'NewPostTtnTrackController');
 Route::get('nptrackcheck', 'NewPostTtnTrackController@checkStatus');
+Route::get('addttntotrack', 'NewPostTtnTrackController@addTtn');
 
 Route::resource('orderdaystatistic', 'OrderDayStatisticController');
 

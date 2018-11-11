@@ -17,20 +17,17 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
       $input = $request->all();
-
       $per_page = (isset($input['per_page'])) ? (int) $input['per_page'] : 20;
       $customer = Customer::join('customer_statistics as st', 'st.customer_id', '=', 'customers.id')->select('customers.*')->with('statistic');
       if (isset($input['email']) && $input['email'] != '') {
         $customer->whereIn('customers.id', function($query) use ($input) {
           $query->from('email')->select('emails.customer_id')->where('emails.email', 'like', '%'.$input['email'].'%');
         });
-        //$customer->whereHas('emails', function($query) use ($input) { $query->where('email', 'like', '%'.$input['email'].'%');});
       }
       if (isset($input['phone']) && $input['phone'] != '') {
         $customer->whereIn('customers.id', function($query) use ($input) {
           $query->from('phones')->select('phones.customer_id')->where('phones.phone', 'like', '%'.$input['phone'].'%');
         });
-        //$customer->whereHas('phones', function($query) use ($input) { $query->where('phone', 'like', '%'.$input['phone'].'%');});
       }
       return $customer->with('emails')->with('phones')->search($input)->orderBy('last_order', 'desc')->paginate($per_page);
     }
