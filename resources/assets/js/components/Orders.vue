@@ -5,7 +5,34 @@
         <img src="imgs/loader.svg">
       </div>
     </div>
+    <div class="hidden-md-and-up">
+
+      <v-layout row>
+            <v-flex xs4 sm4 >
+              <v-btn class="ma-0 pa-0" flat @click="getAllOrders" :class="{primary: footerButton == 'all'}" small>Все </v-btn> <br />
+              <div class="text-xs-center">({{allCollected.total}} / {{allCollected.collected}})</div>
+            </v-flex>
+            <v-flex xs4 sm4 v-for="name in ['Новая Почта', 'Укрпочта', 'Самовывоз']" :key="name">
+              <v-btn class="ma-0 pa-0"   small flat @click="getSpecDeliveryOrders(name)" :class="{primary: footerButton == name}">{{mapMobile[name]}} </v-btn>
+              <div class="text-xs-center">{{getDeliveryCollectedString(name)}}</div>
+            </v-flex>
+      </v-layout>
+    </div>
+    <v-layout row class="hidden-md-and-up">
+      <v-flex xs12 sm12 >
+        <v-list three-line >
+          <div class="pa-2" v-for="(item, index) in list"
+            style="border-bottom: 1px solid #F5F5F5;"
+            :class="{'green lighten-5': item.statuses.collected}"
+            >
+            <ordermobile :order="item" :key="item.id" />
+          </div>
+        </v-list>
+      </v-flex>
+    </v-layout>
+
     <btable
+       class="hidden-sm-and-down"
        :items="list"
        :select-all="true"
        :fields="fields"
@@ -22,7 +49,7 @@
       </template>
     </btable>
 
-    <v-footer fixed class="pa-3">
+    <v-footer fixed class="pa-3 hidden-sm-and-down" >
       <v-btn flat @click="refresh">Обновить заказы</v-btn>
       <v-btn flat @click="getAllOrders" :class="{primary: footerButton == 'all'}">Все заказы ({{globalStats.pending || 0}} | {{globalStats.received || 0}}) ({{allCollected.total}} / {{allCollected.collected}})</v-btn>
 
@@ -48,6 +75,7 @@
 
 <script>
     import orderline from './OrderLine'
+    import ordermobile from './OrderMobile'
     import autosms from './AutoSms'
     import { mapActions, mapGetters, mapMutations } from 'vuex'
 
@@ -66,6 +94,11 @@
           sTodayDelivered: false,
           payStatus: '',
           massAction: {},
+          mapMobile: {
+            'Новая Почта': 'НП',
+            'Укрпочта': 'Укр',
+            'Самовывоз': 'Сам'
+          },
           fields: [
             { key: 'prom_id', label: 'Заказ' },
             { key: 'workout', label: 'Обработка' },
@@ -104,6 +137,7 @@
         }
       },
       components: {
+        ordermobile,
         orderline,
         autosms
       },
@@ -314,5 +348,4 @@ cursor: pointer;
   left: calc(50vw - 100px);
   top: calc(50vh - 100px);
 }
-
 </style>

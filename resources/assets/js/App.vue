@@ -2,7 +2,7 @@
   <div>
     <v-app light class="wrap" data-app>
 
-      <leftbar :imode="mode" @change="mode = arguments[0]"/>
+      <leftbar class="hidden-sm-and-down" :imode="mode" @change="mode = arguments[0]"/>
       <div class="container-fluid">
         <products v-if="mode == 'products'"/>
         <orders v-if="mode == 'orders'"/>
@@ -69,6 +69,12 @@ import nptrack from './components/NpTrack'
 }
 .container {
   margin-bottom: 3rem;
+}
+
+@media screen and (max-width: 600px) {
+  .wrap {
+    padding-left: 0;
+  }
 }
 
 </style>
