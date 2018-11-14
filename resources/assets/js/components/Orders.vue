@@ -6,6 +6,11 @@
       </div>
     </div>
     <div class="hidden-md-and-up">
+      <v-layout row>
+        <v-toolbar flat dense card color="grey">
+          <input class="mobile-search" placeholder="Поиск по заказам" @keypress.enter="mobileSearch" />
+        </v-toolbar>
+      </v-layout>
 
       <v-layout row>
             <v-flex xs4 sm4 >
@@ -21,11 +26,11 @@
     <v-layout row class="hidden-md-and-up">
       <v-flex xs12 sm12 >
         <v-list three-line >
-          <div class="pa-2" v-for="(item, index) in list"
+          <div class="pa-2" v-for="item in list"
             style="border-bottom: 1px solid #F5F5F5;"
-            :class="{'green lighten-5': item.statuses.collected}"
+            :class="{'green lighten-5': item.statuses.collected_string == 'Собран'}"
             >
-            <ordermobile :order="item" :key="item.id" />
+            <ordermobile @update="getList" :order="item" :key="item.id" />
           </div>
         </v-list>
       </v-flex>
@@ -142,6 +147,21 @@
         autosms
       },
       methods: {
+        mobileSearch (val) {
+          const query = val.target.value;
+          delete this.searchQuery['prom_id']
+          delete this.searchQuery['phone']
+          if (!isNaN(parseInt(query))) {
+            this.searchQuery['prom_id'] = query
+          } else {
+            this.searchQuery['phone'] = query
+          }
+          this.footerButton = 'all'
+          this.sNotDelivered = false
+          delete this.searchQuery.delivery_option
+          delete this.searchQuery.status
+          this.getList({page: 1})
+        },
         updateOrder (order, val) {
           var keys = Object.keys(order);
           for (let key of keys) {
@@ -253,7 +273,7 @@
             this.autoUpdate = true
             this.getList()
           }
-          console.log('iterval')
+          console.log('interval')
         }, 120000)
       }
     }
@@ -340,6 +360,7 @@ cursor: pointer;
   height: 100%;
   z-index: 100;
   position: fixed;
+  z-index: 10000;
 }
 .loader {
   width: 200px;
@@ -347,5 +368,12 @@ cursor: pointer;
   position: fixed;
   left: calc(50vw - 100px);
   top: calc(50vh - 100px);
+}
+.mobile-search {
+margin-right: 0;
+    background: white;
+    width: 100%;
+    padding: 4px 10px;
+    border-radius: 4px;
 }
 </style>

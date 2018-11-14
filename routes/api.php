@@ -26,6 +26,7 @@ Route::get('customers/phoneemail', 'CustomerController@getByPhoneEmail');
 Route::get('customers/addphoneemail', 'CustomerController@addPhoneEmail');
 
 Route::get('orders/changestatus', 'OrderController@changeStatus');
+Route::get('orders/updatefromprom/{prom_id}', 'OrderController@updateFromProm');
 
 Route::get('messages/send', 'MessageController@sendMessage');
 

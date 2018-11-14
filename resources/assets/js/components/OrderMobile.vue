@@ -1,5 +1,5 @@
 <template>
-  <v-dialog class="mobile-order"  v-model="showDialog" fullscreen transition="dialog-left-transition" >
+  <v-dialog class="mobile-order"  persistent v-model="showDialog" fullscreen transition="dialog-left-transition" >
     <v-list-tile
         slot="activator"
         avatar
@@ -10,7 +10,7 @@
         </v-list-tile-avatar>
 
         <v-list-tile-content class="ml-3">
-          <div class="caption">
+          <div class="caption" style="width: 155px;">
             <div>
               <span class="body-2">№ {{order.prom_id}}</span>
             </div>
@@ -29,18 +29,34 @@
                 >{{order.statuses.payment_status}}</span>
             </div>
             <div>
-              <v-icon small>person</v-icon><span>{{order.client_first_name}} {{order.client_last_name}}</span>
+              <v-icon small>person</v-icon><span>{{fullName}}</span>
             </div>
             <div>
               <v-icon small>directions_car</v-icon><span>{{order.delivery_option}}</span>
             </div>
           </div>
         </v-list-tile-content>
+        <v-list-tile-action class="ml-3" >
+          <div class="caption text-no-wrap">
+            <div v-if="order.statuses.shipment_date">
+              <v-icon small>calendar_today</v-icon><span>&nbsp;{{deliveryDateString}}</span>
+            </div>
+            <div class="mt-2">
+              <v-icon small v-if="order.statuses.collected_string == 'Собран'">check_circle_outline</v-icon>
+              <v-icon small v-else>history</v-icon>
+              <span>{{order.statuses.collected_string}}</span>
+            </div>
+          </div>
+        </v-list-tile-action>
     </v-list-tile>
     <v-card v-if="showDialog" >
       <v-toolbar flat card dense >
         <v-toolbar-items>
           <v-btn flat @click.native="showDialog = false"> < Назад </v-btn>
+        </v-toolbar-items>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-icon @click="refreshOrder">refresh</v-icon>
         </v-toolbar-items>
       </v-toolbar>
       <div class="px-2 mt-1">
@@ -53,7 +69,8 @@
         </div>
         <div class="mt-1">
           <div class="grey--text">Клиент:</div>
-          <span>{{order.client_first_name}} {{order.client_last_name}}</span>
+          <span>{{order.client_first_name}} {{order.client_last_name}} | {{order.customer.statistic.count_orders}} {{orderString(order.customer.statistic.count_orders)}} на {{order.customer.statistic.total_price}} грн
+            </span>
         </div>
         <div v-if="order.client_notes" class="mt-1">
           <div class="grey--text">Комментарий:</div>
@@ -85,7 +102,7 @@
                   <div>
                     <div>{{item.name}}</div>
                     <div class="grey--text">Код: {{item.sku}}</div>
-                    <div>{{item.product.price}}&nbsp;грн&nbsp;|&nbsp;{{item.quantity}} шт&nbsp;|&nbsp;{{item.product.price * item.quantity}} грн</div>
+                    <div>{{item.product.price}}&nbsp;грн&nbsp;|&nbsp;<strong>{{item.quantity}} шт</strong>&nbsp;|&nbsp;{{item.product.price * item.quantity}} грн</div>
                   </div>
                 </v-list-tile-content>
               </v-list-tile>
@@ -96,6 +113,7 @@
 </template>
 
 <script>
+import * as moment from 'moment';
     export default {
       props: ['order' ],
       data() {
@@ -105,6 +123,18 @@
         }
       },
       computed: {
+        fullName () {
+          let names = this.order.client_first_name.split(' ')
+          names = [...names, ...this.order.client_last_name.split(' ')]
+          return names[0] + ' ' + names[1]
+        },
+        deliveryDateString() {
+          let today = moment()
+          let tomorrow = moment().add(1, 'd')
+          if (today.isSame(this.order.statuses.shipment_date, 'day')) return 'Сегодня'
+          if (tomorrow.isSame(this.order.statuses.shipment_date, 'day')) return 'Завтра'
+          return this.order.statuses.shipment_date
+        },
         orderedProducts: function () {
           return _.orderBy(this.order.products, 'product.name')
         },
@@ -116,6 +146,19 @@
         }
       },
       methods: {
+        orderString (n) {
+          let r = n%10;
+          if (n > 5 && n < 21) { return 'заказов' }
+          if (r == 1) { return 'заказ' }
+          if (r > 1 && r < 5) { return 'заказа' }
+          return 'заказов'
+        },
+        refreshOrder () {
+          axios.get('api/orders/updatefromprom/' + this.order.prom_id).then((res) => {
+            this.$emit('update')
+            console.log(res.data)
+          })
+        },
         save() {
           this.showDialog = false
         },
@@ -138,5 +181,8 @@
 }
 .mobile-order .v-list__tile__avatar {
   min-width: 70px;
+}
+.mobile-order .v-list__tile__action {
+  align-items: start;
 }
 </style>

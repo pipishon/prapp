@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\PromApi;
 
 use App\Order;
+use App\OrderProduct;
+use App\Product;
 use App\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -148,6 +150,35 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         //
+    }
+
+    public function updateFromProm ($prom_id)
+    {
+        $api = new PromApi;
+        $prom_order = $api->getItem($prom_id, 'orders')['order'];
+        $order = Order::where('prom_id', $prom_id)->first();
+        //return $prom_order;
+
+          foreach ($prom_order['products'] as $product) {
+            $product_price = floatval(preg_replace('/\s+/u', '', $product['price']));
+            $O_product = Product::updateOrCreate(array('sku' => $product['sku']),
+                array(
+                  'sku' => $product['sku'],
+                  'name' => $product['name'],
+                  'price' => $product_price,
+                  'main_image' => (string) $product['image'],
+                  'prom_id' => (string) $product['id'],
+                ));
+
+              $order_product = OrderProduct::firstOrCreate(array(
+                'product_id' => $O_product->id,
+                'order_id' => $order->id,
+                'quantity' => $product['quantity'],
+              ));
+          }
+        //$order->load('statuses')->load('customer');
+        //$order->customer->load('statistic');
+        return $order;
     }
 
     /**
