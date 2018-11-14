@@ -158,24 +158,31 @@ class OrderController extends Controller
         $prom_order = $api->getItem($prom_id, 'orders')['order'];
         $order = Order::where('prom_id', $prom_id)->first();
         //return $prom_order;
+        $product_ids = array();
 
-          foreach ($prom_order['products'] as $product) {
-            $product_price = floatval(preg_replace('/\s+/u', '', $product['price']));
-            $O_product = Product::updateOrCreate(array('sku' => $product['sku']),
-                array(
-                  'sku' => $product['sku'],
-                  'name' => $product['name'],
-                  'price' => $product_price,
-                  'main_image' => (string) $product['image'],
-                  'prom_id' => (string) $product['id'],
-                ));
-
-              $order_product = OrderProduct::firstOrCreate(array(
-                'product_id' => $O_product->id,
-                'order_id' => $order->id,
-                'quantity' => $product['quantity'],
+        foreach ($prom_order['products'] as $product) {
+          $price = $product['price'];
+          $price = preg_replace('/\s+/u', '', $price);
+          $price = str_replace(',','.', $price);
+          $price = floatval($price);
+          $O_product = Product::updateOrCreate(array('sku' => $product['sku']),
+              array(
+                'sku' => $product['sku'],
+                'name' => $product['name'],
+                'price' => $price,
+                'main_image' => (string) $product['image'],
+                'prom_id' => (string) $product['id'],
               ));
-          }
+            $product_ids[] = $O_product->id;
+            $order_product = OrderProduct::updateOrCreate(array(
+              'product_id' => $O_product->id,
+              'order_id' => $order->id,
+            ), array(
+              'quantity' => $product['quantity'],
+            ));
+
+        }
+        OrderProduct::where('order_id', $order->id)->whereNotIn('product_id', $product_ids)->delete();
         //$order->load('statuses')->load('customer');
         //$order->customer->load('statistic');
         return $order;

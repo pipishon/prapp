@@ -158,7 +158,10 @@ class SyncController extends Controller
 
 
       foreach ($order['products'] as $product) {
-        $product_price = floatval(preg_replace('/\s+/u', '', $product['price']));
+        $product_price = $product['price'];
+        $product_price = preg_replace('/\s+/u', '', $product_price);
+        $product_price = str_replace(',','.', $product_price);
+        $product_price = floatval($product_price);
         $O_product = Product::updateOrCreate(array('sku' => $product['sku']),
             array(
               'sku' => $product['sku'],

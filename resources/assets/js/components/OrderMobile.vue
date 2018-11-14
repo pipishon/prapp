@@ -50,13 +50,13 @@
         </v-list-tile-action>
     </v-list-tile>
     <v-card v-if="showDialog" >
-      <v-toolbar flat card dense >
-        <v-toolbar-items>
-          <v-btn flat @click.native="showDialog = false"> < Назад </v-btn>
+      <v-toolbar flat card dense class="grey darken-1 mobile-order">
+        <v-toolbar-items @click="showDialog = false">
+          <v-icon color="white">keyboard_arrow_left</v-icon><span  class="white--text " style="padding-top: 11px; font-size: 18px;" >  Назад </span>
         </v-toolbar-items>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-icon @click="refreshOrder">refresh</v-icon>
+          <v-icon @click="refreshOrder" color="white">refresh</v-icon>
         </v-toolbar-items>
       </v-toolbar>
       <div class="px-2 mt-1">
@@ -82,7 +82,7 @@
         </div>
       </div>
       <div class="pa-2 mt-2" style="border-top: 1px solid lightgray; border-bottom: 1px solid lightgray;">
-        <strong>Товары в заказе (<span class="subheading"><strong>{{order.products.length}}</strong></span> шт):</strong>
+        <strong>Товары в заказе (<span class="body-1"><strong>{{order.products.length}}</strong></span> шт):</strong>
       </div>
       <v-list class="mobile-order px-2">
         <div class="my-1" v-for="(item, index) in orderedProducts"
@@ -100,9 +100,9 @@
 
                 <v-list-tile-content class="ml-2 mr-2 caption">
                   <div>
-                    <div>{{item.name}}</div>
-                    <div class="grey--text">Код: {{item.sku}}</div>
-                    <div>{{item.product.price}}&nbsp;грн&nbsp;|&nbsp;<strong>{{item.quantity}} шт</strong>&nbsp;|&nbsp;{{item.product.price * item.quantity}} грн</div>
+                    <div class="body-1" style="line-height: 1.4;">{{item.name}}</div>
+                    <div class="grey--text" style="font-size: 13px;">Код: {{item.sku}}</div>
+                    <div class="body-1">{{convertPrice(item.product.price)}}&nbsp;грн&nbsp;|&nbsp;<strong>{{item.quantity}} шт</strong>&nbsp;|&nbsp;{{convertPrice(item.product.price * item.quantity)}} грн</div>
                   </div>
                 </v-list-tile-content>
               </v-list-tile>
@@ -146,6 +146,9 @@ import * as moment from 'moment';
         }
       },
       methods: {
+        convertPrice (price) {
+          return price//.toString().replace('.', ',')
+        },
         orderString (n) {
           let r = n%10;
           if (n > 5 && n < 21) { return 'заказов' }
@@ -184,5 +187,8 @@ import * as moment from 'moment';
 }
 .mobile-order .v-list__tile__action {
   align-items: start;
+}
+.mobile-order .v-toolbar__content {
+  padding-left: 0 !important;
 }
 </style>

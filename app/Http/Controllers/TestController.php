@@ -15,10 +15,14 @@ class TestController extends Controller
 {
     public function index (Request $request)
     {
-        $orders = Order::paginate('1000');
-        foreach ($orders as $order) {
-            $order->mapDeliveryPayment();
-        }
+        $api = new PromApi;
+        $prom_id = '63940114';
+        $prom_order = $api->getItem($prom_id, 'orders')['order'];
+        $price = $prom_order['products'][5]['price'];
+        $price = preg_replace('/\s+/u', '', $price);
+        $price = str_replace(',','.', $price);
+        $price = floatval($price);
+        dd($price);
     }
     /*
         $ttn = $request->input('ttn');

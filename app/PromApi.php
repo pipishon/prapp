@@ -15,7 +15,7 @@ class PromApi {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'https://' . $this->host . $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_PROXY, '10.0.0.80:3128');
+//        curl_setopt($ch, CURLOPT_PROXY, '10.0.0.80:3128');
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 

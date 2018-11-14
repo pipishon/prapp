@@ -60,6 +60,7 @@
 
 
     </btable>
+
     <v-dialog  v-model="showAddFilterDialog" width="300" persistent @keydown.esc="showAddFilterDialog = false">
 
       <v-card v-if="showAddFilterDialog" >
