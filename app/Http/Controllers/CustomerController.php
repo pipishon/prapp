@@ -29,7 +29,23 @@ class CustomerController extends Controller
           $query->from('phones')->select('phones.customer_id')->where('phones.phone', 'like', '%'.$input['phone'].'%');
         });
       }
-      return $customer->with('emails')->with('phones')->search($input)->orderBy('last_order', 'desc')->paginate($per_page);
+      $customers = $customer->with('emails')->with('phones')->search($input);
+
+      $customers = $customer->select('customers.*')->join('customer_statistics', 'customers.id', '=', 'customer_statistics.customer_id');
+
+      $stats = array(
+          'all' => Customer::count(),
+          'total' => $customers->count(),
+          'aver_price' => $customers->avg('customer_statistics.total_price'),
+          'aver_quantity' => $customers->avg('customer_statistics.count_orders'),
+          'aver_aver' => $customers->avg('customer_statistics.aver_price')
+      );
+      $customers = $customer->orderBy('customer_statistics.last_order', 'desc')->paginate($per_page);
+      $custom = collect([
+        'stats' => $stats,
+      ]);
+      $customers = $custom->merge($customers);
+      return $customers;
     }
 
     /**

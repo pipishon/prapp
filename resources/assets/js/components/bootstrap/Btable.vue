@@ -11,6 +11,11 @@
           <v-text-field v-model="widths[key]" v-if="typeof(widths) != 'undefined' && showWidthAdj[key]" dark @keyup.enter="showWidthAdj[key] = false; $emit('updatewidth')" class="ma-0 pa-0"></v-text-field>
         </th>
       </thead>
+      <tfoot>
+        <tr>
+          <slot name="footer"></slot>
+        </tr>
+      </tfoot>
       <tbody>
         <tr v-if="typeof(search) != 'undefined'" >
           <td v-if="selectAll" style="position: relative; padding: 15px 0px 0px 7px;">

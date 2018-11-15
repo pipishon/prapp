@@ -1,10 +1,10 @@
 <template>
-  <div>
+  <div class="customers">
 
     <v-container fluid class="my-0 py-0">
         <v-layout row>
             <v-flex md3 >
-          <v-select  :hide-details="true" label="Фильтер" :items="Object.keys(filterMap)" v-model="selectedFilter" @input="showAddFilterDialog = true" ></v-select>
+          <v-select  :hide-details="true" label="Фильтр пользователей" :items="Object.keys(filterMap)" v-model="selectedFilter" @input="showAddFilterDialog = true" ></v-select>
             </v-flex>
               <v-chip v-model="filterChips[item.filter]" v-for="item in filters" :key="item.filter" close>{{item.filter}}
                 <span v-if="item.from">&nbsp;от {{item.from}}</span>
@@ -18,6 +18,7 @@
       :widths="tableWidths"
       @updatewidth="updateWidths"
       @search="onSearch"
+      class="mb-5"
     >
 
       <template slot="row" slot-scope="data">
@@ -57,6 +58,15 @@
           </td>
         </tr>
       </template>
+      <template slot="footer">
+        <td colspan="5">Всего: {{stats.total}} шт ({{(stats.total * 100/stats.all).toFixed(2)}} %)</td>
+        <td></td>
+        <td></td>
+        <td>{{parseFloat(stats.aver_quantity).toFixed(2)}}</td>
+        <td>{{parseFloat(stats.aver_price).toFixed(2)}}</td>
+        <td>{{parseFloat(stats.aver_aver).toFixed(2)}}</td>
+        <td></td>
+      </template>
 
 
     </btable>
@@ -77,6 +87,8 @@
       </v-card>
     </v-dialog>
     <v-footer fixed class="pa-3">
+      <span>Всего клиентов: {{stats.all}}  шт</span>
+      <v-spacer></v-spacer>
     <pagination :current="curPage" :last="lastPage" @change="loadPage"/>
     </v-footer>
   </div>
@@ -90,6 +102,8 @@
     export default {
       data() {
         return {
+          stats: {},
+          total: null,
           tableWidths: {},
           showAddFilterDialog: false,
           selectedFilter: null,
@@ -197,6 +211,8 @@
           params = Object.assign(this.searchQuery, params)
           axios.get('api/customers', {params}).then((res) => {
             this.list = res.data.data
+            this.total = res.data.total
+            this.stats = res.data.stats
             if (this.list.length > 0) {
               this.curCustomer = this.list[0]
               this.curPage = res.data.current_page
