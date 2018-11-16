@@ -106,7 +106,7 @@ class NewPostTtnTrackController extends Controller
                     'full_name' => $track['RecipientFullNameEW'],
                     'city' => $track['CityRecipient'],
                     'warehouse' => $track['WarehouseRecipient'],
-                    'warehouse_ref' => $track['WarehouseRecipientRef'],
+                    'warehouse_ref' => isset($track['WarehouseRecipientRef']) ? isset($track['WarehouseRecipientRef']) : '',
                     'recipient_address' => $track['RecipientAddress'],
                     'date_created' => Carbon::parse($track['DateCreated']),
                     'date_first_day_storage' => isset($track['DateFirstDayStorage']) ? Carbon::parse($track['DateFirstDayStorage']) : null,

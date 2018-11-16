@@ -43,6 +43,68 @@ class ImportController extends Controller
     }
 
 
+    public function importproducts (Request $request)
+    {
+      $start_row = (int) $request->input('start_row');
+      $path = storage_path('app/csvfile').'/csvfile.csv';
+
+      $skip = 0;
+      $i = 0;
+      $imported_data = array();
+      $imported_result = array(
+         'product' => 0,
+      );
+
+      if(($handle = fopen($path, 'r')) !== false) {
+          while(($data = fgets($handle)) !== false && $i < 200) {
+            if ($skip <  $start_row) {$skip++; continue;}
+            $data = explode(';', $data);
+
+            /*$data = array(
+                'ref' => $data[0],
+                'name' => $data[1],
+                'price' => $data[2],
+                'units' => $data[3],
+                'main_image' => $data[4],
+                'available' => $data[5],
+                'quantity' => $data[6],
+                'group_id' => $data[7],
+                'category' => $data[8],
+                'prom_id' => $data[9],
+                'subgroup_id' => $data[10],
+                'link' => $data[11],
+            );*/
+
+            $image = trim(explode(',', $data[4])[0]);
+
+            Product::updateOrCreate(array('sku' => $data[0]), array(
+                'name' => $data[1],
+                'price' => floatval(str_replace(',', '.', $data[2])),
+                'units' => $data[3],
+                'main_image' => $image,
+                'quantity' => intval($data[6]),
+                'group_id' => $data[7],
+                'category' => $data[8],
+                'prom_id' => $data[9],
+                'subgroup_id' => $data[10],
+                'link' => trim($data[11]),
+            ));
+
+
+            //$imported_data = $this->processData($data, $order_id);
+            //$order_id = $imported_data['order_id'];
+            $imported_result['product']++;
+            $i++;
+          }
+      }
+      $result = array( 'end_row' => $start_row + $i, 'start_row' => $start_row);
+
+      $result = array_merge($result, $imported_result);
+
+      return $result;
+
+    }
+
     public function import (Request $request)
     {
       $start_row = (int) $request->input('start_row');
@@ -59,6 +121,7 @@ class ImportController extends Controller
          'email' => 0,
          'order' => 0,
       );
+
       if(($handle = fopen($path, 'r')) !== false) {
           while(($data = fgetcsv($handle)) !== false && $i < 200) {
             if ($skip <  $start_row) {$skip++; continue;}

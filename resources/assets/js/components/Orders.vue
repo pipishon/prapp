@@ -50,7 +50,7 @@
        >
 
       <template slot="row" slot-scope="data">
-        <tr is="orderline" @updateorder="updateOrder(item, arguments[0])" v-for="(item, key) in data.items" :item="item" :key="item.id" :class="{'green lighten-5': item.status == 'delivered', 'pink lighten-5': item.status == 'canceled'}"></tr>
+        <tr is="orderline" @update="getList" @updateorder="updateOrder(item, arguments[0])" v-for="(item, key) in data.items" :item="item" :key="item.id" :class="{'green lighten-5': item.status == 'delivered', 'pink lighten-5': item.status == 'canceled'}"></tr>
       </template>
     </btable>
 

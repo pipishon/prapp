@@ -1,5 +1,9 @@
-$('#import').click(function () {
-  importData(31500)
+$('#import_orders').click(function () {
+  importOrdersData(1)
+})
+
+$('#import_products').click(function () {
+  importProductsData(1)
 })
 
 var imported = {
@@ -10,7 +14,20 @@ var imported = {
    'order': 0,
 }
 
-function importData (start_row, order_id) {
+function importProductsData (start_row) {
+  var params = {'start_row': start_row}
+  $('.imported .product').text(imported.product)
+  $.get('/api/importproducts', params, function(res) {
+    imported.product += res.product
+    console.log(res)
+    //console.log(res.end_row, res.start_row)
+    if (res.end_row != res.start_row) {
+      importProductsData(res.end_row)
+    }
+  })
+}
+
+function importOrdersData (start_row, order_id) {
   var params = {'start_row': start_row}
   if (typeof(order_id) != 'undefined') {
     params['order_id'] = order_id

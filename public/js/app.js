@@ -103757,7 +103757,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -103768,6 +103768,10 @@ exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
 //
 //
 //
@@ -103854,6 +103858,14 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     }
   },
   methods: {
+    refreshOrder: function refreshOrder() {
+      var _this2 = this;
+
+      axios.get('api/orders/updatefromprom/' + this.order.prom_id).then(function (res) {
+        _this2.$emit('update');
+        console.log(res.data);
+      });
+    },
     save: function save() {
       this.showDialog = false;
     },
@@ -104013,6 +104025,30 @@ var render = function() {
                             "v-btn",
                             { attrs: { icon: "" }, on: { click: _vm.clear } },
                             [_c("v-icon", [_vm._v("clear")])],
+                            1
+                          )
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-flex",
+                        { attrs: { xs6: "", "offset-md3": "", md3: "" } },
+                        [
+                          _c(
+                            "v-btn",
+                            {
+                              attrs: { flat: "" },
+                              on: { click: _vm.refreshOrder }
+                            },
+                            [
+                              _c(
+                                "v-icon",
+                                { staticClass: "mr-2", attrs: { small: "" } },
+                                [_vm._v("refresh")]
+                              ),
+                              _vm._v("Обновить заказ")
+                            ],
                             1
                           )
                         ],
@@ -109042,11 +109078,22 @@ var render = function() {
           domProps: { innerHTML: _vm._s(_vm.orderDate(_vm.data)) }
         }),
         _vm._v(" "),
-        _c("order", { attrs: { order: _vm.data.item } }, [
-          _c("span", [
-            _vm._v("Товаров " + _vm._s(_vm.data.item.products.length) + " шт")
-          ])
-        ]),
+        _c(
+          "order",
+          {
+            attrs: { order: _vm.data.item },
+            on: {
+              update: function($event) {
+                _vm.$emit("update")
+              }
+            }
+          },
+          [
+            _c("span", [
+              _vm._v("Товаров " + _vm._s(_vm.data.item.products.length) + " шт")
+            ])
+          ]
+        ),
         _vm._v(" "),
         _c("datedelivery", {
           attrs: {
@@ -110560,6 +110607,7 @@ var render = function() {
                   },
                   attrs: { item: item },
                   on: {
+                    update: _vm.getList,
                     updateorder: function($event) {
                       _vm.updateOrder(item, arguments[0])
                     }

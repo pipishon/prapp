@@ -28,7 +28,8 @@
   @if ( $uploaded_file_name !=  '')
   <div class="row">
     <div class="jumbotron col-6">
-      <span>{{$uploaded_file_name}}</span> <button id="import" class="btn btn-primary float-right">Start import</button>
+      <span>{{$uploaded_file_name}}</span> <button id="import_orders" class="btn btn-primary float-right">Start import orders</button>
+      <span>{{$uploaded_file_name}}</span> <button id="import_products" class="btn btn-primary float-right">Start import products</button>
     </div>
     <div class="jumbotron col-6 imported">
       <div >Processed <span class="processed">0</span>/{{$lines}}</div>

@@ -25,6 +25,10 @@
         <v-flex xs6 md3 >
           <v-btn icon @click="clear"><v-icon>clear</v-icon></v-btn>
         </v-flex>
+        <v-flex xs6 offset-md3 md3 >
+          <v-btn @click="refreshOrder" flat><v-icon small class="mr-2" >refresh</v-icon>Обновить заказ</v-btn>
+
+        </v-flex>
       </v-layout>
       <div class="row">
         <div class="col">
@@ -94,6 +98,12 @@
         }
       },
       methods: {
+        refreshOrder () {
+          axios.get('api/orders/updatefromprom/' + this.order.prom_id).then((res) => {
+            this.$emit('update')
+            console.log(res.data)
+          })
+        },
         save() {
           this.showDialog = false
         },
