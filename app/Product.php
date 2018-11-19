@@ -29,4 +29,13 @@ class Product extends Model
       return $query;
   }
     //
+  public function supliers()
+  {
+    return $this->hasMany('App\ProductSuplier');
+  }
+
+  public function labels()
+  {
+    return $this->hasMany('App\ProductLabelp');
+  }
 }

@@ -55,6 +55,8 @@ Route::get('addttntotrack', 'NewPostTtnTrackController@addTtn');
 
 Route::resource('orderdaystatistic', 'OrderDayStatisticController');
 
+Route::resource('suplier', 'SuplierController');
+
 Route::prefix('statistics')->group(function () {
   Route::get('recalc/customers', 'CustomerController@recalcStatistics');
   Route::get('recalc/orders', 'OrderDayStatisticController@recalcStatistics');

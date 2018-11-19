@@ -38,7 +38,7 @@ import nptrack from './components/NpTrack'
     export default {
       data () {
         return {
-          mode: 'orders'
+          mode: 'products'
         }
       },
       components: {

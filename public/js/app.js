@@ -97965,7 +97965,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      mode: 'orders'
+      mode: 'products'
     };
   },
 
@@ -98730,6 +98730,74 @@ module.exports = Component.exports
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(7);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -98741,10 +98809,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      fields: [{ key: 'sku', label: 'Sku' }, { key: 'name', label: 'Name' }, { key: 'price', label: 'Price' }, { key: 'category', label: 'Status' }, { key: 'description', label: 'Description' }, { key: 'status', label: 'Category' }],
+      SuplierToAdd: null,
+      ShowLabelDrawer: false,
+      ShowSuplierDrawer: false,
+      supliers: [],
+      fields: [{ key: 'main_image', label: 'Фото' }, { key: 'name', label: 'Название' }, { key: 'sku', label: 'Артикул' }, { key: 'availability', label: 'Наличие' }, { key: 'category', label: 'Группа' }, { key: 'units', label: 'Ед. изм.' }, { key: 'suplier', label: 'Поставщик' }, { key: 'min_quantity', label: 'Мин. остаток' }, { key: 'orders', label: 'Заказы' }, { key: 'purchase_price', label: 'Закуп цена' }, { key: 'price', label: 'Цена продажи' }, { key: 'marga', label: 'Маржа' }, { key: 'label', label: 'Метки товара' }],
       list: [],
       groups: [],
       curPage: 0,
@@ -98753,15 +98826,35 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     };
   },
 
-  methods: {
-    getList: function getList(params) {
+  computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["c" /* mapGetters */])(['settings', 'selected'])),
+  methods: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["d" /* mapMutations */])(['massSelection']), {
+    addSuplier: function addSuplier() {
+      axios.post('api/suplier', { name: this.SuplierToAdd }).then(function (res) {
+        console.log(res.data);
+      });
+    },
+    changeMass: function changeMass(val) {
       var _this = this;
+
+      if (val) {
+        var massItems = Object.assign([], this.selected);
+        massItems.push(this.item);
+        this.massSelection(massItems);
+      } else {
+        var _massItems = this.selected.filter(function (el) {
+          return el.id != _this.item.id;
+        });
+        this.massSelection(_massItems);
+      }
+    },
+    getList: function getList(params) {
+      var _this2 = this;
 
       params = Object.assign(this.searchQuery, params);
       axios.get('api/products', { params: params }).then(function (res) {
-        _this.list = res.data.data;
-        _this.curPage = res.data.current_page;
-        _this.lastPage = res.data.last_page;
+        _this2.list = res.data.data;
+        _this2.curPage = res.data.current_page;
+        _this2.lastPage = res.data.last_page;
       });
     },
     loadPage: function loadPage(page) {
@@ -98772,8 +98865,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       this.searchQuery[key] = data[key];
       this.getList({ page: 1 });
     }
-  },
+  }),
   mounted: function mounted() {
+    var _this3 = this;
+
+    axios.get('api/suplier').then(function (res) {
+      _this3.supliers = res.data;
+    });
     this.getList();
   }
 });
@@ -98790,22 +98888,176 @@ var render = function() {
     "div",
     [
       _c("btable", {
-        attrs: { items: _vm.list, fields: _vm.fields, search: ["sku", "name"] },
+        attrs: {
+          items: _vm.list,
+          fields: _vm.fields,
+          search: ["sku", "name"],
+          "select-all": true
+        },
         on: { search: _vm.onSearch },
         scopedSlots: _vm._u([
           {
-            key: "sku",
+            key: "row",
             fn: function(data) {
-              return [_vm._v(_vm._s(data.item.sku))]
+              return _vm._l(data.items, function(item, key) {
+                return _c(
+                  "tr",
+                  { key: item.id, class: { "green lighten-5": false } },
+                  [
+                    _c(
+                      "td",
+                      [
+                        _c("v-checkbox", {
+                          staticClass: "mt-0",
+                          attrs: {
+                            flat: "",
+                            value: _vm.selected.indexOf(data.item) != -1
+                          },
+                          on: { change: _vm.changeMass }
+                        })
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c("td", [
+                      _c("img", {
+                        attrs: {
+                          width: "100",
+                          height: "100",
+                          src: item.main_image
+                        }
+                      })
+                    ]),
+                    _vm._v(" "),
+                    _c("td", [
+                      _vm._v("\n          " + _vm._s(item.name) + "\n        ")
+                    ]),
+                    _vm._v(" "),
+                    _c("td", [
+                      _vm._v("\n          " + _vm._s(item.sku) + "\n        ")
+                    ]),
+                    _vm._v(" "),
+                    _c("td"),
+                    _vm._v(" "),
+                    _c("td", [
+                      _vm._v(
+                        "\n          " + _vm._s(item.category) + "\n        "
+                      )
+                    ]),
+                    _vm._v(" "),
+                    _c("td", [
+                      _vm._v("\n          " + _vm._s(item.units) + "\n        ")
+                    ]),
+                    _vm._v(" "),
+                    _c("td", [
+                      _vm._v(
+                        "\n          " + _vm._s(item.supliers) + "\n        "
+                      )
+                    ]),
+                    _vm._v(" "),
+                    _c("td"),
+                    _vm._v(" "),
+                    _c("td"),
+                    _vm._v(" "),
+                    _c("td"),
+                    _vm._v(" "),
+                    _c("td", [
+                      _vm._v("\n          " + _vm._s(item.price) + "\n        ")
+                    ]),
+                    _vm._v(" "),
+                    _c("td"),
+                    _vm._v(" "),
+                    _c("td", [
+                      _vm._v(
+                        "\n          " + _vm._s(item.labels) + "\n        "
+                      )
+                    ])
+                  ]
+                )
+              })
             }
           }
         ])
       }),
       _vm._v(" "),
-      _c("pagination", {
-        attrs: { current: _vm.curPage, last: _vm.lastPage },
-        on: { change: _vm.loadPage }
-      })
+      _c(
+        "v-footer",
+        { staticClass: "pa-3", attrs: { fixed: "" } },
+        [
+          _c("pagination", {
+            attrs: { current: _vm.curPage, last: _vm.lastPage },
+            on: { change: _vm.loadPage }
+          }),
+          _vm._v(" "),
+          _c(
+            "v-btn",
+            {
+              on: {
+                click: function($event) {
+                  _vm.ShowSuplierDrawer = !_vm.ShowSuplierDrawer
+                }
+              }
+            },
+            [_vm._v("Поставщики")]
+          ),
+          _vm._v(" "),
+          _c(
+            "v-btn",
+            {
+              on: {
+                click: function($event) {
+                  _vm.ShowLabelDrawer = !_vm.ShowLabelDrawer
+                }
+              }
+            },
+            [_vm._v("Метки")]
+          )
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "v-navigation-drawer",
+        {
+          attrs: { fixed: "", temporary: "", right: "" },
+          model: {
+            value: _vm.ShowSuplierDrawer,
+            callback: function($$v) {
+              _vm.ShowSuplierDrawer = $$v
+            },
+            expression: "ShowSuplierDrawer"
+          }
+        },
+        [
+          _c("v-toolbar", { attrs: { flat: "" } }, [
+            _c("h3", [_vm._v("Поставщики")])
+          ]),
+          _vm._v(" "),
+          _c(
+            "div",
+            { staticClass: "pa-2" },
+            [
+              _c("v-text-field", {
+                attrs: {
+                  label: "Добавить поставщика",
+                  "append-icon": "add_box"
+                },
+                on: { "click:append": _vm.addSuplier },
+                model: {
+                  value: _vm.SuplierToAdd,
+                  callback: function($$v) {
+                    _vm.SuplierToAdd = $$v
+                  },
+                  expression: "SuplierToAdd"
+                }
+              }),
+              _vm._v("\n        " + _vm._s(this.supliers) + "\n      ")
+            ],
+            1
+          )
+        ],
+        1
+      )
     ],
     1
   )
@@ -107553,7 +107805,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
 
 // exports
 
@@ -107820,6 +108072,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       params['volume_general'] = volume;
       params['weight'] = weight;
       params['backdelivery'] = this.data.backdelivery ? '1' : '0';
+      params['full_address'] = this.data.city + ',' + this.data.warehouse;
 
       axios.get('api/newpost/getttn', { params: params }).then(function (res) {
         console.log(res.data);
@@ -107868,7 +108121,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         var price = Math.ceil(parseFloat(this.item.statuses.payment_price));
         this.data.backprice = price;
         this.data.price = price;
-        if (this.valid) {
+        if (this.item.is_address_valid !== null) {
           //const matches = this.item.delivery_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
           this.data.city = this.item.is_address_valid.city;
           this.loadWarehouses();
@@ -107892,9 +108145,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         //this.places[0].weight = //(this.places[0].weight == '-') ? this.item.statuses.shipment_weight : this.places[0].weight
 
         //const matches = this.item.ttn.full_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
-        this.data.city = this.item.is_address_valid.city;
-        this.loadWarehouses();
-        this.data.warehouse = this.item.is_address_valid.warehouse;
+        if (this.item.is_address_valid !== null) {
+          this.data.city = this.item.is_address_valid.city;
+          this.loadWarehouses();
+          this.data.warehouse = this.item.is_address_valid.warehouse;
+        } else {
+          this.data.city = this.item.ttn.city;
+          this.loadWarehouses();
+          this.data.warehouse = this.item.ttn.full_address.replace(this.data.city + ',', '');
+        }
       }
       if (this.item.statuses.payment_status == 'Наложенный') {
         this.data.backdelivery = 1;

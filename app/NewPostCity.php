@@ -20,9 +20,9 @@ class NewPostCity extends Model
     {
         $res = null;
         $address = str_replace('\'', '\'\'', $address);
-        $cities = NewPostCity::whereRaw("LOCATE(description, '".$address."') <> 0")->with('warehouses')->get();
-        if ($cities == null) {
-            $cities = NewPostCity::whereRaw("LOCATE(description_ua, '".$address."') <> 0")->with('warehouses')->get();
+        $cities = NewPostCity::whereRaw("LOCATE(description, '".$address."') <> 0")->where('description', '!=', '')->with('warehouses')->get();
+        if ($cities == null || count($cities) == 0) {
+            $cities = NewPostCity::whereRaw("LOCATE(description_ua, '".$address."') <> 0")->get();
         }
         foreach ($cities as $city) {
           $warehouse = NewPostWarehouse::whereRaw("LOCATE(description, '".$address."') <> 0")->where('city_ref', $city->ref)->first();

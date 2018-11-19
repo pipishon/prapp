@@ -15,6 +15,7 @@ class TestController extends Controller
 {
     public function index (Request $request)
     {
+      return NewPostCity::isAddressValid('Київ, Відділення №67 (до 30 кг): вул. К. Данькевича, 16 (Троєщина)');
         $api = new PromApi;
         $prom_id = '63940114';
         $prom_order = $api->getItem($prom_id, 'orders')['order'];

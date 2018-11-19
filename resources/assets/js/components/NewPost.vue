@@ -249,6 +249,7 @@ import { mapGetters } from 'vuex'
           params['volume_general'] = volume
           params['weight'] = weight
           params['backdelivery'] = (this.data.backdelivery) ? '1' : '0'
+          params['full_address'] = this.data.city + ',' + this.data.warehouse
 
           axios.get('api/newpost/getttn', {params}).then((res) => {
             console.log(res.data)
@@ -296,7 +297,7 @@ import { mapGetters } from 'vuex'
             const price = Math.ceil(parseFloat(this.item.statuses.payment_price))
             this.data.backprice = price
             this.data.price = price
-            if (this.valid) {
+            if (this.item.is_address_valid !== null) {
               //const matches = this.item.delivery_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
               this.data.city = this.item.is_address_valid.city
               this.loadWarehouses()
@@ -320,9 +321,15 @@ import { mapGetters } from 'vuex'
             //this.places[0].weight = //(this.places[0].weight == '-') ? this.item.statuses.shipment_weight : this.places[0].weight
 
             //const matches = this.item.ttn.full_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
-            this.data.city = this.item.is_address_valid.city
-            this.loadWarehouses()
-            this.data.warehouse = this.item.is_address_valid.warehouse;
+            if (this.item.is_address_valid !== null) {
+              this.data.city = this.item.is_address_valid.city
+              this.loadWarehouses()
+              this.data.warehouse = this.item.is_address_valid.warehouse;
+            } else {
+              this.data.city = this.item.ttn.city
+              this.loadWarehouses()
+              this.data.warehouse = this.item.ttn.full_address.replace(this.data.city + ',', '')
+            }
           }
           if (this.item.statuses.payment_status == 'Наложенный') {
             this.data.backdelivery = 1

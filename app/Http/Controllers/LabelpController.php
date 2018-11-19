@@ -2,31 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Product;
-use App\Order;
-use App\PromApi;
+use App\Labelp;
 use Illuminate\Http\Request;
 
-class ProductController extends Controller
+class LabelpController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
-
-      /*$api = new PromApi;
-      return $api->getList('products', array(
-        'group_id' => $group_id,
-        'limit' => 100
-      ))['products'];*/
-      $input = $request->all();
-
-      $per_page = (isset($input['per_page'])) ? (int) $input['per_page'] : 20;
-
-      return Product::search($input)->with('labels')->with('supliers')->paginate($per_page);
+        //
     }
 
     /**
@@ -53,10 +41,10 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Product  $product
+     * @param  \App\Labelp  $labelp
      * @return \Illuminate\Http\Response
      */
-    public function show(Product $product)
+    public function show(Labelp $labelp)
     {
         //
     }
@@ -64,10 +52,10 @@ class ProductController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Product  $product
+     * @param  \App\Labelp  $labelp
      * @return \Illuminate\Http\Response
      */
-    public function edit(Product $product)
+    public function edit(Labelp $labelp)
     {
         //
     }
@@ -76,10 +64,10 @@ class ProductController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Product  $product
+     * @param  \App\Labelp  $labelp
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, Labelp $labelp)
     {
         //
     }
@@ -87,10 +75,10 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Product  $product
+     * @param  \App\Labelp  $labelp
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Product $product)
+    public function destroy(Labelp $labelp)
     {
         //
     }

@@ -2,31 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Product;
-use App\Order;
-use App\PromApi;
+use App\Suplier;
 use Illuminate\Http\Request;
 
-class ProductController extends Controller
+class SuplierController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
-
-      /*$api = new PromApi;
-      return $api->getList('products', array(
-        'group_id' => $group_id,
-        'limit' => 100
-      ))['products'];*/
-      $input = $request->all();
-
-      $per_page = (isset($input['per_page'])) ? (int) $input['per_page'] : 20;
-
-      return Product::search($input)->with('labels')->with('supliers')->paginate($per_page);
+        return Suplier::all();
+        //
     }
 
     /**
@@ -47,16 +36,16 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        Suplier::firstOrCreate(array('name' => $request->input('name')));
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Product  $product
+     * @param  \App\Suplier  $suplier
      * @return \Illuminate\Http\Response
      */
-    public function show(Product $product)
+    public function show(Suplier $suplier)
     {
         //
     }
@@ -64,10 +53,10 @@ class ProductController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Product  $product
+     * @param  \App\Suplier  $suplier
      * @return \Illuminate\Http\Response
      */
-    public function edit(Product $product)
+    public function edit(Suplier $suplier)
     {
         //
     }
@@ -76,10 +65,10 @@ class ProductController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Product  $product
+     * @param  \App\Suplier  $suplier
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, Suplier $suplier)
     {
         //
     }
@@ -87,10 +76,10 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Product  $product
+     * @param  \App\Suplier  $suplier
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Product $product)
+    public function destroy(Suplier $suplier)
     {
         //
     }

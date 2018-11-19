@@ -375,19 +375,19 @@ class SyncController extends Controller
       foreach ($warehouses as $warehouse) {
           if ($warehouse['TypeOfWarehouse'] == $privatPost ) continue;
           NewPostWarehouse::updateOrCreate(array('ref'=>$warehouse['Ref']), array(
-              'description' => $warehouse['DescriptionRu'],
-              'description_ua' => $warehouse['Description'],
+              'description' => trim($warehouse['DescriptionRu']),
+              'description_ua' => trim($warehouse['Description']),
               'site_id' => $warehouse['SiteKey'],
               'city_ref' => $warehouse['CityRef'],
-              'city_description' => $warehouse['CityDescriptionRu'],
+              'city_description' => trim($warehouse['CityDescriptionRu']),
           ));
       }
       NewPostWarehouse::whereNotIn('ref', $warehouses_refs)->delete();
       $cities = $np->getCities()['data'];
       foreach ($cities as $city) {
           NewPostCity::updateOrCreate(array('ref'=>$city['Ref']), array(
-              'description' => $city['DescriptionRu'],
-              'description_ua' => $city['Description'],
+              'description' => trim($city['DescriptionRu']),
+              'description_ua' => trim($city['Description']),
               'city_id' => $city['CityID'],
           ));
       }
