@@ -26,9 +26,21 @@ class ProductController extends Controller
       ))['products'];*/
       $input = $request->all();
 
-      $per_page = (isset($input['per_page'])) ? (int) $input['per_page'] : 20;
+      $per_page = (isset($input['per_page'])) ? (int) $input['per_page'] : 30;
+      $products = Product::search($input);
 
-      return Product::search($input)->with('labels')->with('supliers')->paginate($per_page);
+      $stats = array(
+          'all' => Product::count(),
+          'total' => $products->count(),
+          'supliers' => ProductSuplier::all()->count(),
+      );
+      $products = $products->with('labels')->with('supliers')->paginate($per_page);
+
+      $custom = collect([
+        'stats' => $stats,
+      ]);
+      $products = $custom->merge($products);
+      return $products;
     }
 
     public function addLabel(Request $request)

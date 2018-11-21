@@ -82,7 +82,7 @@ class ImportController extends Controller
                 'price' => floatval(str_replace(',', '.', $data[2])),
                 'units' => $data[3],
                 'main_image' => $image,
-                'quantity' => intval($data[6]),
+                'min_balance' => intval($data[6]),
                 'group_id' => $data[7],
                 'category' => $data[8],
                 'prom_id' => $data[9],

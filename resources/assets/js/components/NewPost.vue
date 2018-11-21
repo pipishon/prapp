@@ -294,9 +294,6 @@ import { mapGetters } from 'vuex'
               this.places.push(place)
             }
             //this.places[0].weight = this.item.statuses.shipment_weight //|| 0.1
-            const price = Math.ceil(parseFloat(this.item.statuses.payment_price))
-            this.data.backprice = price
-            this.data.price = price
             if (this.item.is_address_valid !== null) {
               //const matches = this.item.delivery_address.match(/^([а-яА-ЯёЁ()\s\.-]+),(.*)/)
               this.data.city = this.item.is_address_valid.city
@@ -331,6 +328,11 @@ import { mapGetters } from 'vuex'
               this.data.warehouse = this.item.ttn.full_address.replace(this.data.city + ',', '')
             }
           }
+
+          const price = Math.ceil(parseFloat(this.item.statuses.payment_price))
+          this.data.backprice = price
+          this.data.price = price
+
           if (this.item.statuses.payment_status == 'Наложенный') {
             this.data.backdelivery = 1
           } else {

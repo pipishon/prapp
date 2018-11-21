@@ -3,14 +3,18 @@
     <btable
       :items="list"
       :fields="fields"
-      :search="['sku', 'name']"
+      :notstriped="true"
+      :search="['sku', 'name', 'category']"
       @search="onSearch"
       :select-all="true"
+      class="mb-5"
+      :widths="tableWidths"
+      @updatewidth="updateWidths"
     >
        <template slot="mass">
             <v-checkbox class="ma-0 pa-0" :input-value="selected.length" @change="massChange"></v-checkbox>
             <v-menu content-class="products" offset-y v-if="selected.length" class="ma-0 mass-menu" >
-              <div  slot="activator" class="ma-0 mass-menu-activator"><strong>{{selected.length}} заказов &#8595;</strong></div>
+              <div  slot="activator" class="ma-0 mass-menu-activator"><strong>{{selected.length}} товаров &#8595;</strong></div>
               <v-list>
                 <v-list-tile
                   v-for="(action, fnName) in {
@@ -31,7 +35,7 @@
                           </v-list-tile>
                           <v-list-tile
                             v-for="(item, index) in massActionItems(fnName)"
-                            :key="index"
+                            :key="item.id"
                             @click=""
                           >
                             <div @click.prevent.stop class="mx-3">
@@ -56,7 +60,7 @@
             <v-checkbox flat class="mt-0" :value="selected.indexOf(item) != -1" @change="changeMass(arguments[0], item)"> </v-checkbox>
           </td>
           <td>
-            <img width="100" height="100" :src="item.main_image" />
+            <img width="50" :src="item.main_image" />
           </td>
           <td>
             {{item.name}}
@@ -91,12 +95,22 @@
           </td>
         </tr>
       </template>
+      <template slot="footer">
+        <td colspan="7">Всего: {{stats.total}} шт ({{(stats.total * 100/stats.all).toFixed(2)}} %)</td>
+        <td>{{(stats.supliers * 100/stats.all).toFixed(2)}} %</td>
+        <td colspan="6"></td>
+      </template>
     </btable>
 
     <v-footer fixed class="pa-3" >
+      <span>Всего товаров: {{stats.all}}  шт</span>
+      <v-spacer></v-spacer>
       <pagination :current="curPage" :last="lastPage" @change="loadPage"/>
       <v-btn @click="ShowSuplierDrawer = !ShowSuplierDrawer">Поставщики</v-btn>
       <v-btn @click="ShowLabelDrawer = !ShowLabelDrawer">Метки</v-btn>
+      <span style="width: 50px;">
+        <v-select  v-model="perPage" :items="[30, 50, 100, 200]" @input="searchQuery['per_page'] = arguments[0]; getList()"></v-select>
+      </span>
     </v-footer>
     <v-navigation-drawer
           v-model="ShowSuplierDrawer"
@@ -127,7 +141,6 @@
               </v-list-tile>
               <v-divider
                 v-if="index + 1 < supliers.length"
-                :key="index"
               ></v-divider>
             </template>
           </v-list>
@@ -163,7 +176,6 @@
               </v-list-tile>
               <v-divider
                 v-if="index + 1 < labels.length"
-                :key="index"
               ></v-divider>
             </template>
           </v-list>
@@ -177,6 +189,9 @@
     export default {
       data() {
         return {
+          stats: {},
+          tableWidths: {},
+          perPage: 30,
           massSelectedItems: [],
           massSearch: '',
           SuplierToAdd: null,
@@ -213,6 +228,12 @@
             this.getList()
             this.massSelection([])
           }
+        },
+        settings: {
+          handler () {
+            this.tableWidths = (typeof(this.settings.product_table_widths) != 'undefined') ? JSON.parse(this.settings.product_table_widths) : {}
+          },
+          deep: true
         }
       },
       computed: {
@@ -220,15 +241,18 @@
       },
       methods: {
         ...mapMutations(['massSelection']),
-        ...mapActions(['massAction']),
+        ...mapActions(['massAction', 'updateSettings']),
+        updateWidths () {
+          this.updateSettings({name: 'product_table_widths', value: JSON.stringify(this.tableWidths)})
+        },
         processMassAction (action) {
           this.massAction({fnName: action, selected: this.selected, items: this.massSelectedItems})
         },
         massActionItems (action) {
           if (action.indexOf('Label') != -1) {
-            return this.labels.filter((el) => el.name.indexOf(this.massSearch) != -1)
+            return this.labels.filter((el) => el.name.toLowerCase().indexOf(this.massSearch) != -1)
           } else {
-            return this.supliers.filter((el) => el.name.indexOf(this.massSearch) != -1)
+            return this.supliers.filter((el) => el.name.toLowerCase().indexOf(this.massSearch) != -1)
           }
         },
         massChange(val) {
@@ -283,8 +307,10 @@
           params = Object.assign(this.searchQuery, params)
           axios.get('api/products', {params}).then((res) => {
             this.list = res.data.data
+            this.stats = res.data.stats
             this.curPage = res.data.current_page
             this.lastPage = res.data.last_page
+            this.massSelection([])
           })
         },
         loadPage(page) {
@@ -297,6 +323,7 @@
         }
       },
       mounted() {
+        this.tableWidths = (typeof(this.settings.product_table_widths) != 'undefined') ? JSON.parse(this.settings.product_table_widths) : {}
         this.getLabels()
         this.getSupliers()
         this.getList()
