@@ -18,17 +18,8 @@
       </tfoot>
       <tbody>
         <tr v-if="typeof(search) != 'undefined'" >
-          <td v-if="selectAll" style="position: relative; padding: 15px 0px 0px 7px;">
-            <v-checkbox class="ma-0 pa-0" :input-value="this.selected.length" @change="massChange"></v-checkbox>
-            <v-menu offset-y v-if="selected.length" class="ma-0 mass-menu" >
-              <div  slot="activator" class="ma-0 mass-menu-activator"><strong>{{selected.length}} заказов &#8595;</strong></div>
-              <v-list>
-                <v-list-tile v-for="(item, fnName) in {massTtn: 'Сформировать ТТН', massSendTtn: 'Разослать ТТН', massDelivered: 'Установить Выполнен'}" :key="fnName" @click="massAction({fnName, selected})" >
-                  <v-list-tile-title >{{ item }}</v-list-tile-title>
-                </v-list-tile>
-              </v-list>
-            </v-menu>
-              <v-icon v-if="selected.length && isMassBusy" class="mass-loader">hourglass_empty</v-icon>
+          <td  v-if="selectAll" style="position: relative; padding: 15px 0px 0px 7px;">
+            <slot name="mass"></slot>
           </td>
 
           <td v-for="field in fields" >
@@ -57,15 +48,8 @@
         }
       },
       computed: {
-        ...mapGetters(['selected', 'isMassBusy'])
       },
       methods: {
-        ...mapMutations(['massSelection']),
-        ...mapActions(['massAction']),
-        massChange(val) {
-          const massItems = (val) ? this.items : []
-          this.massSelection(massItems)
-        },
         widthStyle (key) {
           if (typeof(this.widths) == 'undefined') return {}
           const width = (this.widths[key] < 40) ? 40 : this.widths[key]

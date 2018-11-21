@@ -1,13 +1,14 @@
 <template>
   <div class="wrap">
       <div class="icons-wrap">
-        <div v-for="(val, key) in modes" @click="mode = val; $emit('change', val)" class="icon-wrap my-3" :class="{active: mode==val}">
+        <div v-for="(val, key) in modes" @click="mode = val; massSelection([]); $emit('change', val)" class="icon-wrap my-3" :class="{active: mode==val}">
           <v-icon :color="(mode==val) ? 'orange' : 'white'" medium>{{key}}</v-icon>
         </div>
       </div>
   </div>
 </template>
 <script>
+    import { mapActions, mapGetters, mapMutations } from 'vuex'
     export default {
       props: ['imode'],
       data() {
@@ -30,6 +31,7 @@
         }
       },
       methods: {
+        ...mapMutations(['massSelection']),
       },
       mounted() {
         this.mode = this.imode

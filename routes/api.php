@@ -38,6 +38,14 @@ Route::get('newpost/validate', 'NewPostCityController@isAddressValide');
 Route::get('newpost/getttn', 'NewPostApiController@getTtn');
 
 Route::resource('products', 'ProductController');
+
+Route::prefix('product')->group(function () {
+  Route::get('addlabel', 'ProductController@addLabel');
+  Route::get('removelabel', 'ProductController@removeLabel');
+  Route::get('addsuplier', 'ProductController@addSuplier');
+  Route::get('removesuplier', 'ProductController@removeSuplier');
+});
+
 Route::resource('messages', 'MessageController');
 Route::resource('autoreply', 'AutoReplyController');
 Route::resource('groups', 'GroupsController');
@@ -56,6 +64,8 @@ Route::get('addttntotrack', 'NewPostTtnTrackController@addTtn');
 Route::resource('orderdaystatistic', 'OrderDayStatisticController');
 
 Route::resource('suplier', 'SuplierController');
+
+Route::resource('labelp', 'LabelpController');
 
 Route::prefix('statistics')->group(function () {
   Route::get('recalc/customers', 'CustomerController@recalcStatistics');

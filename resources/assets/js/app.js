@@ -123,10 +123,10 @@ const store = new Vuex.Store({
   actions: {
     massAction ({dispatch, commit}, data) {
       commit('setMassBusy', true)
-      const ids = data.selected.map((el) => el = el.id)
-      dispatch(data.fnName, ids)
+      dispatch(data.fnName, data)
     },
-    massTtn ({commit}, ids) {
+    massTtn ({commit}, data) {
+      const ids = data.selected.map((el) => el = el.id)
       console.log(ids)
       axios.get('api/mass/createttn', {params: {ids}}).then((res) => {
         let ttns = res.data
@@ -135,7 +135,40 @@ const store = new Vuex.Store({
         console.log(res.data)
       })
     },
-    massSendTtn ({commit}, ids) {
+    massLabelAdd ({commit}, data) {
+      const ids = data.selected.map((el) => el = el.id)
+      const label_ids = data.items
+      axios.get('api/product/addlabel', {params: {ids, label_ids}}).then((res) => {
+        commit('setMassBusy', false)
+        console.log(res.data)
+      })
+    },
+    massLabelRemove ({commit}, data) {
+      const ids = data.selected.map((el) => el = el.id)
+      const label_ids = data.items
+      axios.get('api/product/removelabel', {params: {ids, label_ids}}).then((res) => {
+        commit('setMassBusy', false)
+        console.log(res.data)
+      })
+    },
+    massSuplierAdd ({commit}, data) {
+      const ids = data.selected.map((el) => el = el.id)
+      const suplier_ids = data.items
+      axios.get('api/product/addsuplier', {params: {ids, suplier_ids}}).then((res) => {
+        commit('setMassBusy', false)
+        console.log(res.data)
+      })
+    },
+    massSuplierRemove ({commit}, data) {
+      const ids = data.selected.map((el) => el = el.id)
+      const suplier_ids = data.items
+      axios.get('api/product/removesuplier', {params: {ids, suplier_ids}}).then((res) => {
+        commit('setMassBusy', false)
+        console.log(res.data)
+      })
+    },
+    massSendTtn ({commit}, data) {
+      const ids = data.selected.map((el) => el = el.id)
       console.log(ids)
       axios.get('api/mass/sendttn', {params: {ids}}).then((res) => {
         let phone = res.data.phone
@@ -145,7 +178,8 @@ const store = new Vuex.Store({
         console.log(res.data)
       })
     },
-    massDelivered ({commit}, ids) {
+    massDelivered ({commit}, data) {
+      const ids = data.selected.map((el) => el = el.id)
       commit('setDelivered', ids)
       console.log(ids)
       axios.get('api/mass/delivered', {params: {ids}}).then((res) => {

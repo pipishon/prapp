@@ -12,7 +12,7 @@ class ProductLabelp extends Model
 
   public function label()
   {
-    return $this->hasOne('App\Labelp', 'id', 'suplier_id');
+    return $this->hasOne('App\Labelp', 'id', 'labelp_id');
   }
 
   public function getNameAttribute ($val) {

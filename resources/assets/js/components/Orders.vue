@@ -48,6 +48,18 @@
        :widths="tableWidths"
        @updatewidth="updateWidths"
        >
+       <template slot="mass">
+            <v-checkbox class="ma-0 pa-0" :input-value="this.selected.length" @change="massChange"></v-checkbox>
+            <v-menu offset-y v-if="selected.length" class="ma-0 mass-menu" >
+              <div  slot="activator" class="ma-0 mass-menu-activator"><strong>{{selected.length}} заказов &#8595;</strong></div>
+              <v-list>
+                <v-list-tile v-for="(item, fnName) in {massTtn: 'Сформировать ТТН', massSendTtn: 'Разослать ТТН', massDelivered: 'Установить Выполнен'}" :key="fnName" @click="massAction({fnName, selected})" >
+                  <v-list-tile-title >{{ item }}</v-list-tile-title>
+                </v-list-tile>
+              </v-list>
+            </v-menu>
+              <v-icon v-if="selected.length && isMassBusy" class="mass-loader">hourglass_empty</v-icon>
+       </template>
 
       <template slot="row" slot-scope="data">
         <tr is="orderline" @update="getList" @updateorder="updateOrder(item, arguments[0])" v-for="(item, key) in data.items" :item="item" :key="item.id" :class="{'green lighten-5': item.status == 'delivered', 'pink lighten-5': item.status == 'canceled'}"></tr>
@@ -98,7 +110,6 @@
           sNotDelivered: false,
           sTodayDelivered: false,
           payStatus: '',
-          massAction: {},
           mapMobile: {
             'Новая Почта': 'НП',
             'Укрпочта': 'Укр',
@@ -131,7 +142,7 @@
         }
       },
       computed: {
-        ...mapGetters(['settings', 'selected']),
+        ...mapGetters(['settings', 'selected', 'isMassBusy']),
       },
       watch: {
         settings: {
@@ -147,6 +158,12 @@
         autosms
       },
       methods: {
+        ...mapMutations(['massSelection']),
+        ...mapActions(['massAction']),
+        massChange(val) {
+          const massItems = (val) ? this.list : []
+          this.massSelection(massItems)
+        },
         mobileSearch (val) {
           const query = val.target.value;
           delete this.searchQuery['prom_id']

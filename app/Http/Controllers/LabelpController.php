@@ -14,6 +14,7 @@ class LabelpController extends Controller
      */
     public function index()
     {
+        return Labelp::all();
         //
     }
 
@@ -35,6 +36,7 @@ class LabelpController extends Controller
      */
     public function store(Request $request)
     {
+        Labelp::firstOrCreate(array('name' => $request->input('name')));
         //
     }
 
@@ -80,6 +82,7 @@ class LabelpController extends Controller
      */
     public function destroy(Labelp $labelp)
     {
+        $labelp->delete();
         //
     }
 }

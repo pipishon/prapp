@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Product;
+use App\ProductLabelp;
+use App\ProductSuplier;
 use App\Order;
 use App\PromApi;
 use Illuminate\Http\Request;
@@ -29,6 +31,62 @@ class ProductController extends Controller
       return Product::search($input)->with('labels')->with('supliers')->paginate($per_page);
     }
 
+    public function addLabel(Request $request)
+    {
+        $ids = $request->input('ids');
+        $label_ids = $request->input('label_ids');
+        foreach ($ids as $id) {
+            foreach ($label_ids as $label_id) {
+                ProductLabelp::firstOrCreate(array(
+                    'product_id' => $id,
+                    'labelp_id' => $label_id
+                ));
+            }
+        }
+        return array($ids, $label_ids);
+    }
+
+
+    public function removeLabel(Request $request)
+    {
+        $ids = $request->input('ids');
+        $label_ids = $request->input('label_ids');
+        foreach ($ids as $id) {
+            foreach ($label_ids as $label_id) {
+                ProductLabelp::where('product_id', $id)
+                    ->where('labelp_id', $label_id)->delete();
+            }
+        }
+        return array($ids, $label_ids);
+    }
+
+    public function removeSuplier(Request $request)
+    {
+        $ids = $request->input('ids');
+        $suplier_ids = $request->input('suplier_ids');
+        foreach ($ids as $id) {
+            foreach ($suplier_ids as $suplier_id) {
+                ProductSuplier::where('product_id', $id)
+                    ->where('suplier_id', $suplier_id)->delete();
+            }
+        }
+        return array($ids, $suplier_id);
+    }
+
+    public function addSuplier(Request $request)
+    {
+        $ids = $request->input('ids');
+        $suplier_ids = $request->input('suplier_ids');
+        foreach ($ids as $id) {
+            foreach ($suplier_ids as $suplier_id) {
+                ProductSuplier::firstOrCreate(array(
+                    'product_id' => $id,
+                    'suplier_id' => $suplier_id
+                ));
+            }
+        }
+        return array($ids, $suplier_id);
+    }
     /**
      * Show the form for creating a new resource.
      *

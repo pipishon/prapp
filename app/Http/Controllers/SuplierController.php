@@ -81,6 +81,7 @@ class SuplierController extends Controller
      */
     public function destroy(Suplier $suplier)
     {
+        $suplier->delete();
         //
     }
 }
