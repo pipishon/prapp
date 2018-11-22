@@ -44,6 +44,7 @@ Route::prefix('product')->group(function () {
   Route::get('removelabel', 'ProductController@removeLabel');
   Route::get('addsuplier', 'ProductController@addSuplier');
   Route::get('removesuplier', 'ProductController@removeSuplier');
+  Route::get('setpurchaseprice', 'ProductController@setPurchasePrice');
 });
 
 Route::resource('messages', 'MessageController');

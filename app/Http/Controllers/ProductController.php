@@ -34,13 +34,26 @@ class ProductController extends Controller
           'total' => $products->count(),
           'supliers' => ProductSuplier::all()->count(),
       );
-      $products = $products->with('labels')->with('supliers')->paginate($per_page);
+      $products = $products->with('labels')->with('supliers')->orderBy('name')->paginate($per_page);
 
       $custom = collect([
         'stats' => $stats,
       ]);
       $products = $custom->merge($products);
       return $products;
+    }
+
+    public function setPurchasePrice(Request $request)
+    {
+        $ids = $request->input('ids');
+        $price = floatval(str_replace(',','.', $request->input('price')));
+        foreach ($ids as $id) {
+            $product = Product::find($id);
+            $product->purchase_price = $price;
+            $product->margin = ($product->price - $price) * 100 / $product->price;
+            $product->save();
+        }
+        return array($ids);
     }
 
     public function addLabel(Request $request)

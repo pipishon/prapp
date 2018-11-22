@@ -4,7 +4,7 @@
       :items="list"
       :fields="fields"
       :notstriped="true"
-      :search="['sku', 'name', 'category']"
+      :search="['sku', 'name', 'category', 'suplier']"
       @search="onSearch"
       :select-all="true"
       class="mb-5"
@@ -49,6 +49,11 @@
                     </v-menu>
                   </div>
                 </v-list-tile>
+                <v-list-tile>
+                    <div style="width: 100%; padding: 0 16px; cursor: pointer;" @click="showMassPriceDialog = true">
+                      <span >Закупочная цена</span>
+                    </div>
+                </v-list-tile>
               </v-list>
             </v-menu>
               <v-icon v-if="selected.length && isMassBusy" class="mass-loader">hourglass_empty</v-icon>
@@ -84,11 +89,13 @@
           <td>
           </td>
           <td>
+            {{item.purchase_price}}
           </td>
           <td>
             {{item.price}}
           </td>
           <td>
+            <span v-if="item.margin">{{item.margin.toFixed(2)}}</span>
           </td>
           <td>
             <div v-for="item in item.labels">{{item.name}}</div>
@@ -181,6 +188,14 @@
           </v-list>
         </div>
     </v-navigation-drawer>
+    <v-dialog  v-model="showMassPriceDialog" width="300" persistent @keydown.esc="showMassPriceDialog = false">
+      <v-card class="pa-4">
+        <v-text-field v-model="purchasePrice" label="Закупочная цена"></v-text-field>
+        <v-card-actions>
+          <v-btn flat @click="setPurchasePrice" > Установить для {{selected.length}} </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -189,6 +204,8 @@
     export default {
       data() {
         return {
+          purchasePrice: 0,
+          showMassPriceDialog: false,
           stats: {},
           tableWidths: {},
           perPage: 30,
@@ -242,6 +259,11 @@
       methods: {
         ...mapMutations(['massSelection']),
         ...mapActions(['massAction', 'updateSettings']),
+        setPurchasePrice () {
+          this.massAction({fnName: 'massPurchasePrice', selected: this.selected, price: this.purchasePrice})
+          this.purchasePrice = 0
+          this.showMassPriceDialog = false
+        },
         updateWidths () {
           this.updateSettings({name: 'product_table_widths', value: JSON.stringify(this.tableWidths)})
         },

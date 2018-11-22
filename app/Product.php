@@ -21,6 +21,13 @@ class Product extends Model
         $query = $query->where('price', '>', $input['price_from'])->where('price', '<', $input['price_to']);
       }
 
+      if (isset($input['suplier']) && $input['suplier'] != '') {
+          $query = $query->join('product_supliers', 'product_supliers.product_id', 'products.id')
+              ->join('supliers', 'product_supliers.suplier_id', 'supliers.id')
+              ->select('products.*')
+              ->where('supliers.name', 'like', '%'.$input['suplier'].'%');
+      }
+
 
       if (isset($input['order_by'])) {
         $query = $query->orderBy($input['order_by'], $input['order_direction']);

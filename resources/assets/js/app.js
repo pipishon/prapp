@@ -135,6 +135,14 @@ const store = new Vuex.Store({
         console.log(res.data)
       })
     },
+    massPurchasePrice ({commit}, data) {
+      const ids = data.selected.map((el) => el = el.id)
+      const price = data.price
+      axios.get('api/product/setpurchaseprice', {params: {ids, price}}).then((res) => {
+        commit('setMassBusy', false)
+        console.log(res.data)
+      })
+    },
     massLabelAdd ({commit}, data) {
       const ids = data.selected.map((el) => el = el.id)
       const label_ids = data.items
