@@ -99,6 +99,7 @@
     export default {
       data() {
         return {
+          autoUpdateInterval: null,
           autoUpdate: false,
           listLoading: false,
           perPage: 20,
@@ -285,13 +286,16 @@
       mounted() {
         this.tableWidths = (typeof(this.settings.order_table_widths) != 'undefined') ? JSON.parse(this.settings.order_table_widths) : {}
         this.getList()
-        setInterval(() => {
+        this.autoUpdateInterval = setInterval(() => {
           if (this.selected.length == 0) {
             this.autoUpdate = true
             this.getList()
           }
           console.log('interval')
         }, 120000)
+      },
+      destroyed() {
+         clearInterval(this.autoUpdateInterval)
       }
     }
 </script>

@@ -4,7 +4,7 @@
       :items="list"
       :fields="fields"
       :notstriped="true"
-      :search="['sku', 'name', 'category', 'suplier']"
+      :search="['sku', 'name', 'category', 'suplier', 'availability']"
       @search="onSearch"
       :select-all="true"
       class="mb-5"
@@ -74,6 +74,8 @@
             {{item.sku}}
           </td>
           <td>
+            <div>{{item.status}}</div>
+            <div>{{item.presence}}</div>
           </td>
           <td>
             {{item.category}}

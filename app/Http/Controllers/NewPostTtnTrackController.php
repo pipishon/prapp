@@ -16,7 +16,7 @@ class NewPostTtnTrackController extends Controller
       $input = $request->all();
       $per_page = (isset($input['per_page'])) ? (int) $input['per_page'] : 20;
 
-      $np_track = new NewPostTtnTrack;
+      $np_track = NewPostTtnTrack::with('ttn')->search($input);
 
       if (!$request->has('all')) {
           //$np_track = $np_track->whereNotIn('status_code', array(9, 11));
@@ -44,7 +44,7 @@ class NewPostTtnTrackController extends Controller
         )
       ));
 
-      $np_track = $np_track->search($input)->with('ttn')->paginate($per_page);
+      $np_track = $np_track->paginate($per_page);
       $np_track = $custom->merge($np_track);
       return $np_track;
     }

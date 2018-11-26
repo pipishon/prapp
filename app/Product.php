@@ -21,6 +21,12 @@ class Product extends Model
         $query = $query->where('price', '>', $input['price_from'])->where('price', '<', $input['price_to']);
       }
 
+      if (isset($input['availability']) && $input['availability'] != '') {
+        $query = $query->where(function ($query) use ($input) {
+            $query->where('status', $input['availability'])->orWhere('presence', $input['availability']);
+        });
+      }
+
       if (isset($input['suplier']) && $input['suplier'] != '') {
           $query = $query->join('product_supliers', 'product_supliers.product_id', 'products.id')
               ->join('supliers', 'product_supliers.suplier_id', 'supliers.id')
