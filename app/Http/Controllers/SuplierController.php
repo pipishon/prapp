@@ -14,8 +14,7 @@ class SuplierController extends Controller
      */
     public function index()
     {
-        return Suplier::all();
-        //
+        return Suplier::withCount('products')->orderBy('name')->get();
     }
 
     /**

@@ -4,7 +4,7 @@
       :items="list"
       :fields="fields"
       :notstriped="true"
-      :search="['sku', 'name', 'category', 'suplier', 'availability']"
+      :search="['sku', 'name', 'category', 'suplier']"
       @search="onSearch"
       :select-all="true"
       class="mb-5"
@@ -74,8 +74,8 @@
             {{item.sku}}
           </td>
           <td>
-            <div>{{item.status}}</div>
-            <div>{{item.presence}}</div>
+            <div>{{mapStatus[item.status]}}</div>
+            <div>{{mapPresence[item.presence]}}</div>
           </td>
           <td>
             {{item.category}}
@@ -107,12 +107,16 @@
       <template slot="footer">
         <td colspan="7">Всего: {{stats.total}} шт ({{(stats.total * 100/stats.all).toFixed(2)}} %)</td>
         <td>{{(stats.supliers * 100/stats.all).toFixed(2)}} %</td>
-        <td colspan="6"></td>
+        <td colspan="2"></td>
+        <td>{{((stats.all - stats.purchase_price) * 100/stats.all).toFixed(2)}} %</td>
+        <td colspan="3"></td>
       </template>
     </btable>
 
     <v-footer fixed class="pa-3" >
       <span>Всего товаров: {{stats.all}}  шт</span>
+      <v-btn  flat @click="showAvailable" :class="{primary: footerAvailable}">B наличии</v-btn>
+      <v-btn  flat @click="showOnDisplay" :class="{primary: footerOnDisplay}">Опубликованные</v-btn>
       <v-spacer></v-spacer>
       <pagination :current="curPage" :last="lastPage" @change="loadPage"/>
       <v-btn @click="ShowSuplierDrawer = !ShowSuplierDrawer">Поставщики</v-btn>
@@ -140,7 +144,7 @@
                 ripple
               >
                 <v-list-tile-content>
-                  <v-list-tile-title>{{ item.name }}</v-list-tile-title>
+                  <v-list-tile-title>{{ item.name }} ({{item.products_count}})</v-list-tile-title>
                 </v-list-tile-content>
 
                 <v-list-tile-action>
@@ -206,6 +210,23 @@
     export default {
       data() {
         return {
+          footerAvailable: false,
+          footerOnDisplay: true,
+          mapStatus: {
+            'on_display': 'Опубликован',
+            'draft': '',
+            'deleted': 'Удален',
+            'not_on_display': 'Не опубликован',
+            'editing_required': 'Необходимо редактирование',
+            'approval_pending': 'Ожидается подтверждение',
+            'deleted_by_moderator': 'Удален модератором'
+          },
+          mapPresence: {
+            'order': 'Заказ',
+            'service': 'Сервис',
+            'not_available': 'Нет в наличии',
+            'available': 'В наличии'
+          },
           purchasePrice: 0,
           showMassPriceDialog: false,
           stats: {},
@@ -261,6 +282,16 @@
       methods: {
         ...mapMutations(['massSelection']),
         ...mapActions(['massAction', 'updateSettings']),
+        showAvailable () {
+          this.footerAvailable  = !this.footerAvailable
+          this.searchQuery.available = this.footerAvailable
+          this.getList()
+        },
+        showOnDisplay () {
+          this.footerOnDisplay  = !this.footerOnDisplay
+          this.searchQuery.on_display = this.footerOnDisplay
+          this.getList()
+        },
         setPurchasePrice () {
           this.massAction({fnName: 'massPurchasePrice', selected: this.selected, price: this.purchasePrice})
           this.purchasePrice = 0
@@ -347,6 +378,7 @@
         }
       },
       mounted() {
+        this.searchQuery.on_display = true
         this.tableWidths = (typeof(this.settings.product_table_widths) != 'undefined') ? JSON.parse(this.settings.product_table_widths) : {}
         this.getLabels()
         this.getSupliers()

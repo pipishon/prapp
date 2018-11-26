@@ -29,11 +29,21 @@ class ProductController extends Controller
       $per_page = (isset($input['per_page'])) ? (int) $input['per_page'] : 30;
       $products = Product::search($input);
 
-      $stats = array(
-          'all' => Product::count(),
-          'total' => $products->count(),
-          'supliers' => ProductSuplier::all()->count(),
-      );
+      if (isset($input['on_display']) && $input['on_display'] == 'true') {
+          $stats = array(
+              'all' => Product::where('status', 'on_display')->count(),
+              'total' => $products->count(),
+              'supliers' => Product::where('status', 'on_display')->has('supliers')->count(),
+              'purchase_price' => Product::where('status', 'on_display')->whereNull('purchase_price')->count(),
+          );
+      } else {
+          $stats = array(
+              'all' => Product::count(),
+              'total' => $products->count(),
+              'supliers' => Product::has('supliers')->count(),
+              'purchase_price' => Product::whereNull('purchase_price')->count(),
+          );
+      }
       $products = $products->with('labels')->with('supliers')->orderBy('name')->paginate($per_page);
 
       $custom = collect([

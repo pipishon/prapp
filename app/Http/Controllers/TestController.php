@@ -4,26 +4,34 @@ namespace App\Http\Controllers;
 
 use App\PromApi;
 use App\Order;
+use App\Product;
 use App\Customer;
 use App\NewPostCity;
 use App\NewPostApi;
 use App\NewPostTtnTrack;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class TestController extends Controller
 {
     public function index (Request $request)
     {
-      return NewPostCity::isAddressValid('Київ, Відділення №67 (до 30 кг): вул. К. Данькевича, 16 (Троєщина)');
+        $group_num = $request->input('group');
+        $last_id = $request->input('last_id');
         $api = new PromApi;
-        $prom_id = '63940114';
-        $prom_order = $api->getItem($prom_id, 'orders')['order'];
-        $price = $prom_order['products'][5]['price'];
-        $price = preg_replace('/\s+/u', '', $price);
-        $price = str_replace(',','.', $price);
-        $price = floatval($price);
-        dd($price);
+        $limit = '100';
+      $groups = DB::table('products')->groupBy('group_id')->select('group_id')->get()->pluck('group_id')->toArray();
+        $prom_products = $api->getList('products', array('group_id' => $groups[$group_num], 'last_id'=> $last_id, 'limit' => $limit))['products'];
+        foreach ($prom_products as $prom_product) {
+            Product::where('prom_id', $prom_product['id'])->update(array(
+                'status' => $prom_product['status'],
+                'presence' => $prom_product['presence'],
+            ));
+        }
+
+        //    $api->getList('groups')['groups'];
+        dd(array_column($prom_products, 'id'), count($groups));
     }
     /*
         $ttn = $request->input('ttn');

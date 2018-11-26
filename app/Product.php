@@ -21,11 +21,19 @@ class Product extends Model
         $query = $query->where('price', '>', $input['price_from'])->where('price', '<', $input['price_to']);
       }
 
-      if (isset($input['availability']) && $input['availability'] != '') {
+      if (isset($input['available']) && $input['available'] == 'true') {
+          $query = $query->where('presence', 'available');
+      }
+
+      if (isset($input['on_display']) && $input['on_display'] == 'true') {
+          $query = $query->where('status', 'on_display');
+      }
+
+      /*if (isset($input['availability']) && $input['availability'] != '') {
         $query = $query->where(function ($query) use ($input) {
             $query->where('status', $input['availability'])->orWhere('presence', $input['availability']);
         });
-      }
+      }*/
 
       if (isset($input['suplier']) && $input['suplier'] != '') {
           $query = $query->join('product_supliers', 'product_supliers.product_id', 'products.id')
