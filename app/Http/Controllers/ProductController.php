@@ -6,6 +6,7 @@ use App\Product;
 use App\ProductLabelp;
 use App\ProductSuplier;
 use App\Order;
+use App\ProductSuplierLink;
 use App\PromApi;
 use Illuminate\Http\Request;
 
@@ -44,7 +45,7 @@ class ProductController extends Controller
               'purchase_price' => Product::whereNull('purchase_price')->count(),
           );
       }
-      $products = $products->with('labels')->with('supliers')->orderBy('name')->paginate($per_page);
+      $products = $products->with(['labels', 'supliers', 'suplierlinks'])->withCount('orders')->orderBy('name')->paginate($per_page);
 
       $custom = collect([
         'stats' => $stats,
@@ -122,6 +123,30 @@ class ProductController extends Controller
         }
         return array($ids, $suplier_id);
     }
+
+    public function addSuplierLink(Request $request)
+    {
+        $link = ProductSuplierLink::firstOrCreate(array(
+            'product_id' => $request->input('id'),
+            'link' => $request->input('link'),
+        ));
+        return $link;
+    }
+
+    public function updateSuplierLink(Request $request)
+    {
+        if ($request->input('link') == '') {
+            ProductSuplierLink::where('id', $request->input('link_id'))->delete();
+            return 'deleted';
+        }
+        $link = ProductSuplierLink::updateOrCreate(array(
+            'id' => $request->input('link_id'),
+            'product_id' => $request->input('id'),
+        ), array(
+            'link' => $request->input('link'),
+        ));
+        return $link;
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -174,7 +199,12 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        //
+        $input = $request->except(array('orders_count', 'labels', 'supliers', 'suplierlinks'));
+
+        $price = $input['purchase_price'];
+        $input['margin'] = ($input['price'] - $price) * 100 / $input['price'];
+        $product->update($input);
+        return $product;
     }
 
     /**

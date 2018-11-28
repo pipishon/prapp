@@ -68,7 +68,7 @@
             <img width="50" :src="item.main_image" />
           </td>
           <td>
-            {{item.name}}
+            <product @update="getList" :product="item">{{item.name}}</product>
           </td>
           <td>
             {{item.sku}}
@@ -81,14 +81,12 @@
             {{item.category}}
           </td>
           <td>
-            {{item.units}}
-          </td>
-          <td>
             <div v-for="item in item.supliers">{{item.name}}</div>
           </td>
           <td>
           </td>
           <td>
+            {{item.orders_count}}
           </td>
           <td>
             {{item.purchase_price}}
@@ -207,7 +205,11 @@
 
 <script>
     import { mapActions, mapGetters, mapMutations } from 'vuex'
+    import product from './Product'
     export default {
+      components: {
+        product
+      },
       data() {
         return {
           footerAvailable: false,
@@ -246,7 +248,6 @@
             { key: 'sku', label: 'Артикул' },
             { key: 'availability', label: 'Наличие' },
             { key: 'category', label: 'Группа' },
-            { key: 'units', label: 'Ед. изм.' },
             { key: 'suplier', label: 'Поставщик' },
             { key: 'min_quantity', label: 'Мин. остаток' },
             { key: 'orders', label: 'Заказы' },

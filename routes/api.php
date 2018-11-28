@@ -41,6 +41,8 @@ Route::resource('products', 'ProductController');
 
 Route::prefix('product')->group(function () {
   Route::get('addlabel', 'ProductController@addLabel');
+  Route::get('addsuplierlink', 'ProductController@addSuplierLink');
+  Route::get('updatesuplierlink', 'ProductController@updateSuplierLink');
   Route::get('removelabel', 'ProductController@removeLabel');
   Route::get('addsuplier', 'ProductController@addSuplier');
   Route::get('removesuplier', 'ProductController@removeSuplier');

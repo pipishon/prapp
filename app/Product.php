@@ -55,8 +55,18 @@ class Product extends Model
     return $this->hasMany('App\ProductSuplier');
   }
 
+  public function suplierlinks()
+  {
+    return $this->hasMany('App\ProductSuplierLink');
+  }
+
   public function labels()
   {
     return $this->hasMany('App\ProductLabelp');
+  }
+
+  public function orders()
+  {
+    return $this->hasMany('App\OrderProduct');
   }
 }
