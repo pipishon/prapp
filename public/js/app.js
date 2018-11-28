@@ -100139,20 +100139,46 @@ var render = function() {
                         _c(
                           "div",
                           [
+                            _c("v-text-field", {
+                              staticClass: "ma-0 pa-0",
+                              staticStyle: {
+                                width: "80%",
+                                display: "inline-block"
+                              },
+                              attrs: { "hide-details": true },
+                              model: {
+                                value: _vm.suplierLink,
+                                callback: function($$v) {
+                                  _vm.suplierLink = $$v
+                                },
+                                expression: "suplierLink"
+                              }
+                            }),
+                            _c(
+                              "v-btn",
+                              {
+                                attrs: { icon: "" },
+                                on: { click: _vm.addSuplierLink }
+                              },
+                              [_c("v-icon", [_vm._v("add")])],
+                              1
+                            ),
+                            _vm._v(" "),
                             _vm._l(_vm.product.suplierlinks, function(item) {
                               return _c(
                                 "div",
                                 [
                                   _c("v-text-field", {
                                     staticClass: "ma-0 pa-0",
+                                    staticStyle: {
+                                      width: "80%",
+                                      display: "inline-block"
+                                    },
                                     attrs: {
                                       "hide-details": true,
                                       "append-icon": "link"
                                     },
                                     on: {
-                                      blur: function($event) {
-                                        _vm.updateSuplierLink(item)
-                                      },
                                       "click:append": function($event) {
                                         _vm.goToLink(item.link)
                                       }
@@ -100164,26 +100190,24 @@ var render = function() {
                                       },
                                       expression: "item.link"
                                     }
-                                  })
+                                  }),
+                                  _c(
+                                    "v-btn",
+                                    {
+                                      attrs: { icon: "" },
+                                      on: {
+                                        click: function($event) {
+                                          item.link = ""
+                                          _vm.updateSuplierLink(item)
+                                        }
+                                      }
+                                    },
+                                    [_c("v-icon", [_vm._v("remove")])],
+                                    1
+                                  )
                                 ],
                                 1
                               )
-                            }),
-                            _vm._v(" "),
-                            _c("v-text-field", {
-                              staticClass: "ma-0 pa-0",
-                              attrs: {
-                                "hide-details": true,
-                                "append-icon": "add"
-                              },
-                              on: { "click:append": _vm.addSuplierLink },
-                              model: {
-                                value: _vm.suplierLink,
-                                callback: function($$v) {
-                                  _vm.suplierLink = $$v
-                                },
-                                expression: "suplierLink"
-                              }
                             })
                           ],
                           2

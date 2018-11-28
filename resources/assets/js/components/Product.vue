@@ -162,10 +162,10 @@
           </v-flex>
           <v-flex md5 >
             <div>
+              <v-text-field style="width:80%; display: inline-block;" :hide-details="true" class="ma-0 pa-0" v-model="suplierLink" ></v-text-field><v-btn icon @click="addSuplierLink"><v-icon>add</v-icon></v-btn>
               <div v-for="item in product.suplierlinks">
-                <v-text-field :hide-details="true" class="ma-0 pa-0" v-model="item.link" @blur="updateSuplierLink(item)" append-icon="link" @click:append="goToLink(item.link)"></v-text-field>
+                <v-text-field style="width:80%; display: inline-block;" :hide-details="true" class="ma-0 pa-0" v-model="item.link" append-icon="link" @click:append="goToLink(item.link)"></v-text-field><v-btn icon @click="item.link = ''; updateSuplierLink(item)"><v-icon>remove</v-icon></v-btn>
               </div>
-            <v-text-field :hide-details="true" class="ma-0 pa-0" v-model="suplierLink" append-icon="add" @click:append="addSuplierLink"></v-text-field>
             </div>
           </v-flex>
         </v-layout>
