@@ -112,7 +112,7 @@
             <span class="subheading font-weight-medium" >Маржа</span>
           </v-flex>
           <v-flex md1 >
-            <input v-if="product.margin" :value="product.margin.toFixed(2)" readonly>
+            <input :value="(product.margin != null) ? product.margin.toFixed(2) : ''" readonly>
           </v-flex>
         </v-layout>
         <v-layout row align-center class="px-4">
@@ -142,7 +142,7 @@
             <span class="subheading font-weight-medium" >Сорт 1</span>
           </v-flex>
           <v-flex md1 >
-            <input  :value="0" readonly>
+            <input  v-model="product.sort1">
           </v-flex>
         </v-layout>
         <v-layout row align-center class="px-4">
@@ -153,7 +153,7 @@
             <span class="subheading font-weight-medium" >Сорт 2</span>
           </v-flex>
           <v-flex md1 >
-            <input  :value="0" readonly>
+            <input  v-model="product.sort2">
           </v-flex>
         </v-layout>
         <v-layout row class="px-4">
@@ -162,9 +162,19 @@
           </v-flex>
           <v-flex md5 >
             <div>
-              <v-text-field style="width:80%; display: inline-block;" :hide-details="true" class="ma-0 pa-0" v-model="suplierLink" ></v-text-field><v-btn icon @click="addSuplierLink"><v-icon>add</v-icon></v-btn>
-              <div v-for="item in product.suplierlinks">
-                <v-text-field style="width:80%; display: inline-block;" :hide-details="true" class="ma-0 pa-0" v-model="item.link" append-icon="link" @click:append="goToLink(item.link)"></v-text-field><v-btn icon @click="item.link = ''; updateSuplierLink(item)"><v-icon>remove</v-icon></v-btn>
+              <div v-for="(item, index) in product.suplierlinks">
+                <input style="width:80%; display: inline-block;" v-model="item.link" />
+                <span v-if="item.link != ''">
+                  <v-btn icon class="ma-0 pa-0">
+                    <v-icon @click="goToLink(item.link)">link</v-icon>
+                  </v-btn>
+                  <v-btn v-if="index > 0" class="ma-0 pa-0" icon @click="deleteSuplierLink(item)">
+                    <v-icon>delete</v-icon>
+                  </v-btn>
+                </span>
+              </div>
+              <div>
+              <v-btn class="ma-0 pa-0" @click="addSuplierLink" icon ><v-icon class="grey--text" >add_box</v-icon></v-btn>
               </div>
             </div>
           </v-flex>
@@ -172,7 +182,7 @@
       </v-container>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="primary" flat @click="showDialog = false" > Отмена </v-btn>
+        <v-btn color="primary" flat @click="cancel" > Отмена </v-btn>
         <v-btn color="primary" flat @click="save" > Сохранить </v-btn>
         <v-spacer></v-spacer>
       </v-card-actions>
@@ -188,6 +198,24 @@
           suplierLink: '',
         }
       },
+      watch: {
+        product: {
+          handler (val) {
+            if (this.product.suplierlinks.length == 0) {
+              this.addSuplierLink()
+            }
+            this.product.margin = (this.product.purchase_price) ? (this.product.price - this.product.purchase_price) * 100 / this.product.price : null
+          },
+          deep: true
+        },
+        showDialog(val) {
+          if (val) {
+            if (this.product.suplierlinks.length == 0) {
+              this.addSuplierLink()
+            }
+          }
+        }
+      },
       computed: {
       },
       methods: {
@@ -195,22 +223,17 @@
           const win = window.open(link, '_blank');
           win.focus();
         },
-        updateSuplierLink (item) {
-          const params = {id: this.product.id, link: item.link, link_id: item.id}
-          axios.get('api/product/updatesuplierlink', {params}).then((res) => {
-            console.log(res.data)
-            if (item.link == '') {
-              this.product.suplierlinks = this.product.suplierlinks.filter((el) => el.id != item.id)
-            }
-          })
+        deleteSuplierLink (item) {
+          const index = this.product.suplierlinks.indexOf(item)
+          this.product.suplierlinks.splice(index, 1)// = this.product.suplierlinks.filter((el) => el.id != item.id)
         },
         addSuplierLink () {
-          const params = {id: this.product.id, link: this.suplierLink}
-          axios.get('api/product/addsuplierlink', {params}).then((res) => {
-            console.log(res.data)
-            this.product.suplierlinks.push(res.data)
-            this.suplierLink = ''
-          })
+          const params = {product_id: this.product.id, link: this.suplierLink}
+          this.product.suplierlinks.push(params)
+        },
+        cancel () {
+          this.$emit('update')
+          this.showDialog = false
         },
         save () {
           axios.put('api/products/' + this.product.id, {...this.product}).then((res) => {
@@ -234,7 +257,7 @@ input {
   width: 100%;
   border: 1px solid lightgray;
   padding: 3px 10px;
-  border-radius: 5px;
+  border-radius: 0.25rem;
   margin: 10px 0;
 }
 </style>

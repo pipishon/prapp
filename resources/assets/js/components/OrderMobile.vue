@@ -136,7 +136,7 @@ import * as moment from 'moment';
           return this.order.statuses.shipment_date
         },
         orderedProducts: function () {
-          return _.orderBy(this.order.products, 'product.name')
+          return _.orderBy(this.order.products, [ 'product.sort1', 'product.name'])
         },
         maxPrice () {
           return this.order.products.reduce((acc, curr) => {

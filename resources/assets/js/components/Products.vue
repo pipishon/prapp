@@ -49,9 +49,19 @@
                     </v-menu>
                   </div>
                 </v-list-tile>
-                <v-list-tile>
-                    <div style="width: 100%; padding: 0 16px; cursor: pointer;" @click="showMassPriceDialog = true">
-                      <span >Закупочная цена</span>
+                <v-list-tile
+                    v-for="(label, name) in {
+                    'purchase_price': 'Закупочная цена',
+                    'sort1': 'Сортировка 1',
+                    'sort2': 'Сортировка 2',
+                    }"
+                    :key="name"
+                  >
+                  <div
+                    style="width: 100%; padding: 0 16px; cursor: pointer;"
+                    @click="mass.name = name; mass.label = label; showMassDialog = true"
+                    >
+                    <span >{{label}}</span>
                     </div>
                 </v-list-tile>
               </v-list>
@@ -100,14 +110,20 @@
           <td>
             <div v-for="item in item.labels">{{item.name}}</div>
           </td>
+          <td>
+            {{item.sort1}}
+          </td>
+          <td>
+            {{item.sort2}}
+          </td>
         </tr>
       </template>
       <template slot="footer">
-        <td colspan="7">Всего: {{stats.total}} шт ({{(stats.total * 100/stats.all).toFixed(2)}} %)</td>
+        <td colspan="6">Всего: {{stats.total}} шт ({{(stats.total * 100/stats.all).toFixed(2)}} %)</td>
         <td>{{(stats.supliers * 100/stats.all).toFixed(2)}} %</td>
         <td colspan="2"></td>
         <td>{{((stats.all - stats.purchase_price) * 100/stats.all).toFixed(2)}} %</td>
-        <td colspan="3"></td>
+        <td colspan="5"></td>
       </template>
     </btable>
 
@@ -192,11 +208,11 @@
           </v-list>
         </div>
     </v-navigation-drawer>
-    <v-dialog  v-model="showMassPriceDialog" width="300" persistent @keydown.esc="showMassPriceDialog = false">
+    <v-dialog  v-model="showMassDialog" width="300" persistent @keydown.esc="showMassDialog = false">
       <v-card class="pa-4">
-        <v-text-field v-model="purchasePrice" label="Закупочная цена"></v-text-field>
+        <v-text-field v-model="mass.value" :label="mass.label"></v-text-field>
         <v-card-actions>
-          <v-btn flat @click="setPurchasePrice" > Установить для {{selected.length}} </v-btn>
+          <v-btn flat @click="processMass" > Установить для {{selected.length}} </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -212,6 +228,7 @@
       },
       data() {
         return {
+          mass: {label: '', name: '', value: ''},
           footerAvailable: false,
           footerOnDisplay: true,
           mapStatus: {
@@ -230,7 +247,7 @@
             'available': 'В наличии'
           },
           purchasePrice: 0,
-          showMassPriceDialog: false,
+          showMassDialog: false,
           stats: {},
           tableWidths: {},
           perPage: 30,
@@ -255,6 +272,8 @@
             { key: 'price', label: 'Цена продажи' },
             { key: 'marga', label: 'Маржа' },
             { key: 'label', label: 'Метки товара' },
+            { key: 'sort1', label: 'Сорт1' },
+            { key: 'sort2', label: 'Сорт2' },
           ],
           list: [],
           groups: [],
@@ -293,10 +312,17 @@
           this.searchQuery.on_display = this.footerOnDisplay
           this.getList()
         },
-        setPurchasePrice () {
-          this.massAction({fnName: 'massPurchasePrice', selected: this.selected, price: this.purchasePrice})
-          this.purchasePrice = 0
-          this.showMassPriceDialog = false
+        processMass () {
+          this.massAction({
+            fnName: 'massUpdateProduct',
+            selected: this.selected,
+            name: this.mass.name,
+            value: this.mass.value,
+          })
+          this.mass.label = ''
+          this.mass.value = ''
+          this.mass.name = ''
+          this.showMassDialog = false
         },
         updateWidths () {
           this.updateSettings({name: 'product_table_widths', value: JSON.stringify(this.tableWidths)})

@@ -135,10 +135,11 @@ const store = new Vuex.Store({
         console.log(res.data)
       })
     },
-    massPurchasePrice ({commit}, data) {
+    massUpdateProduct ({commit}, data) {
       const ids = data.selected.map((el) => el = el.id)
-      const price = data.price
-      axios.get('api/product/setpurchaseprice', {params: {ids, price}}).then((res) => {
+      const name = data.name
+      const value = data.value
+      axios.get('api/product/massupdate', {params: {ids, name, value}}).then((res) => {
         commit('setMassBusy', false)
         console.log(res.data)
       })

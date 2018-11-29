@@ -54,14 +54,20 @@ class ProductController extends Controller
       return $products;
     }
 
-    public function setPurchasePrice(Request $request)
+    public function massUpdate(Request $request)
     {
         $ids = $request->input('ids');
-        $price = floatval(str_replace(',','.', $request->input('price')));
+        $name = $request->input('name');
+        $value = $request->input('value');
+        if ($name == 'purchase_price') {
+            $value = floatval(str_replace(',','.', $value));
+        }
         foreach ($ids as $id) {
             $product = Product::find($id);
-            $product->purchase_price = $price;
-            $product->margin = ($product->price - $price) * 100 / $product->price;
+            $product->{$name} = $value;
+            if ($name == 'purchase_price') {
+                $product->margin = ($product->price - $value) * 100 / $product->price;
+            }
             $product->save();
         }
         return array($ids);
@@ -199,10 +205,24 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $input = $request->except(array('orders_count', 'labels', 'supliers', 'suplierlinks'));
+        $input = $request->except(array('orders_count', 'labels', 'supliers'));
+        $link_ids = array();
+        foreach ($input['suplierlinks'] as $link) {
+            if (!$link['link']) continue;
+            if (isset($link['id'])) {
+                $suplier_link = ProductSuplierLink::find($link['id']);
+                $suplier_link->update($link);
+            } else {
+                $suplier_link = ProductSuplierLink::create($link);
+            }
 
-        $price = $input['purchase_price'];
-        $input['margin'] = ($input['price'] - $price) * 100 / $input['price'];
+            $link_ids[] = $suplier_link->id;
+        }
+        ProductSuplierLink::where('product_id', $product->id)->whereNotIn('id', $link_ids)->delete();
+        unset($input['suplierlinks']);
+
+        /*$price = $input['purchase_price'];
+        $input['margin'] = ($input['price'] - $price) * 100 / $input['price'];*/
         $product->update($input);
         return $product;
     }

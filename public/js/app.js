@@ -34473,14 +34473,15 @@ var store = new __WEBPACK_IMPORTED_MODULE_2_vuex__["a" /* default */].Store({
         console.log(res.data);
       });
     },
-    massPurchasePrice: function massPurchasePrice(_ref3, data) {
+    massUpdateProduct: function massUpdateProduct(_ref3, data) {
       var commit = _ref3.commit;
 
       var ids = data.selected.map(function (el) {
         return el = el.id;
       });
-      var price = data.price;
-      axios.get('api/product/setpurchaseprice', { params: { ids: ids, price: price } }).then(function (res) {
+      var name = data.name;
+      var value = data.value;
+      axios.get('api/product/massupdate', { params: { ids: ids, name: name, value: value } }).then(function (res) {
         commit('setMassBusy', false);
         console.log(res.data);
       });
@@ -98966,6 +98967,22 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -98975,6 +98992,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
   },
   data: function data() {
     return {
+      mass: { label: '', name: '', value: '' },
       footerAvailable: false,
       footerOnDisplay: true,
       mapStatus: {
@@ -98993,7 +99011,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
         'available': 'В наличии'
       },
       purchasePrice: 0,
-      showMassPriceDialog: false,
+      showMassDialog: false,
       stats: {},
       tableWidths: {},
       perPage: 30,
@@ -99005,7 +99023,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
       LabelToAdd: null,
       supliers: [],
       labels: [],
-      fields: [{ key: 'main_image', label: 'Фото' }, { key: 'name', label: 'Название' }, { key: 'sku', label: 'Артикул' }, { key: 'availability', label: 'Наличие' }, { key: 'category', label: 'Группа' }, { key: 'suplier', label: 'Поставщик' }, { key: 'min_quantity', label: 'Мин. остаток' }, { key: 'orders', label: 'Заказы' }, { key: 'purchase_price', label: 'Закуп цена' }, { key: 'price', label: 'Цена продажи' }, { key: 'marga', label: 'Маржа' }, { key: 'label', label: 'Метки товара' }],
+      fields: [{ key: 'main_image', label: 'Фото' }, { key: 'name', label: 'Название' }, { key: 'sku', label: 'Артикул' }, { key: 'availability', label: 'Наличие' }, { key: 'category', label: 'Группа' }, { key: 'suplier', label: 'Поставщик' }, { key: 'min_quantity', label: 'Мин. остаток' }, { key: 'orders', label: 'Заказы' }, { key: 'purchase_price', label: 'Закуп цена' }, { key: 'price', label: 'Цена продажи' }, { key: 'marga', label: 'Маржа' }, { key: 'label', label: 'Метки товара' }, { key: 'sort1', label: 'Сорт1' }, { key: 'sort2', label: 'Сорт2' }],
       list: [],
       groups: [],
       curPage: 0,
@@ -99042,10 +99060,17 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
       this.searchQuery.on_display = this.footerOnDisplay;
       this.getList();
     },
-    setPurchasePrice: function setPurchasePrice() {
-      this.massAction({ fnName: 'massPurchasePrice', selected: this.selected, price: this.purchasePrice });
-      this.purchasePrice = 0;
-      this.showMassPriceDialog = false;
+    processMass: function processMass() {
+      this.massAction({
+        fnName: 'massUpdateProduct',
+        selected: this.selected,
+        name: this.mass.name,
+        value: this.mass.value
+      });
+      this.mass.label = '';
+      this.mass.value = '';
+      this.mass.name = '';
+      this.showMassDialog = false;
     },
     updateWidths: function updateWidths() {
       this.updateSettings({ name: 'product_table_widths', value: JSON.stringify(this.tableWidths) });
@@ -99244,7 +99269,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n.ttl[data-v-2f444cf0] {\r\n  font-size: 16px;\r\n  padding-top: 25px;\r\n  color: red;\n}\ninput[data-v-2f444cf0] {\r\n  width: 100%;\r\n  border: 1px solid lightgray;\r\n  padding: 3px 10px;\r\n  border-radius: 5px;\r\n  margin: 10px 0;\n}\r\n", ""]);
+exports.push([module.i, "\n.ttl[data-v-2f444cf0] {\r\n  font-size: 16px;\r\n  padding-top: 25px;\r\n  color: red;\n}\ninput[data-v-2f444cf0] {\r\n  width: 100%;\r\n  border: 1px solid lightgray;\r\n  padding: 3px 10px;\r\n  border-radius: 0.25rem;\r\n  margin: 10px 0;\n}\r\n", ""]);
 
 // exports
 
@@ -99438,6 +99463,16 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['product'],
@@ -99448,42 +99483,50 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     };
   },
 
+  watch: {
+    product: {
+      handler: function handler(val) {
+        if (this.product.suplierlinks.length == 0) {
+          this.addSuplierLink();
+        }
+        this.product.margin = this.product.purchase_price ? (this.product.price - this.product.purchase_price) * 100 / this.product.price : null;
+      },
+
+      deep: true
+    },
+    showDialog: function showDialog(val) {
+      if (val) {
+        if (this.product.suplierlinks.length == 0) {
+          this.addSuplierLink();
+        }
+      }
+    }
+  },
   computed: {},
   methods: {
     goToLink: function goToLink(link) {
       var win = window.open(link, '_blank');
       win.focus();
     },
-    updateSuplierLink: function updateSuplierLink(item) {
-      var _this = this;
-
-      var params = { id: this.product.id, link: item.link, link_id: item.id };
-      axios.get('api/product/updatesuplierlink', { params: params }).then(function (res) {
-        console.log(res.data);
-        if (item.link == '') {
-          _this.product.suplierlinks = _this.product.suplierlinks.filter(function (el) {
-            return el.id != item.id;
-          });
-        }
-      });
+    deleteSuplierLink: function deleteSuplierLink(item) {
+      var index = this.product.suplierlinks.indexOf(item);
+      this.product.suplierlinks.splice(index, 1); // = this.product.suplierlinks.filter((el) => el.id != item.id)
     },
     addSuplierLink: function addSuplierLink() {
-      var _this2 = this;
-
-      var params = { id: this.product.id, link: this.suplierLink };
-      axios.get('api/product/addsuplierlink', { params: params }).then(function (res) {
-        console.log(res.data);
-        _this2.product.suplierlinks.push(res.data);
-        _this2.suplierLink = '';
-      });
+      var params = { product_id: this.product.id, link: this.suplierLink };
+      this.product.suplierlinks.push(params);
+    },
+    cancel: function cancel() {
+      this.$emit('update');
+      this.showDialog = false;
     },
     save: function save() {
-      var _this3 = this;
+      var _this = this;
 
       axios.put('api/products/' + this.product.id, _extends({}, this.product)).then(function (res) {
-        _this3.$emit('update');
-        _this3.product.magrin = res.data.margin;
-        _this3.showDialog = false;
+        _this.$emit('update');
+        _this.product.magrin = res.data.margin;
+        _this.showDialog = false;
       });
     }
   },
@@ -99960,12 +100003,15 @@ var render = function() {
                       ),
                       _vm._v(" "),
                       _c("v-flex", { attrs: { md1: "" } }, [
-                        _vm.product.margin
-                          ? _c("input", {
-                              attrs: { readonly: "" },
-                              domProps: { value: _vm.product.margin.toFixed(2) }
-                            })
-                          : _vm._e()
+                        _c("input", {
+                          attrs: { readonly: "" },
+                          domProps: {
+                            value:
+                              _vm.product.margin != null
+                                ? _vm.product.margin.toFixed(2)
+                                : ""
+                          }
+                        })
                       ])
                     ],
                     1
@@ -100069,8 +100115,27 @@ var render = function() {
                       _vm._v(" "),
                       _c("v-flex", { attrs: { md1: "" } }, [
                         _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: 0 }
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: _vm.product.sort1,
+                              expression: "product.sort1"
+                            }
+                          ],
+                          domProps: { value: _vm.product.sort1 },
+                          on: {
+                            input: function($event) {
+                              if ($event.target.composing) {
+                                return
+                              }
+                              _vm.$set(
+                                _vm.product,
+                                "sort1",
+                                $event.target.value
+                              )
+                            }
+                          }
                         })
                       ])
                     ],
@@ -100111,8 +100176,27 @@ var render = function() {
                       _vm._v(" "),
                       _c("v-flex", { attrs: { md1: "" } }, [
                         _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: 0 }
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: _vm.product.sort2,
+                              expression: "product.sort2"
+                            }
+                          ],
+                          domProps: { value: _vm.product.sort2 },
+                          on: {
+                            input: function($event) {
+                              if ($event.target.composing) {
+                                return
+                              }
+                              _vm.$set(
+                                _vm.product,
+                                "sort2",
+                                $event.target.value
+                              )
+                            }
+                          }
                         })
                       ])
                     ],
@@ -100139,76 +100223,112 @@ var render = function() {
                         _c(
                           "div",
                           [
-                            _c("v-text-field", {
-                              staticClass: "ma-0 pa-0",
-                              staticStyle: {
-                                width: "80%",
-                                display: "inline-block"
-                              },
-                              attrs: { "hide-details": true },
-                              model: {
-                                value: _vm.suplierLink,
-                                callback: function($$v) {
-                                  _vm.suplierLink = $$v
-                                },
-                                expression: "suplierLink"
-                              }
-                            }),
-                            _c(
-                              "v-btn",
-                              {
-                                attrs: { icon: "" },
-                                on: { click: _vm.addSuplierLink }
-                              },
-                              [_c("v-icon", [_vm._v("add")])],
-                              1
-                            ),
-                            _vm._v(" "),
-                            _vm._l(_vm.product.suplierlinks, function(item) {
-                              return _c(
-                                "div",
-                                [
-                                  _c("v-text-field", {
-                                    staticClass: "ma-0 pa-0",
-                                    staticStyle: {
-                                      width: "80%",
-                                      display: "inline-block"
-                                    },
-                                    attrs: {
-                                      "hide-details": true,
-                                      "append-icon": "link"
-                                    },
-                                    on: {
-                                      "click:append": function($event) {
-                                        _vm.goToLink(item.link)
-                                      }
-                                    },
-                                    model: {
+                            _vm._l(_vm.product.suplierlinks, function(
+                              item,
+                              index
+                            ) {
+                              return _c("div", [
+                                _c("input", {
+                                  directives: [
+                                    {
+                                      name: "model",
+                                      rawName: "v-model",
                                       value: item.link,
-                                      callback: function($$v) {
-                                        _vm.$set(item, "link", $$v)
-                                      },
                                       expression: "item.link"
                                     }
-                                  }),
-                                  _c(
-                                    "v-btn",
-                                    {
-                                      attrs: { icon: "" },
-                                      on: {
-                                        click: function($event) {
-                                          item.link = ""
-                                          _vm.updateSuplierLink(item)
-                                        }
+                                  ],
+                                  staticStyle: {
+                                    width: "80%",
+                                    display: "inline-block"
+                                  },
+                                  domProps: { value: item.link },
+                                  on: {
+                                    input: function($event) {
+                                      if ($event.target.composing) {
+                                        return
                                       }
-                                    },
-                                    [_c("v-icon", [_vm._v("remove")])],
-                                    1
-                                  )
-                                ],
-                                1
-                              )
-                            })
+                                      _vm.$set(
+                                        item,
+                                        "link",
+                                        $event.target.value
+                                      )
+                                    }
+                                  }
+                                }),
+                                _vm._v(" "),
+                                item.link != ""
+                                  ? _c(
+                                      "span",
+                                      [
+                                        _c(
+                                          "v-btn",
+                                          {
+                                            staticClass: "ma-0 pa-0",
+                                            attrs: { icon: "" }
+                                          },
+                                          [
+                                            _c(
+                                              "v-icon",
+                                              {
+                                                on: {
+                                                  click: function($event) {
+                                                    _vm.goToLink(item.link)
+                                                  }
+                                                }
+                                              },
+                                              [_vm._v("link")]
+                                            )
+                                          ],
+                                          1
+                                        ),
+                                        _vm._v(" "),
+                                        index > 0
+                                          ? _c(
+                                              "v-btn",
+                                              {
+                                                staticClass: "ma-0 pa-0",
+                                                attrs: { icon: "" },
+                                                on: {
+                                                  click: function($event) {
+                                                    _vm.deleteSuplierLink(item)
+                                                  }
+                                                }
+                                              },
+                                              [
+                                                _c("v-icon", [_vm._v("delete")])
+                                              ],
+                                              1
+                                            )
+                                          : _vm._e()
+                                      ],
+                                      1
+                                    )
+                                  : _vm._e()
+                              ])
+                            }),
+                            _vm._v(" "),
+                            _c(
+                              "div",
+                              [
+                                _c(
+                                  "v-btn",
+                                  {
+                                    staticClass: "ma-0 pa-0",
+                                    attrs: { icon: "" },
+                                    on: { click: _vm.addSuplierLink }
+                                  },
+                                  [
+                                    _c(
+                                      "v-icon",
+                                      { staticClass: "grey--text" },
+                                      [_vm._v("add_box")]
+                                    )
+                                  ],
+                                  1
+                                )
+                              ],
+                              1
+                            )
                           ],
                           2
                         )
@@ -100229,11 +100349,7 @@ var render = function() {
                     "v-btn",
                     {
                       attrs: { color: "primary", flat: "" },
-                      on: {
-                        click: function($event) {
-                          _vm.showDialog = false
-                        }
-                      }
+                      on: { click: _vm.cancel }
                     },
                     [_vm._v(" Отмена ")]
                   ),
@@ -100403,7 +100519,19 @@ var render = function() {
                         _vm._l(item.labels, function(item) {
                           return _c("div", [_vm._v(_vm._s(item.name))])
                         })
-                      )
+                      ),
+                      _vm._v(" "),
+                      _c("td", [
+                        _vm._v(
+                          "\n          " + _vm._s(item.sort1) + "\n        "
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c("td", [
+                        _vm._v(
+                          "\n          " + _vm._s(item.sort2) + "\n        "
+                        )
+                      ])
                     ]
                   )
                 })
@@ -100640,24 +100768,35 @@ var render = function() {
                             }
                           ),
                           _vm._v(" "),
-                          _c("v-list-tile", [
-                            _c(
-                              "div",
-                              {
-                                staticStyle: {
-                                  width: "100%",
-                                  padding: "0 16px",
-                                  cursor: "pointer"
-                                },
-                                on: {
-                                  click: function($event) {
-                                    _vm.showMassPriceDialog = true
-                                  }
-                                }
-                              },
-                              [_c("span", [_vm._v("Закупочная цена")])]
-                            )
-                          ])
+                          _vm._l(
+                            {
+                              purchase_price: "Закупочная цена",
+                              sort1: "Сортировка 1",
+                              sort2: "Сортировка 2"
+                            },
+                            function(label, name) {
+                              return _c("v-list-tile", { key: name }, [
+                                _c(
+                                  "div",
+                                  {
+                                    staticStyle: {
+                                      width: "100%",
+                                      padding: "0 16px",
+                                      cursor: "pointer"
+                                    },
+                                    on: {
+                                      click: function($event) {
+                                        _vm.mass.name = name
+                                        _vm.mass.label = label
+                                        _vm.showMassDialog = true
+                                      }
+                                    }
+                                  },
+                                  [_c("span", [_vm._v(_vm._s(label))])]
+                                )
+                              ])
+                            }
+                          )
                         ],
                         2
                       )
@@ -100676,7 +100815,7 @@ var render = function() {
           ),
           _vm._v(" "),
           _c("template", { slot: "footer" }, [
-            _c("td", { attrs: { colspan: "7" } }, [
+            _c("td", { attrs: { colspan: "6" } }, [
               _vm._v(
                 "Всего: " +
                   _vm._s(_vm.stats.total) +
@@ -100707,7 +100846,7 @@ var render = function() {
               )
             ]),
             _vm._v(" "),
-            _c("td", { attrs: { colspan: "3" } })
+            _c("td", { attrs: { colspan: "5" } })
           ])
         ],
         2
@@ -101005,15 +101144,15 @@ var render = function() {
               ) {
                 return null
               }
-              _vm.showMassPriceDialog = false
+              _vm.showMassDialog = false
             }
           },
           model: {
-            value: _vm.showMassPriceDialog,
+            value: _vm.showMassDialog,
             callback: function($$v) {
-              _vm.showMassPriceDialog = $$v
+              _vm.showMassDialog = $$v
             },
-            expression: "showMassPriceDialog"
+            expression: "showMassDialog"
           }
         },
         [
@@ -101022,13 +101161,13 @@ var render = function() {
             { staticClass: "pa-4" },
             [
               _c("v-text-field", {
-                attrs: { label: "Закупочная цена" },
+                attrs: { label: _vm.mass.label },
                 model: {
-                  value: _vm.purchasePrice,
+                  value: _vm.mass.value,
                   callback: function($$v) {
-                    _vm.purchasePrice = $$v
+                    _vm.$set(_vm.mass, "value", $$v)
                   },
-                  expression: "purchasePrice"
+                  expression: "mass.value"
                 }
               }),
               _vm._v(" "),
@@ -101037,10 +101176,7 @@ var render = function() {
                 [
                   _c(
                     "v-btn",
-                    {
-                      attrs: { flat: "" },
-                      on: { click: _vm.setPurchasePrice }
-                    },
+                    { attrs: { flat: "" }, on: { click: _vm.processMass } },
                     [
                       _vm._v(
                         " Установить для " + _vm._s(_vm.selected.length) + " "
@@ -112153,7 +112289,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     },
 
     orderedProducts: function orderedProducts() {
-      return _.orderBy(this.order.products, 'product.name');
+      return _.orderBy(this.order.products, ['product.sort1', 'product.name']);
     },
     maxPrice: function maxPrice() {
       return this.order.products.reduce(function (acc, curr) {
