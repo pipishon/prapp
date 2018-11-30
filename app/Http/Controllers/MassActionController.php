@@ -124,6 +124,7 @@ class MassActionController extends Controller
                 $data['full_address'] = $new_post_ttn->full_address;
                 $data['warehouse'] = $new_post_ttn->warehouse;
                 $data['name'] = $new_post_ttn->name;
+                $data['phone'] = $new_post_ttn->phone;
             }
             $new_post_ttn->update($data);
             $data['date'] = Carbon::now()->format('d.m.Y');

@@ -1,12 +1,12 @@
 <template>
-  <v-dialog width="600" v-model="showDialog" persistent @keydown.esc="showDialog = false">
+  <v-dialog content-class="newpost-dialog" width="600" v-model="showDialog" persistent @keydown.esc="showDialog = false">
     <div slot="activator" class="my-2">
       <v-icon  :class="{'blue--text text--accent-1': valid}" small>check_circle</v-icon>
     <v-tooltip v-if="isTtnCreated" left content-class="white black--text" transition="sss" :open-delay="0" :close-delay="0" style="cursor: default;">
       <span slot="activator" v-if="item.ttn">{{item.ttn.full_address}}</span><span v-else>{{item.delivery_address}}</span>
       <div class="body-1" style="width: 250px;">
         <div>{{this.item.ttn.name}}</div>
-        <div>{{this.item.ttn.phone}}</div>
+        <div :class="{'not-valid': isPhoneNotSame}">{{this.item.ttn.phone}}</div>
         <div>{{this.item.ttn.full_address}}</div>
         <div>Вес {{(item.ttn.weight > item.ttn.volume_general) ? item.ttn.weight : item.ttn.volume_general}} кг</div>
         <div>Стоимость доставки {{deliveryCost}}</div>
@@ -80,7 +80,7 @@
               <v-text-field label="Отчество" v-model="data.client_middle_name" class="mr-3"></v-text-field>
             </v-flex>
             <v-flex xs6 md6 >
-              <v-text-field label="Телефон" v-model="data.phone" ></v-text-field>
+              <v-text-field label="Телефон" :class="{'not-valid': isPhoneNotSame}" v-model="data.phone" ></v-text-field>
             </v-flex>
           </v-layout>
           <v-layout row>
@@ -189,6 +189,11 @@ import { mapGetters } from 'vuex'
         }*/
       },
       computed: {
+        isPhoneNotSame () {
+          if (this.item.ttn == null) return false
+          const phone = (this.item.statuses.custom_phone != null) ? this.item.statuses.custom_phone : this.item.phone
+          return (this.item.ttn.phone != phone)
+        },
         isWeightValid () {
           let valid = true
           this.places.map((place) => {
@@ -379,5 +384,13 @@ import { mapGetters } from 'vuex'
       }
     }
 </script>
-<style scoped>
+<style>
+
+.newpost-dialog .not-valid input {
+  color: blue !important;
+}
+.newpost-dialog .not-valid  {
+  color: blue !important;
+}
+
 </style>

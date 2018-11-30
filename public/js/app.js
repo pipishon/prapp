@@ -109879,19 +109879,19 @@ if (false) {
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(367)
+  __webpack_require__(419)
 }
 var normalizeComponent = __webpack_require__(1)
 /* script */
 var __vue_script__ = __webpack_require__(369)
 /* template */
-var __vue_template__ = __webpack_require__(370)
+var __vue_template__ = __webpack_require__(421)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
 var __vue_styles__ = injectStyle
 /* scopeId */
-var __vue_scopeId__ = "data-v-8d645b0e"
+var __vue_scopeId__ = null
 /* moduleIdentifier (server only) */
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
@@ -109924,46 +109924,8 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 367 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(368);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(3)("61fb490a", content, false, {});
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-8d645b0e\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./NewPost.vue", function() {
-     var newContent = require("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-8d645b0e\",\"scoped\":true,\"hasInlineConfig\":true}!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./NewPost.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 368 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(2)(false);
-// imports
-
-
-// module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", ""]);
-
-// exports
-
-
-/***/ }),
+/* 367 */,
+/* 368 */,
 /* 369 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -110162,6 +110124,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
   },
   computed: {
+    isPhoneNotSame: function isPhoneNotSame() {
+      if (this.item.ttn == null) return false;
+      var phone = this.item.statuses.custom_phone != null ? this.item.statuses.custom_phone : this.item.phone;
+      return this.item.ttn.phone != phone;
+    },
     isWeightValid: function isWeightValid() {
       var valid = true;
       this.places.map(function (place) {
@@ -110352,919 +110319,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 370 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "v-dialog",
-    {
-      attrs: { width: "600", persistent: "" },
-      on: {
-        keydown: function($event) {
-          if (
-            !("button" in $event) &&
-            _vm._k($event.keyCode, "esc", 27, $event.key, "Escape")
-          ) {
-            return null
-          }
-          _vm.showDialog = false
-        }
-      },
-      model: {
-        value: _vm.showDialog,
-        callback: function($$v) {
-          _vm.showDialog = $$v
-        },
-        expression: "showDialog"
-      }
-    },
-    [
-      _c(
-        "div",
-        {
-          staticClass: "my-2",
-          attrs: { slot: "activator" },
-          slot: "activator"
-        },
-        [
-          _c(
-            "v-icon",
-            {
-              class: { "blue--text text--accent-1": _vm.valid },
-              attrs: { small: "" }
-            },
-            [_vm._v("check_circle")]
-          ),
-          _vm._v(" "),
-          _vm.isTtnCreated
-            ? _c(
-                "v-tooltip",
-                {
-                  staticStyle: { cursor: "default" },
-                  attrs: {
-                    left: "",
-                    "content-class": "white black--text",
-                    transition: "sss",
-                    "open-delay": 0,
-                    "close-delay": 0
-                  }
-                },
-                [
-                  _vm.item.ttn
-                    ? _c(
-                        "span",
-                        { attrs: { slot: "activator" }, slot: "activator" },
-                        [_vm._v(_vm._s(_vm.item.ttn.full_address))]
-                      )
-                    : _c("span", [_vm._v(_vm._s(_vm.item.delivery_address))]),
-                  _vm._v(" "),
-                  _c(
-                    "div",
-                    { staticClass: "body-1", staticStyle: { width: "250px" } },
-                    [
-                      _c("div", [_vm._v(_vm._s(this.item.ttn.name))]),
-                      _vm._v(" "),
-                      _c("div", [_vm._v(_vm._s(this.item.ttn.phone))]),
-                      _vm._v(" "),
-                      _c("div", [_vm._v(_vm._s(this.item.ttn.full_address))]),
-                      _vm._v(" "),
-                      _c("div", [
-                        _vm._v(
-                          "Вес " +
-                            _vm._s(
-                              _vm.item.ttn.weight > _vm.item.ttn.volume_general
-                                ? _vm.item.ttn.weight
-                                : _vm.item.ttn.volume_general
-                            ) +
-                            " кг"
-                        )
-                      ]),
-                      _vm._v(" "),
-                      _c("div", [
-                        _vm._v("Стоимость доставки " + _vm._s(_vm.deliveryCost))
-                      ]),
-                      _vm._v(" "),
-                      this.item.ttn.backdelivery == "1"
-                        ? _c("div", [
-                            _vm._v(
-                              "Наложенный платеж " +
-                                _vm._s(this.item.ttn.backprice) +
-                                " грн."
-                            )
-                          ])
-                        : _vm._e()
-                    ]
-                  )
-                ]
-              )
-            : _c("span", [
-                _vm.item.ttn
-                  ? _c("span", [_vm._v(_vm._s(_vm.item.ttn.full_address))])
-                  : _c("span", [_vm._v(_vm._s(_vm.item.delivery_address))])
-              ]),
-          _vm._v(" "),
-          _vm.isTtnCreated
-            ? _c("span", [
-                _c(
-                  "a",
-                  {
-                    attrs: {
-                      target: "_blank",
-                      href:
-                        "https://my.novaposhta.ua/orders/printDocument/orders[]/" +
-                        _vm.item.ttn.int_doc_number +
-                        "/type/html/apiKey/b2aa728b253bc10bbb33e79c30d6498d"
-                    },
-                    on: {
-                      click: function($event) {
-                        $event.stopPropagation()
-                      }
-                    }
-                  },
-                  [
-                    _c("v-icon", { attrs: { small: "" } }, [
-                      _vm._v("description")
-                    ])
-                  ],
-                  1
-                ),
-                _vm._v(" "),
-                _c(
-                  "a",
-                  {
-                    attrs: {
-                      target: "_blank",
-                      href:
-                        "https://my.novaposhta.ua/orders/printMarkings/orders[]/" +
-                        _vm.item.ttn.int_doc_number +
-                        "/type/html/apiKey/b2aa728b253bc10bbb33e79c30d6498d"
-                    },
-                    on: {
-                      click: function($event) {
-                        $event.stopPropagation()
-                      }
-                    }
-                  },
-                  [_c("v-icon", { attrs: { small: "" } }, [_vm._v("book")])],
-                  1
-                )
-              ])
-            : _vm._e(),
-          _vm._v(" "),
-          !_vm.isTtnCreated &&
-          _vm.item.statuses.shipment_weight != "-" &&
-          _vm.valid
-            ? _c(
-                "v-btn",
-                {
-                  staticClass: "mt-0 ml-0",
-                  attrs: { flat: "", icon: "" },
-                  nativeOn: {
-                    click: function($event) {
-                      $event.stopPropagation()
-                      _vm.setDefaults()
-                      _vm.send(false)
-                    }
-                  }
-                },
-                [_c("v-icon", { attrs: { small: "" } }, [_vm._v("autorenew")])],
-                1
-              )
-            : _vm._e()
-        ],
-        1
-      ),
-      _vm._v(" "),
-      !_vm.editeTtn && _vm.isTtnCreated
-        ? _c(
-            "v-card",
-            [
-              _c("v-card-title", { staticClass: "primary white--text" }, [
-                _c("h5", [_vm._v("Экспресс накладная")])
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "px-4 pt-2" }, [
-                _c("table", { staticClass: "w-100" }, [
-                  _c(
-                    "tr",
-                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
-                    [
-                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
-                        _c("strong", [_vm._v("Экспресс накладная")])
-                      ]),
-                      _c(
-                        "td",
-                        {
-                          staticClass: "body-2 light-green--text text--darken-3"
-                        },
-                        [_vm._v(_vm._s(_vm.item.ttn.int_doc_number))]
-                      )
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "tr",
-                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
-                    [
-                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
-                        _c("strong", [_vm._v("Получатель")])
-                      ]),
-                      _c("td", { staticClass: "body-2" }, [
-                        _vm._v(_vm._s(_vm.item.ttn.name))
-                      ])
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "tr",
-                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
-                    [
-                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
-                        _c("strong", [_vm._v("Телефон получателя")])
-                      ]),
-                      _c("td", { staticClass: "body-2" }, [
-                        _vm._v(_vm._s(_vm.item.ttn.phone))
-                      ])
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "tr",
-                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
-                    [
-                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
-                        _c("strong", [_vm._v("Адрес")])
-                      ]),
-                      _c("td", { staticClass: "body-2" }, [
-                        _vm._v(_vm._s(_vm.item.ttn.full_address))
-                      ])
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "tr",
-                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
-                    [
-                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
-                        _c("strong", [_vm._v("Дата отправки")])
-                      ]),
-                      _c("td", { staticClass: "body-2" }, [
-                        _vm._v(_vm._s(_vm.item.ttn.date))
-                      ])
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "tr",
-                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
-                    [
-                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
-                        _c("strong", [_vm._v("Плательщик")])
-                      ]),
-                      _c("td", { staticClass: "body-2" }, [
-                        _vm._v(_vm._s(_vm.mapPayer[_vm.item.ttn.payer]))
-                      ])
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "tr",
-                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
-                    [
-                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
-                        _c("strong", [_vm._v("Оценочная стоимость")])
-                      ]),
-                      _c("td", { staticClass: "body-2" }, [
-                        _vm._v(_vm._s(_vm.item.ttn.price) + " грн.")
-                      ])
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _vm.item.ttn.backdelivery == 1
-                    ? _c(
-                        "tr",
-                        {
-                          staticStyle: {
-                            "border-bottom": "1px solid lightgray"
-                          }
-                        },
-                        [
-                          _c("td", { staticClass: "body-2 py-3 px-2" }, [
-                            _c("strong", [
-                              _vm._v("Плательщик при обратной доставке")
-                            ])
-                          ]),
-                          _c("td", { staticClass: "body-2" }, [
-                            _vm._v(_vm._s(_vm.mapPayer[_vm.item.ttn.backpayer]))
-                          ])
-                        ]
-                      )
-                    : _vm._e(),
-                  _vm._v(" "),
-                  _vm.item.ttn.backdelivery == 1
-                    ? _c(
-                        "tr",
-                        {
-                          staticStyle: {
-                            "border-bottom": "1px solid lightgray"
-                          }
-                        },
-                        [
-                          _c("td", { staticClass: "body-2 py-3 px-2" }, [
-                            _c("strong", [_vm._v("Сумма обратной доставки")])
-                          ]),
-                          _c("td", { staticClass: "body-2" }, [
-                            _vm._v(_vm._s(_vm.item.ttn.backprice) + " грн.")
-                          ])
-                        ]
-                      )
-                    : _vm._e(),
-                  _vm._v(" "),
-                  _c(
-                    "tr",
-                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
-                    [
-                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
-                        _c("strong", [_vm._v("Вес")])
-                      ]),
-                      _vm._v(" "),
-                      _c("td", { staticClass: "body-2" }, [
-                        _vm._v(
-                          _vm._s(
-                            _vm.item.ttn.weight > _vm.item.ttn.volume_general
-                              ? _vm.item.ttn.weight
-                              : _vm.item.ttn.volume_general
-                          ) + " кг"
-                        )
-                      ])
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c("tr", [
-                    _c("td", { staticClass: "body-2 py-3 px-2" }, [
-                      _c("strong", [_vm._v("Стоимость доставки")])
-                    ]),
-                    _c("td", { staticClass: "body-2" }, [
-                      _vm._v(_vm._s(_vm.deliveryCost))
-                    ])
-                  ])
-                ])
-              ]),
-              _vm._v(" "),
-              _c(
-                "v-alert",
-                {
-                  attrs: { outline: "", dismissible: "", type: "warning" },
-                  model: {
-                    value: _vm.editeTtnWarning,
-                    callback: function($$v) {
-                      _vm.editeTtnWarning = $$v
-                    },
-                    expression: "editeTtnWarning"
-                  }
-                },
-                [
-                  _c("h3", [_vm._v("Внимание!")]),
-                  _vm._v(" "),
-                  _c("div", [
-                    _vm._v(
-                      "Сохранение новых условий доставки приведет к аннулированию ранее сгенерированной ЭН."
-                    )
-                  ]),
-                  _vm._v(" "),
-                  _c(
-                    "v-btn",
-                    {
-                      attrs: { color: "secondary", outline: "", flat: "" },
-                      on: {
-                        click: function($event) {
-                          _vm.editeTtn = true
-                        }
-                      }
-                    },
-                    [_vm._v("Продолжить")]
-                  )
-                ],
-                1
-              ),
-              _vm._v(" "),
-              _c(
-                "v-card-actions",
-                [
-                  _c("v-spacer"),
-                  _vm._v(" "),
-                  _c(
-                    "v-btn",
-                    {
-                      attrs: { color: "primary", flat: "" },
-                      on: {
-                        click: function($event) {
-                          _vm.showDialog = false
-                        }
-                      }
-                    },
-                    [_vm._v(" Отмена ")]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-btn",
-                    {
-                      attrs: { color: "primary", flat: "" },
-                      on: {
-                        click: function($event) {
-                          _vm.editeTtn = true
-                        }
-                      }
-                    },
-                    [_vm._v(" Редактировать ЕН ")]
-                  )
-                ],
-                1
-              )
-            ],
-            1
-          )
-        : _vm._e(),
-      _vm._v(" "),
-      _vm.editeTtn || !_vm.isTtnCreated
-        ? _c(
-            "v-card",
-            [
-              _c("v-card-title", { staticClass: "primary white--text" }, [
-                _c("h5", [_vm._v("Формирование ТТН")])
-              ]),
-              _vm._v(" "),
-              _c(
-                "div",
-                { staticClass: "px-5" },
-                [
-                  _c(
-                    "v-layout",
-                    { attrs: { row: "" } },
-                    [
-                      _c(
-                        "v-flex",
-                        { attrs: { xs12: "", md12: "" } },
-                        [
-                          _c("v-select", {
-                            attrs: {
-                              label: "Плательщик",
-                              items: [
-                                { text: "Получатель", value: "Recipient" },
-                                { text: "Отправитель", value: "Sender" }
-                              ]
-                            },
-                            model: {
-                              value: _vm.data.payer,
-                              callback: function($$v) {
-                                _vm.$set(_vm.data, "payer", $$v)
-                              },
-                              expression: "data.payer"
-                            }
-                          })
-                        ],
-                        1
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    { attrs: { row: "" } },
-                    [
-                      _c(
-                        "v-flex",
-                        { attrs: { xs6: "", md6: "" } },
-                        [
-                          _c("v-text-field", {
-                            staticClass: "mr-3",
-                            attrs: { label: "Фамилия" },
-                            model: {
-                              value: _vm.data.client_last_name,
-                              callback: function($$v) {
-                                _vm.$set(_vm.data, "client_last_name", $$v)
-                              },
-                              expression: "data.client_last_name"
-                            }
-                          })
-                        ],
-                        1
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "v-flex",
-                        { attrs: { xs6: "", md6: "" } },
-                        [
-                          _c("v-text-field", {
-                            attrs: {
-                              label: "Имя",
-                              "append-outer-icon": "code"
-                            },
-                            on: { "click:append-outer": _vm.switchNames },
-                            model: {
-                              value: _vm.data.client_first_name,
-                              callback: function($$v) {
-                                _vm.$set(_vm.data, "client_first_name", $$v)
-                              },
-                              expression: "data.client_first_name"
-                            }
-                          })
-                        ],
-                        1
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    { attrs: { row: "" } },
-                    [
-                      _c(
-                        "v-flex",
-                        { attrs: { xs6: "", md6: "" } },
-                        [
-                          _c("v-text-field", {
-                            staticClass: "mr-3",
-                            attrs: { label: "Отчество" },
-                            model: {
-                              value: _vm.data.client_middle_name,
-                              callback: function($$v) {
-                                _vm.$set(_vm.data, "client_middle_name", $$v)
-                              },
-                              expression: "data.client_middle_name"
-                            }
-                          })
-                        ],
-                        1
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "v-flex",
-                        { attrs: { xs6: "", md6: "" } },
-                        [
-                          _c("v-text-field", {
-                            attrs: { label: "Телефон" },
-                            model: {
-                              value: _vm.data.phone,
-                              callback: function($$v) {
-                                _vm.$set(_vm.data, "phone", $$v)
-                              },
-                              expression: "data.phone"
-                            }
-                          })
-                        ],
-                        1
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    { attrs: { row: "" } },
-                    [
-                      _c(
-                        "v-flex",
-                        { attrs: { xs12: "", md12: "" } },
-                        [
-                          _vm.item.ttn
-                            ? _c("strong", [
-                                _vm._v(_vm._s(_vm.item.ttn.full_address))
-                              ])
-                            : _c("strong", [
-                                _vm._v(_vm._s(_vm.item.delivery_address))
-                              ]),
-                          _vm._v(" "),
-                          _c("v-autocomplete", {
-                            attrs: {
-                              label: "Город",
-                              "item-text": "description",
-                              "item-value": "description",
-                              items: _vm.newPostCities
-                            },
-                            on: { change: _vm.loadWarehouses },
-                            model: {
-                              value: _vm.data.city,
-                              callback: function($$v) {
-                                _vm.$set(_vm.data, "city", $$v)
-                              },
-                              expression: "data.city"
-                            }
-                          }),
-                          _vm._v(" "),
-                          _c("v-autocomplete", {
-                            attrs: {
-                              label: "Отделение",
-                              items: _vm.newPostWarehouses
-                            },
-                            model: {
-                              value: _vm.data.warehouse,
-                              callback: function($$v) {
-                                _vm.$set(_vm.data, "warehouse", $$v)
-                              },
-                              expression: "data.warehouse"
-                            }
-                          })
-                        ],
-                        1
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    { attrs: { row: "" } },
-                    [
-                      _c(
-                        "v-flex",
-                        { attrs: { xs6: "", md6: "" } },
-                        [
-                          _c("v-text-field", {
-                            staticClass: "mr-3",
-                            attrs: { label: "Объявленная стоимость" },
-                            model: {
-                              value: _vm.data.price,
-                              callback: function($$v) {
-                                _vm.$set(_vm.data, "price", $$v)
-                              },
-                              expression: "data.price"
-                            }
-                          })
-                        ],
-                        1
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    { attrs: { row: "" } },
-                    [
-                      _c(
-                        "v-flex",
-                        { attrs: { xs6: "", md6: "" } },
-                        [
-                          _c("v-checkbox", {
-                            attrs: { label: "Заказать обратную доставку" },
-                            model: {
-                              value: _vm.data.backdelivery,
-                              callback: function($$v) {
-                                _vm.$set(_vm.data, "backdelivery", $$v)
-                              },
-                              expression: "data.backdelivery"
-                            }
-                          })
-                        ],
-                        1
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _vm.data.backdelivery
-                    ? _c(
-                        "div",
-                        [
-                          _c(
-                            "v-layout",
-                            { attrs: { row: "" } },
-                            [
-                              _c(
-                                "v-flex",
-                                { attrs: { xs12: "", md12: "" } },
-                                [
-                                  _c("v-select", {
-                                    attrs: {
-                                      label: "Плательщик",
-                                      items: [
-                                        {
-                                          text: "Получатель",
-                                          value: "Recipient"
-                                        },
-                                        { text: "Отправитель", value: "Sender" }
-                                      ]
-                                    },
-                                    model: {
-                                      value: _vm.data.backpayer,
-                                      callback: function($$v) {
-                                        _vm.$set(_vm.data, "backpayer", $$v)
-                                      },
-                                      expression: "data.backpayer"
-                                    }
-                                  })
-                                ],
-                                1
-                              )
-                            ],
-                            1
-                          ),
-                          _vm._v(" "),
-                          _c(
-                            "v-layout",
-                            { attrs: { row: "" } },
-                            [
-                              _c(
-                                "v-flex",
-                                { attrs: { md6: "" } },
-                                [
-                                  _c("v-text-field", {
-                                    staticClass: "mr-3",
-                                    attrs: { label: "Сумма обратной доставки" },
-                                    model: {
-                                      value: _vm.data.backprice,
-                                      callback: function($$v) {
-                                        _vm.$set(_vm.data, "backprice", $$v)
-                                      },
-                                      expression: "data.backprice"
-                                    }
-                                  })
-                                ],
-                                1
-                              )
-                            ],
-                            1
-                          )
-                        ],
-                        1
-                      )
-                    : _vm._e(),
-                  _vm._v(" "),
-                  _vm._l(_vm.places, function(place, key) {
-                    return _c(
-                      "v-layout",
-                      { key: key, attrs: { row: "" } },
-                      [
-                        _c(
-                          "v-flex",
-                          { staticClass: "mr-3", attrs: { md2: "" } },
-                          [
-                            _c("v-text-field", {
-                              attrs: { label: "Вес" },
-                              model: {
-                                value: place.weight,
-                                callback: function($$v) {
-                                  _vm.$set(place, "weight", $$v)
-                                },
-                                expression: "place.weight"
-                              }
-                            })
-                          ],
-                          1
-                        ),
-                        _vm._v(" "),
-                        _c(
-                          "v-flex",
-                          { staticClass: "mr-3", attrs: { md2: "" } },
-                          [
-                            _c("v-text-field", {
-                              attrs: { label: "Длина" },
-                              model: {
-                                value: place.length,
-                                callback: function($$v) {
-                                  _vm.$set(place, "length", $$v)
-                                },
-                                expression: "place.length"
-                              }
-                            })
-                          ],
-                          1
-                        ),
-                        _vm._v(" "),
-                        _c(
-                          "v-flex",
-                          { staticClass: "mr-3", attrs: { md2: "" } },
-                          [
-                            _c("v-text-field", {
-                              attrs: { label: "Ширина" },
-                              model: {
-                                value: place.width,
-                                callback: function($$v) {
-                                  _vm.$set(place, "width", $$v)
-                                },
-                                expression: "place.width"
-                              }
-                            })
-                          ],
-                          1
-                        ),
-                        _vm._v(" "),
-                        _c(
-                          "v-flex",
-                          { staticClass: "mr-3", attrs: { md2: "" } },
-                          [
-                            _c("v-text-field", {
-                              attrs: { label: "Высота" },
-                              model: {
-                                value: place.height,
-                                callback: function($$v) {
-                                  _vm.$set(place, "height", $$v)
-                                },
-                                expression: "place.height"
-                              }
-                            })
-                          ],
-                          1
-                        ),
-                        _vm._v(" "),
-                        _c(
-                          "v-flex",
-                          { attrs: { md3: "" } },
-                          [
-                            _c("v-text-field", {
-                              attrs: {
-                                label: "Объемный вес",
-                                value: _vm.volumeWeight(place)
-                              }
-                            })
-                          ],
-                          1
-                        )
-                      ],
-                      1
-                    )
-                  })
-                ],
-                2
-              ),
-              _vm._v(" "),
-              _c(
-                "v-card-actions",
-                [
-                  _c("v-spacer"),
-                  _vm._v(" "),
-                  _c(
-                    "v-btn",
-                    {
-                      attrs: { color: "primary", flat: "" },
-                      on: {
-                        click: function($event) {
-                          _vm.showDialog = false
-                          _vm.editeTtn = false
-                        }
-                      }
-                    },
-                    [_vm._v(" Отмена ")]
-                  ),
-                  _vm._v(" "),
-                  _vm.isWeightValid
-                    ? _c(
-                        "v-btn",
-                        {
-                          attrs: { color: "primary", flat: "" },
-                          on: {
-                            click: function($event) {
-                              _vm.send(false)
-                            }
-                          }
-                        },
-                        [_vm._v("Сгенерировать ЭН")]
-                      )
-                    : _vm._e(),
-                  _vm._v(" "),
-                  !_vm.isTtnCreated
-                    ? _c(
-                        "v-btn",
-                        {
-                          attrs: { color: "primary", flat: "" },
-                          on: {
-                            click: function($event) {
-                              _vm.send(true)
-                            }
-                          }
-                        },
-                        [_vm._v(" Сохранить ")]
-                      )
-                    : _vm._e()
-                ],
-                1
-              )
-            ],
-            1
-          )
-        : _vm._e()
-    ],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-8d645b0e", module.exports)
-  }
-}
-
-/***/ }),
+/* 370 */,
 /* 371 */
 /***/ (function(module, exports) {
 
@@ -116986,6 +116041,968 @@ if (false) {
   module.hot.accept()
   if (module.hot.data) {
     require("vue-hot-reload-api")      .rerender("data-v-66ab2f82", module.exports)
+  }
+}
+
+/***/ }),
+/* 419 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(420);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(3)("feb16f3a", content, false, {});
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-8d645b0e\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./NewPost.vue", function() {
+     var newContent = require("!!../../../../node_modules/css-loader/index.js!../../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-8d645b0e\",\"scoped\":false,\"hasInlineConfig\":true}!../../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0!./NewPost.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 420 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(2)(false);
+// imports
+
+
+// module
+exports.push([module.i, "\n.newpost-dialog .not-valid input {\r\n  color: blue !important;\n}\n.newpost-dialog .not-valid  {\r\n  color: blue !important;\n}\r\n\r\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 421 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "v-dialog",
+    {
+      attrs: {
+        "content-class": "newpost-dialog",
+        width: "600",
+        persistent: ""
+      },
+      on: {
+        keydown: function($event) {
+          if (
+            !("button" in $event) &&
+            _vm._k($event.keyCode, "esc", 27, $event.key, "Escape")
+          ) {
+            return null
+          }
+          _vm.showDialog = false
+        }
+      },
+      model: {
+        value: _vm.showDialog,
+        callback: function($$v) {
+          _vm.showDialog = $$v
+        },
+        expression: "showDialog"
+      }
+    },
+    [
+      _c(
+        "div",
+        {
+          staticClass: "my-2",
+          attrs: { slot: "activator" },
+          slot: "activator"
+        },
+        [
+          _c(
+            "v-icon",
+            {
+              class: { "blue--text text--accent-1": _vm.valid },
+              attrs: { small: "" }
+            },
+            [_vm._v("check_circle")]
+          ),
+          _vm._v(" "),
+          _vm.isTtnCreated
+            ? _c(
+                "v-tooltip",
+                {
+                  staticStyle: { cursor: "default" },
+                  attrs: {
+                    left: "",
+                    "content-class": "white black--text",
+                    transition: "sss",
+                    "open-delay": 0,
+                    "close-delay": 0
+                  }
+                },
+                [
+                  _vm.item.ttn
+                    ? _c(
+                        "span",
+                        { attrs: { slot: "activator" }, slot: "activator" },
+                        [_vm._v(_vm._s(_vm.item.ttn.full_address))]
+                      )
+                    : _c("span", [_vm._v(_vm._s(_vm.item.delivery_address))]),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    { staticClass: "body-1", staticStyle: { width: "250px" } },
+                    [
+                      _c("div", [_vm._v(_vm._s(this.item.ttn.name))]),
+                      _vm._v(" "),
+                      _c(
+                        "div",
+                        { class: { "not-valid": _vm.isPhoneNotSame } },
+                        [_vm._v(_vm._s(this.item.ttn.phone))]
+                      ),
+                      _vm._v(" "),
+                      _c("div", [_vm._v(_vm._s(this.item.ttn.full_address))]),
+                      _vm._v(" "),
+                      _c("div", [
+                        _vm._v(
+                          "Вес " +
+                            _vm._s(
+                              _vm.item.ttn.weight > _vm.item.ttn.volume_general
+                                ? _vm.item.ttn.weight
+                                : _vm.item.ttn.volume_general
+                            ) +
+                            " кг"
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c("div", [
+                        _vm._v("Стоимость доставки " + _vm._s(_vm.deliveryCost))
+                      ]),
+                      _vm._v(" "),
+                      this.item.ttn.backdelivery == "1"
+                        ? _c("div", [
+                            _vm._v(
+                              "Наложенный платеж " +
+                                _vm._s(this.item.ttn.backprice) +
+                                " грн."
+                            )
+                          ])
+                        : _vm._e()
+                    ]
+                  )
+                ]
+              )
+            : _c("span", [
+                _vm.item.ttn
+                  ? _c("span", [_vm._v(_vm._s(_vm.item.ttn.full_address))])
+                  : _c("span", [_vm._v(_vm._s(_vm.item.delivery_address))])
+              ]),
+          _vm._v(" "),
+          _vm.isTtnCreated
+            ? _c("span", [
+                _c(
+                  "a",
+                  {
+                    attrs: {
+                      target: "_blank",
+                      href:
+                        "https://my.novaposhta.ua/orders/printDocument/orders[]/" +
+                        _vm.item.ttn.int_doc_number +
+                        "/type/html/apiKey/b2aa728b253bc10bbb33e79c30d6498d"
+                    },
+                    on: {
+                      click: function($event) {
+                        $event.stopPropagation()
+                      }
+                    }
+                  },
+                  [
+                    _c("v-icon", { attrs: { small: "" } }, [
+                      _vm._v("description")
+                    ])
+                  ],
+                  1
+                ),
+                _vm._v(" "),
+                _c(
+                  "a",
+                  {
+                    attrs: {
+                      target: "_blank",
+                      href:
+                        "https://my.novaposhta.ua/orders/printMarkings/orders[]/" +
+                        _vm.item.ttn.int_doc_number +
+                        "/type/html/apiKey/b2aa728b253bc10bbb33e79c30d6498d"
+                    },
+                    on: {
+                      click: function($event) {
+                        $event.stopPropagation()
+                      }
+                    }
+                  },
+                  [_c("v-icon", { attrs: { small: "" } }, [_vm._v("book")])],
+                  1
+                )
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          !_vm.isTtnCreated &&
+          _vm.item.statuses.shipment_weight != "-" &&
+          _vm.valid
+            ? _c(
+                "v-btn",
+                {
+                  staticClass: "mt-0 ml-0",
+                  attrs: { flat: "", icon: "" },
+                  nativeOn: {
+                    click: function($event) {
+                      $event.stopPropagation()
+                      _vm.setDefaults()
+                      _vm.send(false)
+                    }
+                  }
+                },
+                [_c("v-icon", { attrs: { small: "" } }, [_vm._v("autorenew")])],
+                1
+              )
+            : _vm._e()
+        ],
+        1
+      ),
+      _vm._v(" "),
+      !_vm.editeTtn && _vm.isTtnCreated
+        ? _c(
+            "v-card",
+            [
+              _c("v-card-title", { staticClass: "primary white--text" }, [
+                _c("h5", [_vm._v("Экспресс накладная")])
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "px-4 pt-2" }, [
+                _c("table", { staticClass: "w-100" }, [
+                  _c(
+                    "tr",
+                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
+                    [
+                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
+                        _c("strong", [_vm._v("Экспресс накладная")])
+                      ]),
+                      _c(
+                        "td",
+                        {
+                          staticClass: "body-2 light-green--text text--darken-3"
+                        },
+                        [_vm._v(_vm._s(_vm.item.ttn.int_doc_number))]
+                      )
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
+                    [
+                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
+                        _c("strong", [_vm._v("Получатель")])
+                      ]),
+                      _c("td", { staticClass: "body-2" }, [
+                        _vm._v(_vm._s(_vm.item.ttn.name))
+                      ])
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
+                    [
+                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
+                        _c("strong", [_vm._v("Телефон получателя")])
+                      ]),
+                      _c("td", { staticClass: "body-2" }, [
+                        _vm._v(_vm._s(_vm.item.ttn.phone))
+                      ])
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
+                    [
+                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
+                        _c("strong", [_vm._v("Адрес")])
+                      ]),
+                      _c("td", { staticClass: "body-2" }, [
+                        _vm._v(_vm._s(_vm.item.ttn.full_address))
+                      ])
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
+                    [
+                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
+                        _c("strong", [_vm._v("Дата отправки")])
+                      ]),
+                      _c("td", { staticClass: "body-2" }, [
+                        _vm._v(_vm._s(_vm.item.ttn.date))
+                      ])
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
+                    [
+                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
+                        _c("strong", [_vm._v("Плательщик")])
+                      ]),
+                      _c("td", { staticClass: "body-2" }, [
+                        _vm._v(_vm._s(_vm.mapPayer[_vm.item.ttn.payer]))
+                      ])
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
+                    [
+                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
+                        _c("strong", [_vm._v("Оценочная стоимость")])
+                      ]),
+                      _c("td", { staticClass: "body-2" }, [
+                        _vm._v(_vm._s(_vm.item.ttn.price) + " грн.")
+                      ])
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _vm.item.ttn.backdelivery == 1
+                    ? _c(
+                        "tr",
+                        {
+                          staticStyle: {
+                            "border-bottom": "1px solid lightgray"
+                          }
+                        },
+                        [
+                          _c("td", { staticClass: "body-2 py-3 px-2" }, [
+                            _c("strong", [
+                              _vm._v("Плательщик при обратной доставке")
+                            ])
+                          ]),
+                          _c("td", { staticClass: "body-2" }, [
+                            _vm._v(_vm._s(_vm.mapPayer[_vm.item.ttn.backpayer]))
+                          ])
+                        ]
+                      )
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _vm.item.ttn.backdelivery == 1
+                    ? _c(
+                        "tr",
+                        {
+                          staticStyle: {
+                            "border-bottom": "1px solid lightgray"
+                          }
+                        },
+                        [
+                          _c("td", { staticClass: "body-2 py-3 px-2" }, [
+                            _c("strong", [_vm._v("Сумма обратной доставки")])
+                          ]),
+                          _c("td", { staticClass: "body-2" }, [
+                            _vm._v(_vm._s(_vm.item.ttn.backprice) + " грн.")
+                          ])
+                        ]
+                      )
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _c(
+                    "tr",
+                    { staticStyle: { "border-bottom": "1px solid lightgray" } },
+                    [
+                      _c("td", { staticClass: "body-2 py-3 px-2" }, [
+                        _c("strong", [_vm._v("Вес")])
+                      ]),
+                      _vm._v(" "),
+                      _c("td", { staticClass: "body-2" }, [
+                        _vm._v(
+                          _vm._s(
+                            _vm.item.ttn.weight > _vm.item.ttn.volume_general
+                              ? _vm.item.ttn.weight
+                              : _vm.item.ttn.volume_general
+                          ) + " кг"
+                        )
+                      ])
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c("tr", [
+                    _c("td", { staticClass: "body-2 py-3 px-2" }, [
+                      _c("strong", [_vm._v("Стоимость доставки")])
+                    ]),
+                    _c("td", { staticClass: "body-2" }, [
+                      _vm._v(_vm._s(_vm.deliveryCost))
+                    ])
+                  ])
+                ])
+              ]),
+              _vm._v(" "),
+              _c(
+                "v-alert",
+                {
+                  attrs: { outline: "", dismissible: "", type: "warning" },
+                  model: {
+                    value: _vm.editeTtnWarning,
+                    callback: function($$v) {
+                      _vm.editeTtnWarning = $$v
+                    },
+                    expression: "editeTtnWarning"
+                  }
+                },
+                [
+                  _c("h3", [_vm._v("Внимание!")]),
+                  _vm._v(" "),
+                  _c("div", [
+                    _vm._v(
+                      "Сохранение новых условий доставки приведет к аннулированию ранее сгенерированной ЭН."
+                    )
+                  ]),
+                  _vm._v(" "),
+                  _c(
+                    "v-btn",
+                    {
+                      attrs: { color: "secondary", outline: "", flat: "" },
+                      on: {
+                        click: function($event) {
+                          _vm.editeTtn = true
+                        }
+                      }
+                    },
+                    [_vm._v("Продолжить")]
+                  )
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c(
+                "v-card-actions",
+                [
+                  _c("v-spacer"),
+                  _vm._v(" "),
+                  _c(
+                    "v-btn",
+                    {
+                      attrs: { color: "primary", flat: "" },
+                      on: {
+                        click: function($event) {
+                          _vm.showDialog = false
+                        }
+                      }
+                    },
+                    [_vm._v(" Отмена ")]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "v-btn",
+                    {
+                      attrs: { color: "primary", flat: "" },
+                      on: {
+                        click: function($event) {
+                          _vm.editeTtn = true
+                        }
+                      }
+                    },
+                    [_vm._v(" Редактировать ЕН ")]
+                  )
+                ],
+                1
+              )
+            ],
+            1
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _vm.editeTtn || !_vm.isTtnCreated
+        ? _c(
+            "v-card",
+            [
+              _c("v-card-title", { staticClass: "primary white--text" }, [
+                _c("h5", [_vm._v("Формирование ТТН")])
+              ]),
+              _vm._v(" "),
+              _c(
+                "div",
+                { staticClass: "px-5" },
+                [
+                  _c(
+                    "v-layout",
+                    { attrs: { row: "" } },
+                    [
+                      _c(
+                        "v-flex",
+                        { attrs: { xs12: "", md12: "" } },
+                        [
+                          _c("v-select", {
+                            attrs: {
+                              label: "Плательщик",
+                              items: [
+                                { text: "Получатель", value: "Recipient" },
+                                { text: "Отправитель", value: "Sender" }
+                              ]
+                            },
+                            model: {
+                              value: _vm.data.payer,
+                              callback: function($$v) {
+                                _vm.$set(_vm.data, "payer", $$v)
+                              },
+                              expression: "data.payer"
+                            }
+                          })
+                        ],
+                        1
+                      )
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "v-layout",
+                    { attrs: { row: "" } },
+                    [
+                      _c(
+                        "v-flex",
+                        { attrs: { xs6: "", md6: "" } },
+                        [
+                          _c("v-text-field", {
+                            staticClass: "mr-3",
+                            attrs: { label: "Фамилия" },
+                            model: {
+                              value: _vm.data.client_last_name,
+                              callback: function($$v) {
+                                _vm.$set(_vm.data, "client_last_name", $$v)
+                              },
+                              expression: "data.client_last_name"
+                            }
+                          })
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-flex",
+                        { attrs: { xs6: "", md6: "" } },
+                        [
+                          _c("v-text-field", {
+                            attrs: {
+                              label: "Имя",
+                              "append-outer-icon": "code"
+                            },
+                            on: { "click:append-outer": _vm.switchNames },
+                            model: {
+                              value: _vm.data.client_first_name,
+                              callback: function($$v) {
+                                _vm.$set(_vm.data, "client_first_name", $$v)
+                              },
+                              expression: "data.client_first_name"
+                            }
+                          })
+                        ],
+                        1
+                      )
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "v-layout",
+                    { attrs: { row: "" } },
+                    [
+                      _c(
+                        "v-flex",
+                        { attrs: { xs6: "", md6: "" } },
+                        [
+                          _c("v-text-field", {
+                            staticClass: "mr-3",
+                            attrs: { label: "Отчество" },
+                            model: {
+                              value: _vm.data.client_middle_name,
+                              callback: function($$v) {
+                                _vm.$set(_vm.data, "client_middle_name", $$v)
+                              },
+                              expression: "data.client_middle_name"
+                            }
+                          })
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-flex",
+                        { attrs: { xs6: "", md6: "" } },
+                        [
+                          _c("v-text-field", {
+                            class: { "not-valid": _vm.isPhoneNotSame },
+                            attrs: { label: "Телефон" },
+                            model: {
+                              value: _vm.data.phone,
+                              callback: function($$v) {
+                                _vm.$set(_vm.data, "phone", $$v)
+                              },
+                              expression: "data.phone"
+                            }
+                          })
+                        ],
+                        1
+                      )
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "v-layout",
+                    { attrs: { row: "" } },
+                    [
+                      _c(
+                        "v-flex",
+                        { attrs: { xs12: "", md12: "" } },
+                        [
+                          _vm.item.ttn
+                            ? _c("strong", [
+                                _vm._v(_vm._s(_vm.item.ttn.full_address))
+                              ])
+                            : _c("strong", [
+                                _vm._v(_vm._s(_vm.item.delivery_address))
+                              ]),
+                          _vm._v(" "),
+                          _c("v-autocomplete", {
+                            attrs: {
+                              label: "Город",
+                              "item-text": "description",
+                              "item-value": "description",
+                              items: _vm.newPostCities
+                            },
+                            on: { change: _vm.loadWarehouses },
+                            model: {
+                              value: _vm.data.city,
+                              callback: function($$v) {
+                                _vm.$set(_vm.data, "city", $$v)
+                              },
+                              expression: "data.city"
+                            }
+                          }),
+                          _vm._v(" "),
+                          _c("v-autocomplete", {
+                            attrs: {
+                              label: "Отделение",
+                              items: _vm.newPostWarehouses
+                            },
+                            model: {
+                              value: _vm.data.warehouse,
+                              callback: function($$v) {
+                                _vm.$set(_vm.data, "warehouse", $$v)
+                              },
+                              expression: "data.warehouse"
+                            }
+                          })
+                        ],
+                        1
+                      )
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "v-layout",
+                    { attrs: { row: "" } },
+                    [
+                      _c(
+                        "v-flex",
+                        { attrs: { xs6: "", md6: "" } },
+                        [
+                          _c("v-text-field", {
+                            staticClass: "mr-3",
+                            attrs: { label: "Объявленная стоимость" },
+                            model: {
+                              value: _vm.data.price,
+                              callback: function($$v) {
+                                _vm.$set(_vm.data, "price", $$v)
+                              },
+                              expression: "data.price"
+                            }
+                          })
+                        ],
+                        1
+                      )
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "v-layout",
+                    { attrs: { row: "" } },
+                    [
+                      _c(
+                        "v-flex",
+                        { attrs: { xs6: "", md6: "" } },
+                        [
+                          _c("v-checkbox", {
+                            attrs: { label: "Заказать обратную доставку" },
+                            model: {
+                              value: _vm.data.backdelivery,
+                              callback: function($$v) {
+                                _vm.$set(_vm.data, "backdelivery", $$v)
+                              },
+                              expression: "data.backdelivery"
+                            }
+                          })
+                        ],
+                        1
+                      )
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _vm.data.backdelivery
+                    ? _c(
+                        "div",
+                        [
+                          _c(
+                            "v-layout",
+                            { attrs: { row: "" } },
+                            [
+                              _c(
+                                "v-flex",
+                                { attrs: { xs12: "", md12: "" } },
+                                [
+                                  _c("v-select", {
+                                    attrs: {
+                                      label: "Плательщик",
+                                      items: [
+                                        {
+                                          text: "Получатель",
+                                          value: "Recipient"
+                                        },
+                                        { text: "Отправитель", value: "Sender" }
+                                      ]
+                                    },
+                                    model: {
+                                      value: _vm.data.backpayer,
+                                      callback: function($$v) {
+                                        _vm.$set(_vm.data, "backpayer", $$v)
+                                      },
+                                      expression: "data.backpayer"
+                                    }
+                                  })
+                                ],
+                                1
+                              )
+                            ],
+                            1
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "v-layout",
+                            { attrs: { row: "" } },
+                            [
+                              _c(
+                                "v-flex",
+                                { attrs: { md6: "" } },
+                                [
+                                  _c("v-text-field", {
+                                    staticClass: "mr-3",
+                                    attrs: { label: "Сумма обратной доставки" },
+                                    model: {
+                                      value: _vm.data.backprice,
+                                      callback: function($$v) {
+                                        _vm.$set(_vm.data, "backprice", $$v)
+                                      },
+                                      expression: "data.backprice"
+                                    }
+                                  })
+                                ],
+                                1
+                              )
+                            ],
+                            1
+                          )
+                        ],
+                        1
+                      )
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _vm._l(_vm.places, function(place, key) {
+                    return _c(
+                      "v-layout",
+                      { key: key, attrs: { row: "" } },
+                      [
+                        _c(
+                          "v-flex",
+                          { staticClass: "mr-3", attrs: { md2: "" } },
+                          [
+                            _c("v-text-field", {
+                              attrs: { label: "Вес" },
+                              model: {
+                                value: place.weight,
+                                callback: function($$v) {
+                                  _vm.$set(place, "weight", $$v)
+                                },
+                                expression: "place.weight"
+                              }
+                            })
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "v-flex",
+                          { staticClass: "mr-3", attrs: { md2: "" } },
+                          [
+                            _c("v-text-field", {
+                              attrs: { label: "Длина" },
+                              model: {
+                                value: place.length,
+                                callback: function($$v) {
+                                  _vm.$set(place, "length", $$v)
+                                },
+                                expression: "place.length"
+                              }
+                            })
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "v-flex",
+                          { staticClass: "mr-3", attrs: { md2: "" } },
+                          [
+                            _c("v-text-field", {
+                              attrs: { label: "Ширина" },
+                              model: {
+                                value: place.width,
+                                callback: function($$v) {
+                                  _vm.$set(place, "width", $$v)
+                                },
+                                expression: "place.width"
+                              }
+                            })
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "v-flex",
+                          { staticClass: "mr-3", attrs: { md2: "" } },
+                          [
+                            _c("v-text-field", {
+                              attrs: { label: "Высота" },
+                              model: {
+                                value: place.height,
+                                callback: function($$v) {
+                                  _vm.$set(place, "height", $$v)
+                                },
+                                expression: "place.height"
+                              }
+                            })
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "v-flex",
+                          { attrs: { md3: "" } },
+                          [
+                            _c("v-text-field", {
+                              attrs: {
+                                label: "Объемный вес",
+                                value: _vm.volumeWeight(place)
+                              }
+                            })
+                          ],
+                          1
+                        )
+                      ],
+                      1
+                    )
+                  })
+                ],
+                2
+              ),
+              _vm._v(" "),
+              _c(
+                "v-card-actions",
+                [
+                  _c("v-spacer"),
+                  _vm._v(" "),
+                  _c(
+                    "v-btn",
+                    {
+                      attrs: { color: "primary", flat: "" },
+                      on: {
+                        click: function($event) {
+                          _vm.showDialog = false
+                          _vm.editeTtn = false
+                        }
+                      }
+                    },
+                    [_vm._v(" Отмена ")]
+                  ),
+                  _vm._v(" "),
+                  _vm.isWeightValid
+                    ? _c(
+                        "v-btn",
+                        {
+                          attrs: { color: "primary", flat: "" },
+                          on: {
+                            click: function($event) {
+                              _vm.send(false)
+                            }
+                          }
+                        },
+                        [_vm._v("Сгенерировать ЭН")]
+                      )
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.isTtnCreated
+                    ? _c(
+                        "v-btn",
+                        {
+                          attrs: { color: "primary", flat: "" },
+                          on: {
+                            click: function($event) {
+                              _vm.send(true)
+                            }
+                          }
+                        },
+                        [_vm._v(" Сохранить ")]
+                      )
+                    : _vm._e()
+                ],
+                1
+              )
+            ],
+            1
+          )
+        : _vm._e()
+    ],
+    1
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-8d645b0e", module.exports)
   }
 }
 

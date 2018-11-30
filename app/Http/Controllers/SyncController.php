@@ -169,6 +169,8 @@ class SyncController extends Controller
               'price' => $product_price,
               'main_image' => (string) $product['image'],
               'prom_id' => (string) $product['id'],
+              'presence' => 'available',
+              'status' => 'on_display',
             ));
 
           $order_product = OrderProduct::firstOrCreate(array(
