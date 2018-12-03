@@ -40,6 +40,7 @@ Route::get('newpost/getttn', 'NewPostApiController@getTtn');
 Route::resource('products', 'ProductController');
 
 Route::prefix('product')->group(function () {
+  Route::post('import', 'ProductController@importProcess');
   Route::get('addlabel', 'ProductController@addLabel');
   Route::get('addsuplierlink', 'ProductController@addSuplierLink');
   Route::get('updatesuplierlink', 'ProductController@updateSuplierLink');

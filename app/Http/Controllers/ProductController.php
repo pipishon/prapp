@@ -73,6 +73,78 @@ class ProductController extends Controller
         return array($ids);
     }
 
+
+    public function importFromApiProcess (Request $request)
+    {
+        $group_num = $request->input('group');
+        $last_id = $request->input('last_id');
+        $groups = DB::table('products')->groupBy('group_id')->select('group_id')->get()->pluck('group_id')->toArray();
+        $prom_products = $api->getList('products', array('group_id' => $groups[$group_num], 'last_id'=> $last_id, 'limit' => $limit))['products'];
+        foreach ($prom_products as $prom_product) {
+            Product::where('prom_id', $prom_product['id'])->update(array(
+                'status' => $prom_product['status'],
+                'presence' => $prom_product['presence'],
+            ));
+        }
+        dd(array_column($prom_products, 'id'), count($groups));
+    }
+
+    public function importProcess (Request $request)
+    {
+        $start_row = $request->input('start_row');
+        $result = array();
+        if ($start_row == 0) {
+            $start_row = 1;
+            $request->file('importfile')->storeAs('csvfile', 'csvfile.csv');
+            $path = storage_path('app/csvfile').'/csvfile.csv';
+            $rows = 0;
+            if(($handle = fopen($path, 'r')) !== false) {
+                while(($data = fgetcsv($handle, 10000, ';')) !== false) {
+                    $rows++;
+                }
+            }
+            $result['total'] = $rows - 2;
+        }
+        //$filename = $request->file('csvfile')->getClientOriginalName();
+        $path = storage_path('app/csvfile').'/csvfile.csv';
+        $skip = 0;
+        $imported = 0;
+        $i = 0;
+        $last_row = 0;
+        if(($handle = fopen($path, 'r')) !== false) {
+            while(($data = fgetcsv($handle, 10000, ';')) !== false && $i < 1000) {
+                if ($skip <  $start_row) {$skip++; continue;}
+                foreach( $data as &$value ) {
+                  $value = iconv( 'cp1251','utf-8', $value );
+                }
+                $i++;
+                //$data = explode(';', $data);
+                $image = trim(explode(',', $data[9])[0]);
+
+                Product::updateOrCreate(array('prom_id' => $data[18]), array(
+                    'sku' => $data[0],
+                    'name' => $data[1],
+                    'price' => floatval(str_replace(',', '.', $data[3])),
+                    'units' => $data[5],
+                    'main_image' => $image,
+                    //'min_balance' => intval($data[6]),
+                    'presence' => ($data[10] == '+') ? 'available' : 'not_available',
+                    'quantity' => intval($data[11]),
+                    'group_id' => $data[12],
+                    'category' => $data[13],
+                    'subgroup_id' => $data[20],
+                    'link' => trim($data[27]),
+                ));
+                $imported++;
+            }
+        }
+        $last_row = $start_row + $i;
+        $result['imported'] = $imported;
+        $result['last_row'] = $last_row;
+        return $result;
+        //return array('imported' => $imported, 'last_row' => $last_row);
+    }
+
     public function addLabel(Request $request)
     {
         $ids = $request->input('ids');

@@ -135,10 +135,22 @@
       <pagination :current="curPage" :last="lastPage" @change="loadPage"/>
       <v-btn @click="ShowSuplierDrawer = !ShowSuplierDrawer">Поставщики</v-btn>
       <v-btn @click="ShowLabelDrawer = !ShowLabelDrawer">Метки</v-btn>
+      <v-btn @click="showImportDialog = true">Импорт</v-btn>
+
       <span style="width: 50px;">
         <v-select  v-model="perPage" :items="[30, 50, 100, 200]" @input="searchQuery['per_page'] = arguments[0]; getList()"></v-select>
       </span>
     </v-footer>
+
+    <v-dialog  v-model="showImportDialog" width="300" persistent @keydown.esc="showImportDialog = false">
+      <v-card class="pa-4">
+        <input type="file" @change="imprt.file = arguments[0].target.files" />
+        <v-btn @click="importProcess(0)">Импорт csv</v-btn>
+        <v-progress-circular :size="60" :value="imprt.imported * 100 / imprt.total">
+          {{imprt.imported}}
+        </v-progress-circular>
+      </v-card>
+    </v-dialog>
     <v-navigation-drawer
           v-model="ShowSuplierDrawer"
           fixed
@@ -228,6 +240,7 @@
       },
       data() {
         return {
+          imprt: {file: null, imported: 0, total: 1},
           mass: {label: '', name: '', value: ''},
           footerAvailable: false,
           footerOnDisplay: true,
@@ -247,6 +260,7 @@
             'available': 'В наличии'
           },
           purchasePrice: 0,
+          showImportDialog: false,
           showMassDialog: false,
           stats: {},
           tableWidths: {},
@@ -302,6 +316,36 @@
       methods: {
         ...mapMutations(['massSelection']),
         ...mapActions(['massAction', 'updateSettings']),
+        importProcess (startRow) {
+          if (startRow == 0) {
+            const file = this.imprt.file[0]
+            const formData = new FormData();
+            formData.append('importfile', file)
+            this.imprt.imported = 0
+            axios({
+                method: 'post',
+                url: 'api/product/import',
+                data: formData,
+                config: { headers: {'Content-Type': 'multipart/form-data' }}
+            }).then((res) => {
+              if (res.data.imported != 0) {
+                this.imprt.imported += res.data.imported
+                this.imprt.total += res.data.total
+                this.importProcess(res.data.last_row)
+              }
+            })
+          } else {
+            axios.post('api/product/import', {start_row: startRow}).then((res) => {
+              if (res.data.imported != 0) {
+                this.imprt.imported += res.data.imported
+                this.importProcess(res.data.last_row)
+                console.log(res.data)
+              } else {
+                this.getList()
+              }
+            })
+          }
+        },
         showAvailable () {
           this.footerAvailable  = !this.footerAvailable
           this.searchQuery.available = this.footerAvailable
