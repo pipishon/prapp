@@ -41,6 +41,8 @@ Route::resource('products', 'ProductController');
 
 Route::prefix('product')->group(function () {
   Route::post('import', 'ProductController@importProcess');
+  Route::get('importfromapi', 'ProductController@importFromApiProcess');
+  Route::get('ordermonth/{id}', 'ProductController@getOrderMonth');
   Route::get('addlabel', 'ProductController@addLabel');
   Route::get('addsuplierlink', 'ProductController@addSuplierLink');
   Route::get('updatesuplierlink', 'ProductController@updateSuplierLink');

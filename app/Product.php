@@ -3,10 +3,21 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
 	protected $guarded = [];
+
+  protected $appends = ['orders'];
+
+  public function getOrdersAttribute () {
+    return DB::table('products')
+        ->join('order_products', 'products.id', 'order_products.product_id')
+        ->join('orders', 'orders.id', 'order_products.order_id')
+        ->where('products.id', $this->id)
+        ->where('orders.status', 'delivered')->count();
+  }
 
   public function scopeSearch ($query, $input)
   {
@@ -65,8 +76,4 @@ class Product extends Model
     return $this->hasMany('App\ProductLabelp');
   }
 
-  public function orders()
-  {
-    return $this->hasMany('App\OrderProduct');
-  }
 }

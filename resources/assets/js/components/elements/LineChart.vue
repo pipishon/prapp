@@ -8,7 +8,6 @@ export default {
   data () {
     return {
       options: {
-        responsive: true,
 				title: {
 					display: true,
 				},

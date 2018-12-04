@@ -86737,7 +86737,6 @@ var reactiveProp = __WEBPACK_IMPORTED_MODULE_0_vue_chartjs__["b" /* mixins */].r
 	data: function data() {
 		return {
 			options: {
-				responsive: true,
 				title: {
 					display: true
 				},
@@ -98995,6 +98994,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
 
 
 
@@ -99004,7 +99004,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
   },
   data: function data() {
     return {
-      imprt: { file: null, imported: 0, total: 1 },
+      imprt: { file: null, imported: 0, total: 1, done: false },
       mass: { label: '', name: '', value: '' },
       footerAvailable: false,
       footerOnDisplay: true,
@@ -99064,14 +99064,37 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
   },
   computed: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["c" /* mapGetters */])(['settings', 'selected', 'isMassBusy'])),
   methods: _extends({}, Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["d" /* mapMutations */])(['massSelection']), Object(__WEBPACK_IMPORTED_MODULE_0_vuex__["b" /* mapActions */])(['massAction', 'updateSettings']), {
-    importProcess: function importProcess(startRow) {
+    importFromApiProcess: function importFromApiProcess(lastId) {
       var _this = this;
+
+      var params = {};
+      if (typeof lastId != 'undefined') {
+        params['last_id'] = lastId;
+      } else {
+        this.imprt.imported = 0;
+        this.imprt.done = false;
+      }
+      axios.get('api/product/importfromapi', { params: params }).then(function (res) {
+        console.log(res.data);
+        _this.imprt.total = res.data.total;
+        _this.imprt.imported += res.data.imported;
+        if (typeof res.data.last_id != 'undefined') {
+          _this.importFromApiProcess(res.data.last_id);
+        } else {
+          _this.imprt.done = true;
+          _this.getList();
+        }
+      });
+    },
+    importProcess: function importProcess(startRow) {
+      var _this2 = this;
 
       if (startRow == 0) {
         var file = this.imprt.file[0];
         var formData = new FormData();
         formData.append('importfile', file);
         this.imprt.imported = 0;
+        this.imprt.done = false;
         axios({
           method: 'post',
           url: 'api/product/import',
@@ -99079,19 +99102,23 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
           config: { headers: { 'Content-Type': 'multipart/form-data' } }
         }).then(function (res) {
           if (res.data.imported != 0) {
-            _this.imprt.imported += res.data.imported;
-            _this.imprt.total += res.data.total;
-            _this.importProcess(res.data.last_row);
+            _this2.imprt.imported += res.data.imported;
+            _this2.imprt.total += res.data.total;
+            _this2.importProcess(res.data.last_row);
+          } else {
+            _this2.imprt.done = true;
+            _this2.getList();
           }
         });
       } else {
         axios.post('api/product/import', { start_row: startRow }).then(function (res) {
           if (res.data.imported != 0) {
-            _this.imprt.imported += res.data.imported;
-            _this.importProcess(res.data.last_row);
+            _this2.imprt.imported += res.data.imported;
+            _this2.importProcess(res.data.last_row);
             console.log(res.data);
           } else {
-            _this.getList();
+            _this2.imprt.done = true;
+            _this2.getList();
           }
         });
       }
@@ -99125,15 +99152,15 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
       this.massAction({ fnName: action, selected: this.selected, items: this.massSelectedItems });
     },
     massActionItems: function massActionItems(action) {
-      var _this2 = this;
+      var _this3 = this;
 
       if (action.indexOf('Label') != -1) {
         return this.labels.filter(function (el) {
-          return el.name.toLowerCase().indexOf(_this2.massSearch) != -1;
+          return el.name.toLowerCase().indexOf(_this3.massSearch) != -1;
         });
       } else {
         return this.supliers.filter(function (el) {
-          return el.name.toLowerCase().indexOf(_this2.massSearch) != -1;
+          return el.name.toLowerCase().indexOf(_this3.massSearch) != -1;
         });
       }
     },
@@ -99142,34 +99169,34 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
       this.massSelection(massItems);
     },
     addLabel: function addLabel() {
-      var _this3 = this;
-
-      axios.post('api/labelp', { name: this.LabelToAdd }).then(function (res) {
-        _this3.getLabels();
-        console.log(res.data);
-      });
-    },
-    removeLabel: function removeLabel(item) {
       var _this4 = this;
 
-      axios.delete('api/labelp/' + item.id).then(function (res) {
+      axios.post('api/labelp', { name: this.LabelToAdd }).then(function (res) {
         _this4.getLabels();
         console.log(res.data);
       });
     },
-    addSuplier: function addSuplier() {
+    removeLabel: function removeLabel(item) {
       var _this5 = this;
 
+      axios.delete('api/labelp/' + item.id).then(function (res) {
+        _this5.getLabels();
+        console.log(res.data);
+      });
+    },
+    addSuplier: function addSuplier() {
+      var _this6 = this;
+
       axios.post('api/suplier', { name: this.SuplierToAdd }).then(function (res) {
-        _this5.getSupliers();
+        _this6.getSupliers();
         console.log(res.data);
       });
     },
     removeSuplier: function removeSuplier(item) {
-      var _this6 = this;
+      var _this7 = this;
 
       axios.delete('api/suplier/' + item.id).then(function (res) {
-        _this6.getSupliers();
+        _this7.getSupliers();
         console.log(res.data);
       });
     },
@@ -99186,29 +99213,29 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
       }
     },
     getLabels: function getLabels() {
-      var _this7 = this;
+      var _this8 = this;
 
       axios.get('api/labelp').then(function (res) {
-        _this7.labels = res.data;
+        _this8.labels = res.data;
       });
     },
     getSupliers: function getSupliers() {
-      var _this8 = this;
+      var _this9 = this;
 
       axios.get('api/suplier').then(function (res) {
-        _this8.supliers = res.data;
+        _this9.supliers = res.data;
       });
     },
     getList: function getList(params) {
-      var _this9 = this;
+      var _this10 = this;
 
       params = Object.assign(this.searchQuery, params);
       axios.get('api/products', { params: params }).then(function (res) {
-        _this9.list = res.data.data;
-        _this9.stats = res.data.stats;
-        _this9.curPage = res.data.current_page;
-        _this9.lastPage = res.data.last_page;
-        _this9.massSelection([]);
+        _this10.list = res.data.data;
+        _this10.stats = res.data.stats;
+        _this10.curPage = res.data.current_page;
+        _this10.lastPage = res.data.last_page;
+        _this10.massSelection([]);
       });
     },
     loadPage: function loadPage(page) {
@@ -99221,6 +99248,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
     }
   }),
   mounted: function mounted() {
+
     this.searchQuery.on_display = true;
     this.tableWidths = typeof this.settings.product_table_widths != 'undefined' ? JSON.parse(this.settings.product_table_widths) : {};
     this.getLabels();
@@ -99519,11 +99547,30 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['product'],
   data: function data() {
     return {
+      chartData: null,
+      showDialogStatistics: false,
       showDialog: false,
       suplierLink: ''
     };
@@ -99550,6 +99597,30 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
   },
   computed: {},
   methods: {
+    showOrderStatistic: function showOrderStatistic() {
+      var _this = this;
+
+      this.showDialogStatistics = true;
+      axios.get('api/product/ordermonth/' + this.product.id).then(function (res) {
+        var labels = [];
+        var datasets = [{
+          label: 'Заказано Товаров',
+          data: [],
+          backgroundColor: 'red',
+          borderColor: 'red',
+          fill: false,
+          pointRadius: 0
+        }];
+        res.data.map(function (row) {
+          labels.push(row.month + '.' + row.year);
+          datasets.map(function (dataset) {
+            dataset.data.push(row.qty);
+          });
+        });
+        _this.chartData = { labels: labels, datasets: datasets };
+        console.log(_this.chartData);
+      });
+    },
     goToLink: function goToLink(link) {
       var win = window.open(link, '_blank');
       win.focus();
@@ -99567,12 +99638,12 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
       this.showDialog = false;
     },
     save: function save() {
-      var _this = this;
+      var _this2 = this;
 
       axios.put('api/products/' + this.product.id, _extends({}, this.product)).then(function (res) {
-        _this.$emit('update');
-        _this.product.magrin = res.data.margin;
-        _this.showDialog = false;
+        _this2.$emit('update');
+        _this2.product.magrin = res.data.margin;
+        _this2.showDialog = false;
       });
     }
   },
@@ -99588,835 +99659,988 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c(
-    "v-dialog",
-    {
-      attrs: { fullscreen: "", transition: "dialog-bottom-transition" },
-      model: {
-        value: _vm.showDialog,
-        callback: function($$v) {
-          _vm.showDialog = $$v
-        },
-        expression: "showDialog"
-      }
-    },
+    "div",
     [
       _c(
-        "a",
-        { attrs: { slot: "activator", href: "#" }, slot: "activator" },
-        [_vm._t("default")],
-        2
-      ),
-      _vm._v(" "),
-      _vm.showDialog
-        ? _c(
-            "v-card",
-            [
-              _c(
-                "v-toolbar",
-                { attrs: { flat: "", card: "", dense: "", fixed: "" } },
+        "v-dialog",
+        {
+          attrs: { fullscreen: "", transition: "dialog-bottom-transition" },
+          model: {
+            value: _vm.showDialog,
+            callback: function($$v) {
+              _vm.showDialog = $$v
+            },
+            expression: "showDialog"
+          }
+        },
+        [
+          _c(
+            "a",
+            { attrs: { slot: "activator", href: "#" }, slot: "activator" },
+            [_vm._t("default")],
+            2
+          ),
+          _vm._v(" "),
+          _vm.showDialog
+            ? _c(
+                "v-card",
                 [
-                  _c("h3", [_vm._v("Редактирование товара")]),
-                  _vm._v(" "),
-                  _c("v-spacer"),
-                  _vm._v(" "),
                   _c(
-                    "v-toolbar-items",
+                    "v-toolbar",
+                    { attrs: { flat: "", card: "", dense: "", fixed: "" } },
                     [
+                      _c("h3", [_vm._v("Редактирование товара")]),
+                      _vm._v(" "),
+                      _c("v-spacer"),
+                      _vm._v(" "),
                       _c(
-                        "v-btn",
-                        {
-                          attrs: { flat: "" },
-                          nativeOn: {
-                            click: function($event) {
-                              _vm.showDialog = false
-                            }
-                          }
-                        },
-                        [_c("v-icon", [_vm._v("close")])],
+                        "v-toolbar-items",
+                        [
+                          _c(
+                            "v-btn",
+                            {
+                              attrs: { flat: "" },
+                              nativeOn: {
+                                click: function($event) {
+                                  _vm.showDialog = false
+                                }
+                              }
+                            },
+                            [_c("v-icon", [_vm._v("close")])],
+                            1
+                          )
+                        ],
                         1
                       )
                     ],
                     1
-                  )
-                ],
-                1
-              ),
-              _vm._v(" "),
-              _c(
-                "v-container",
-                { staticClass: "mt-5", attrs: { fluid: "" } },
-                [
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        {
-                          staticClass: "text-right pr-4",
-                          attrs: { xs12: "", md2: "" }
-                        },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Наименование")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { xs12: "", md9: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "", "append-icon": "open_in_new" },
-                          domProps: { value: _vm.product.name }
-                        })
-                      ])
-                    ],
-                    1
                   ),
                   _vm._v(" "),
                   _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
+                    "v-container",
+                    { staticClass: "mt-5", attrs: { fluid: "" } },
                     [
                       _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
                         [
                           _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Aртикул")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: _vm.product.sku }
-                        })
-                      ]),
-                      _vm._v(" "),
-                      _c(
-                        "v-flex",
-                        { attrs: { "offset-md6": "", "md-2": "" } },
-                        [
-                          _c(
-                            "div",
+                            "v-flex",
                             {
-                              staticClass: "ttl",
-                              staticStyle: {
-                                "padding-top": "0",
-                                "padding-bottom": "5px"
-                              }
+                              staticClass: "text-right pr-4",
+                              attrs: { xs12: "", md2: "" }
                             },
-                            [_vm._v("Изображение")]
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Наименование")]
+                              )
+                            ]
                           ),
                           _vm._v(" "),
-                          _c("img", {
-                            staticStyle: { position: "absolute" },
-                            attrs: { width: "130", src: _vm.product.main_image }
-                          })
-                        ]
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("ID товара")]
-                          )
-                        ]
+                          _c("v-flex", { attrs: { xs12: "", md9: "" } }, [
+                            _c("input", {
+                              attrs: {
+                                readonly: "",
+                                "append-icon": "open_in_new"
+                              },
+                              domProps: { value: _vm.product.name }
+                            })
+                          ])
+                        ],
+                        1
                       ),
                       _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: _vm.product.prom_id }
-                        })
-                      ])
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
                       _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
                         [
                           _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Группа")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md5: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: _vm.product.category }
-                        })
-                      ])
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Ед. измерения")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: _vm.product.units }
-                        })
-                      ]),
-                      _vm._v(" "),
-                      _c(
-                        "v-flex",
-                        { attrs: { "offset-md6": "", "md-3": "" } },
-                        [
-                          _c(
-                            "div",
+                            "v-flex",
                             {
-                              staticClass: "ttl",
-                              staticStyle: {
-                                "padding-bottom": "0",
-                                "padding-top": "30px"
-                              }
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
                             },
-                            [_vm._v("Наличие")]
-                          )
-                        ]
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Мин. остаток")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: _vm.product.min_quantity }
-                        })
-                      ]),
-                      _vm._v(" "),
-                      _c(
-                        "v-flex",
-                        {
-                          staticClass: "text-right pr-4",
-                          attrs: { md2: "", "offset-md4": "" }
-                        },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Остаток")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: _vm.product.quantity }
-                        })
-                      ])
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Поставщик")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md4: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: 0 }
-                        })
-                      ]),
-                      _vm._v(" "),
-                      _c(
-                        "v-flex",
-                        {
-                          staticClass: "text-right pr-4",
-                          attrs: { md2: "", "offset-md1": "" }
-                        },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Статус")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: _vm.product.status }
-                        })
-                      ])
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        {
-                          staticClass: "text-right pr-4",
-                          attrs: { md2: "", "offset-md7": "" }
-                        },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Наличие")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: _vm.product.presence }
-                        })
-                      ])
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [_c("div", { staticClass: "ttl" }, [_vm._v("Цены")])]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "v-flex",
-                        { attrs: { "offset-md7": "", "md-3": "" } },
-                        [_c("div", { staticClass: "ttl" }, [_vm._v("Метки")])]
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Закуп. цена")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          directives: [
-                            {
-                              name: "model",
-                              rawName: "v-model",
-                              value: _vm.product.purchase_price,
-                              expression: "product.purchase_price"
-                            }
-                          ],
-                          domProps: { value: _vm.product.purchase_price },
-                          on: {
-                            input: function($event) {
-                              if ($event.target.composing) {
-                                return
-                              }
-                              _vm.$set(
-                                _vm.product,
-                                "purchase_price",
-                                $event.target.value
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Aртикул")]
                               )
-                            }
-                          }
-                        })
-                      ]),
-                      _vm._v(" "),
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: { value: _vm.product.sku }
+                            })
+                          ]),
+                          _vm._v(" "),
                           _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Маржа")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: {
-                            value:
-                              _vm.product.margin != null
-                                ? _vm.product.margin.toFixed(2)
-                                : ""
-                          }
-                        })
-                      ])
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Цена продажи")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: _vm.product.price }
-                        })
-                      ])
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [_c("div", { staticClass: "ttl" }, [_vm._v("Продажи")])]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "v-flex",
-                        { attrs: { "offset-md7": "", "md-3": "" } },
-                        [
-                          _c("div", { staticClass: "ttl" }, [
-                            _vm._v("Сортировка")
-                          ])
-                        ]
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Заказы, всего")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          attrs: { readonly: "" },
-                          domProps: { value: _vm.product.orders_count }
-                        })
-                      ]),
-                      _vm._v(" "),
-                      _c(
-                        "v-flex",
-                        {
-                          staticClass: "text-right pr-4",
-                          attrs: { "offset-md4": "", md2: "" }
-                        },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Сорт 1")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          directives: [
-                            {
-                              name: "model",
-                              rawName: "v-model",
-                              value: _vm.product.sort1,
-                              expression: "product.sort1"
-                            }
-                          ],
-                          domProps: { value: _vm.product.sort1 },
-                          on: {
-                            input: function($event) {
-                              if ($event.target.composing) {
-                                return
-                              }
-                              _vm.$set(
-                                _vm.product,
-                                "sort1",
-                                $event.target.value
-                              )
-                            }
-                          }
-                        })
-                      ])
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    {
-                      staticClass: "px-4",
-                      attrs: { row: "", "align-center": "" }
-                    },
-                    [
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [
-                          _c("div", { staticClass: "ttl" }, [
-                            _vm._v("URL поставщика")
-                          ])
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "v-flex",
-                        {
-                          staticClass: "text-right pr-4",
-                          attrs: { "offset-md5": "", md2: "" }
-                        },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Сорт 2")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md1: "" } }, [
-                        _c("input", {
-                          directives: [
-                            {
-                              name: "model",
-                              rawName: "v-model",
-                              value: _vm.product.sort2,
-                              expression: "product.sort2"
-                            }
-                          ],
-                          domProps: { value: _vm.product.sort2 },
-                          on: {
-                            input: function($event) {
-                              if ($event.target.composing) {
-                                return
-                              }
-                              _vm.$set(
-                                _vm.product,
-                                "sort2",
-                                $event.target.value
-                              )
-                            }
-                          }
-                        })
-                      ])
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-layout",
-                    { staticClass: "px-4", attrs: { row: "" } },
-                    [
-                      _c(
-                        "v-flex",
-                        { staticClass: "text-right pr-4", attrs: { md2: "" } },
-                        [
-                          _c(
-                            "span",
-                            { staticClass: "subheading font-weight-medium" },
-                            [_vm._v("Ссылка")]
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("v-flex", { attrs: { md5: "" } }, [
-                        _c(
-                          "div",
-                          [
-                            _vm._l(_vm.product.suplierlinks, function(
-                              item,
-                              index
-                            ) {
-                              return _c("div", [
-                                _c("input", {
-                                  directives: [
-                                    {
-                                      name: "model",
-                                      rawName: "v-model",
-                                      value: item.link,
-                                      expression: "item.link"
-                                    }
-                                  ],
+                            "v-flex",
+                            { attrs: { "offset-md6": "", "md-2": "" } },
+                            [
+                              _c(
+                                "div",
+                                {
+                                  staticClass: "ttl",
                                   staticStyle: {
-                                    width: "80%",
-                                    display: "inline-block"
-                                  },
-                                  domProps: { value: item.link },
-                                  on: {
-                                    input: function($event) {
-                                      if ($event.target.composing) {
-                                        return
-                                      }
-                                      _vm.$set(
-                                        item,
-                                        "link",
-                                        $event.target.value
-                                      )
-                                    }
+                                    "padding-top": "0",
+                                    "padding-bottom": "5px"
                                   }
-                                }),
-                                _vm._v(" "),
-                                item.link != ""
-                                  ? _c(
-                                      "span",
-                                      [
-                                        _c(
-                                          "v-btn",
-                                          {
-                                            staticClass: "ma-0 pa-0",
-                                            attrs: { icon: "" }
-                                          },
-                                          [
-                                            _c(
-                                              "v-icon",
-                                              {
-                                                on: {
-                                                  click: function($event) {
-                                                    _vm.goToLink(item.link)
-                                                  }
-                                                }
-                                              },
-                                              [_vm._v("link")]
-                                            )
-                                          ],
-                                          1
-                                        ),
-                                        _vm._v(" "),
-                                        index > 0
-                                          ? _c(
-                                              "v-btn",
-                                              {
-                                                staticClass: "ma-0 pa-0",
-                                                attrs: { icon: "" },
-                                                on: {
-                                                  click: function($event) {
-                                                    _vm.deleteSuplierLink(item)
-                                                  }
-                                                }
-                                              },
-                                              [
-                                                _c("v-icon", [_vm._v("delete")])
-                                              ],
-                                              1
-                                            )
-                                          : _vm._e()
-                                      ],
-                                      1
-                                    )
-                                  : _vm._e()
+                                },
+                                [_vm._v("Изображение")]
+                              ),
+                              _vm._v(" "),
+                              _c("img", {
+                                staticStyle: { position: "absolute" },
+                                attrs: {
+                                  width: "130",
+                                  src: _vm.product.main_image
+                                }
+                              })
+                            ]
+                          )
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("ID товара")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: { value: _vm.product.prom_id }
+                            })
+                          ])
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Группа")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md5: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: { value: _vm.product.category }
+                            })
+                          ])
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Ед. измерения")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: { value: _vm.product.units }
+                            })
+                          ]),
+                          _vm._v(" "),
+                          _c(
+                            "v-flex",
+                            { attrs: { "offset-md6": "", "md-3": "" } },
+                            [
+                              _c(
+                                "div",
+                                {
+                                  staticClass: "ttl",
+                                  staticStyle: {
+                                    "padding-bottom": "0",
+                                    "padding-top": "30px"
+                                  }
+                                },
+                                [_vm._v("Наличие")]
+                              )
+                            ]
+                          )
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Мин. остаток")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: { value: _vm.product.min_quantity }
+                            })
+                          ]),
+                          _vm._v(" "),
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "", "offset-md4": "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Остаток")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: { value: _vm.product.quantity }
+                            })
+                          ])
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Поставщик")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md4: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: { value: 0 }
+                            })
+                          ]),
+                          _vm._v(" "),
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "", "offset-md1": "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Статус")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: { value: _vm.product.status }
+                            })
+                          ])
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "", "offset-md7": "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Наличие")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: { value: _vm.product.presence }
+                            })
+                          ])
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c("div", { staticClass: "ttl" }, [
+                                _vm._v("Цены")
                               ])
-                            }),
-                            _vm._v(" "),
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "v-flex",
+                            { attrs: { "offset-md7": "", "md-3": "" } },
+                            [
+                              _c("div", { staticClass: "ttl" }, [
+                                _vm._v("Метки")
+                              ])
+                            ]
+                          )
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Закуп. цена")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.product.purchase_price,
+                                  expression: "product.purchase_price"
+                                }
+                              ],
+                              domProps: { value: _vm.product.purchase_price },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.$set(
+                                    _vm.product,
+                                    "purchase_price",
+                                    $event.target.value
+                                  )
+                                }
+                              }
+                            })
+                          ]),
+                          _vm._v(" "),
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Маржа")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: {
+                                value:
+                                  _vm.product.margin != null
+                                    ? _vm.product.margin.toFixed(2)
+                                    : ""
+                              }
+                            })
+                          ])
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Цена продажи")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: { value: _vm.product.price }
+                            })
+                          ])
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c("div", { staticClass: "ttl" }, [
+                                _vm._v("Продажи")
+                              ])
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "v-flex",
+                            { attrs: { "offset-md7": "", "md-3": "" } },
+                            [
+                              _c("div", { staticClass: "ttl" }, [
+                                _vm._v("Сортировка")
+                              ])
+                            ]
+                          )
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Заказы, всего")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              attrs: { readonly: "" },
+                              domProps: { value: _vm.product.orders }
+                            })
+                          ]),
+                          _vm._v(" "),
+                          _c(
+                            "v-flex",
+                            { attrs: { md1: "" } },
+                            [
+                              _c(
+                                "v-btn",
+                                {
+                                  attrs: { icon: "", flat: "" },
+                                  on: { click: _vm.showOrderStatistic }
+                                },
+                                [_c("v-icon", [_vm._v("bar_chart")])],
+                                1
+                              )
+                            ],
+                            1
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { "offset-md3": "", md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Сорт 1")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.product.sort1,
+                                  expression: "product.sort1"
+                                }
+                              ],
+                              domProps: { value: _vm.product.sort1 },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.$set(
+                                    _vm.product,
+                                    "sort1",
+                                    $event.target.value
+                                  )
+                                }
+                              }
+                            })
+                          ])
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        {
+                          staticClass: "px-4",
+                          attrs: { row: "", "align-center": "" }
+                        },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c("div", { staticClass: "ttl" }, [
+                                _vm._v("URL поставщика")
+                              ])
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { "offset-md5": "", md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Сорт 2")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md1: "" } }, [
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.product.sort2,
+                                  expression: "product.sort2"
+                                }
+                              ],
+                              domProps: { value: _vm.product.sort2 },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.$set(
+                                    _vm.product,
+                                    "sort2",
+                                    $event.target.value
+                                  )
+                                }
+                              }
+                            })
+                          ])
+                        ],
+                        1
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-layout",
+                        { staticClass: "px-4", attrs: { row: "" } },
+                        [
+                          _c(
+                            "v-flex",
+                            {
+                              staticClass: "text-right pr-4",
+                              attrs: { md2: "" }
+                            },
+                            [
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "subheading font-weight-medium"
+                                },
+                                [_vm._v("Ссылка")]
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c("v-flex", { attrs: { md5: "" } }, [
                             _c(
                               "div",
                               [
+                                _vm._l(_vm.product.suplierlinks, function(
+                                  item,
+                                  index
+                                ) {
+                                  return _c("div", [
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: item.link,
+                                          expression: "item.link"
+                                        }
+                                      ],
+                                      staticStyle: {
+                                        width: "80%",
+                                        display: "inline-block"
+                                      },
+                                      domProps: { value: item.link },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            item,
+                                            "link",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    }),
+                                    _vm._v(" "),
+                                    item.link != ""
+                                      ? _c(
+                                          "span",
+                                          [
+                                            _c(
+                                              "v-btn",
+                                              {
+                                                staticClass: "ma-0 pa-0",
+                                                attrs: { icon: "" }
+                                              },
+                                              [
+                                                _c(
+                                                  "v-icon",
+                                                  {
+                                                    on: {
+                                                      click: function($event) {
+                                                        _vm.goToLink(item.link)
+                                                      }
+                                                    }
+                                                  },
+                                                  [_vm._v("link")]
+                                                )
+                                              ],
+                                              1
+                                            ),
+                                            _vm._v(" "),
+                                            index > 0
+                                              ? _c(
+                                                  "v-btn",
+                                                  {
+                                                    staticClass: "ma-0 pa-0",
+                                                    attrs: { icon: "" },
+                                                    on: {
+                                                      click: function($event) {
+                                                        _vm.deleteSuplierLink(
+                                                          item
+                                                        )
+                                                      }
+                                                    }
+                                                  },
+                                                  [
+                                                    _c("v-icon", [
+                                                      _vm._v("delete")
+                                                    ])
+                                                  ],
+                                                  1
+                                                )
+                                              : _vm._e()
+                                          ],
+                                          1
+                                        )
+                                      : _vm._e()
+                                  ])
+                                }),
+                                _vm._v(" "),
                                 _c(
-                                  "v-btn",
-                                  {
-                                    staticClass: "ma-0 pa-0",
-                                    attrs: { icon: "" },
-                                    on: { click: _vm.addSuplierLink }
-                                  },
+                                  "div",
                                   [
                                     _c(
-                                      "v-icon",
-                                      { staticClass: "grey--text" },
-                                      [_vm._v("add_box")]
+                                      "v-btn",
+                                      {
+                                        staticClass: "ma-0 pa-0",
+                                        attrs: { icon: "" },
+                                        on: { click: _vm.addSuplierLink }
+                                      },
+                                      [
+                                        _c(
+                                          "v-icon",
+                                          { staticClass: "grey--text" },
+                                          [_vm._v("add_box")]
+                                        )
+                                      ],
+                                      1
                                     )
                                   ],
                                   1
                                 )
                               ],
-                              1
+                              2
                             )
-                          ],
-                          2
-                        )
-                      ])
+                          ])
+                        ],
+                        1
+                      )
+                    ],
+                    1
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "v-card-actions",
+                    [
+                      _c("v-spacer"),
+                      _vm._v(" "),
+                      _c(
+                        "v-btn",
+                        {
+                          attrs: { color: "primary", flat: "" },
+                          on: { click: _vm.cancel }
+                        },
+                        [_vm._v(" Отмена ")]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "v-btn",
+                        {
+                          attrs: { color: "primary", flat: "" },
+                          on: { click: _vm.save }
+                        },
+                        [_vm._v(" Сохранить ")]
+                      ),
+                      _vm._v(" "),
+                      _c("v-spacer")
                     ],
                     1
                   )
                 ],
                 1
-              ),
-              _vm._v(" "),
-              _c(
-                "v-card-actions",
-                [
-                  _c("v-spacer"),
-                  _vm._v(" "),
-                  _c(
-                    "v-btn",
-                    {
-                      attrs: { color: "primary", flat: "" },
-                      on: { click: _vm.cancel }
-                    },
-                    [_vm._v(" Отмена ")]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "v-btn",
-                    {
-                      attrs: { color: "primary", flat: "" },
-                      on: { click: _vm.save }
-                    },
-                    [_vm._v(" Сохранить ")]
-                  ),
-                  _vm._v(" "),
-                  _c("v-spacer")
-                ],
-                1
               )
-            ],
-            1
-          )
-        : _vm._e()
+            : _vm._e()
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "v-dialog",
+        {
+          attrs: { width: "600" },
+          model: {
+            value: _vm.showDialogStatistics,
+            callback: function($$v) {
+              _vm.showDialogStatistics = $$v
+            },
+            expression: "showDialogStatistics"
+          }
+        },
+        [
+          _c("v-card", [
+            _c(
+              "div",
+              { staticStyle: { width: "600px", height: "600px" } },
+              [
+                _c("linechart", {
+                  attrs: {
+                    "chart-data": _vm.chartData,
+                    options: { responsive: true }
+                  }
+                })
+              ],
+              1
+            )
+          ])
+        ],
+        1
+      )
     ],
     1
   )
@@ -100534,9 +100758,7 @@ var render = function() {
                       _vm._v(" "),
                       _c("td", [
                         _vm._v(
-                          "\n          " +
-                            _vm._s(item.orders_count) +
-                            "\n        "
+                          "\n          " + _vm._s(item.orders) + "\n        "
                         )
                       ]),
                       _vm._v(" "),
@@ -101046,10 +101268,23 @@ var render = function() {
               ),
               _vm._v(" "),
               _c(
+                "v-btn",
+                {
+                  on: {
+                    click: function($event) {
+                      _vm.importFromApiProcess()
+                    }
+                  }
+                },
+                [_vm._v("Импорт api")]
+              ),
+              _vm._v(" "),
+              _c(
                 "v-progress-circular",
                 {
                   attrs: {
                     size: 60,
+                    color: _vm.imprt.done ? "green" : "black",
                     value: (_vm.imprt.imported * 100) / _vm.imprt.total
                   }
                 },
@@ -110415,7 +110650,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             _this2.data[key] = _this2.item.ttn[key];
           }
         });
+        var _place = { weight: '0.1', length: '5', width: '5', height: '5' };
         this.places = JSON.parse(this.item.ttn.crm_places);
+        if (this.item.statuses.shipment_place && this.item.statuses.shipment_place > 1) {
+          if (this.places.length < this.item.statuses.shipment_place) {
+            this.places.push(_place);
+          }
+        }
         var names = this.item.ttn.name.split(' ');
         // this.data.phone = (this.item.statuses.custom_phone != null) ? this.item.statuses.custom_phone : this.item.ttn.phone
         this.data.client_last_name = names[0] || '';

@@ -6,6 +6,7 @@ use App\Product;
 use App\ProductLabelp;
 use App\ProductSuplier;
 use App\Order;
+use Illuminate\Support\Facades\DB;
 use App\ProductSuplierLink;
 use App\PromApi;
 use Illuminate\Http\Request;
@@ -45,7 +46,7 @@ class ProductController extends Controller
               'purchase_price' => Product::whereNull('purchase_price')->count(),
           );
       }
-      $products = $products->with(['labels', 'supliers', 'suplierlinks'])->withCount('orders')->orderBy('name')->paginate($per_page);
+      $products = $products->with(['labels', 'supliers', 'suplierlinks'])->orderBy('name')->paginate($per_page);
 
       $custom = collect([
         'stats' => $stats,
@@ -73,20 +74,47 @@ class ProductController extends Controller
         return array($ids);
     }
 
+    public function getOrderMonth ($id) {
+        $months = DB::table('orders')
+            ->join('order_products', 'orders.id', 'order_products.order_id')
+                ->where('orders.status', 'delivered')
+                ->where('order_products.product_id', $id)
+                ->select(DB::raw('count(order_products.quantity) as `qty`'), DB::raw('YEAR(orders.prom_date_created) year, MONTH(orders.prom_date_created) month'))
+                ->groupby('year','month')
+                ->get();
+        return $months;
+    }
 
     public function importFromApiProcess (Request $request)
     {
-        $group_num = $request->input('group');
         $last_id = $request->input('last_id');
+        $api = new PromApi;
         $groups = DB::table('products')->groupBy('group_id')->select('group_id')->get()->pluck('group_id')->toArray();
-        $prom_products = $api->getList('products', array('group_id' => $groups[$group_num], 'last_id'=> $last_id, 'limit' => $limit))['products'];
+        $prom_params = array('group_id' => '', 'limit' => 100);
+        if ($last_id) {
+            $prom_params['last_id'] = $last_id;
+        }
+
+        $prom_products = $api->getList('products', $prom_params)['products'];
+        $total = Product::count();
         foreach ($prom_products as $prom_product) {
             Product::where('prom_id', $prom_product['id'])->update(array(
+                'name' => $prom_product['name'],
+                'sku' => (string) $prom_product['sku'],
                 'status' => $prom_product['status'],
                 'presence' => $prom_product['presence'],
+                'group_id' => $prom_product['group']['id'],
+                'category' => $prom_product['group']['name'],
+                'price' => $prom_product['price'],
             ));
         }
-        dd(array_column($prom_products, 'id'), count($groups));
+        $ids = array_column($prom_products, 'id');
+        if (count($ids) == 100) {
+            $last_id = array_values(array_slice($ids, -1))[0];
+            return array('last_id' => $last_id, 'imported' => count($prom_products), 'total' => $total);
+        } else {
+            return array('imported' => count($prom_products), 'total' => $total);
+        }
     }
 
     public function importProcess (Request $request)

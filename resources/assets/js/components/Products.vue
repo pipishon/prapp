@@ -96,7 +96,7 @@
           <td>
           </td>
           <td>
-            {{item.orders_count}}
+            {{item.orders}}
           </td>
           <td>
             {{item.purchase_price}}
@@ -146,7 +146,8 @@
       <v-card class="pa-4">
         <input type="file" @change="imprt.file = arguments[0].target.files" />
         <v-btn @click="importProcess(0)">Импорт csv</v-btn>
-        <v-progress-circular :size="60" :value="imprt.imported * 100 / imprt.total">
+        <v-btn @click="importFromApiProcess()">Импорт api</v-btn>
+        <v-progress-circular :size="60" :color="(imprt.done) ? 'green' : 'black'" :value="imprt.imported * 100 / imprt.total">
           {{imprt.imported}}
         </v-progress-circular>
       </v-card>
@@ -240,7 +241,7 @@
       },
       data() {
         return {
-          imprt: {file: null, imported: 0, total: 1},
+          imprt: {file: null, imported: 0, total: 1, done: false},
           mass: {label: '', name: '', value: ''},
           footerAvailable: false,
           footerOnDisplay: true,
@@ -316,12 +317,33 @@
       methods: {
         ...mapMutations(['massSelection']),
         ...mapActions(['massAction', 'updateSettings']),
+        importFromApiProcess (lastId) {
+          const params = {}
+          if (typeof(lastId) != 'undefined') {
+            params['last_id'] = lastId
+          } else {
+            this.imprt.imported = 0
+            this.imprt.done = false
+          }
+          axios.get('api/product/importfromapi', {params}).then((res) => {
+            console.log(res.data)
+            this.imprt.total = res.data.total
+            this.imprt.imported += res.data.imported
+            if (typeof(res.data.last_id) != 'undefined') {
+              this.importFromApiProcess(res.data.last_id)
+            } else {
+              this.imprt.done = true
+              this.getList()
+            }
+          })
+        },
         importProcess (startRow) {
           if (startRow == 0) {
             const file = this.imprt.file[0]
             const formData = new FormData();
             formData.append('importfile', file)
             this.imprt.imported = 0
+            this.imprt.done = false
             axios({
                 method: 'post',
                 url: 'api/product/import',
@@ -332,6 +354,9 @@
                 this.imprt.imported += res.data.imported
                 this.imprt.total += res.data.total
                 this.importProcess(res.data.last_row)
+              } else {
+                this.imprt.done = true
+                this.getList()
               }
             })
           } else {
@@ -341,6 +366,7 @@
                 this.importProcess(res.data.last_row)
                 console.log(res.data)
               } else {
+                this.imprt.done = true
                 this.getList()
               }
             })
@@ -449,6 +475,7 @@
         }
       },
       mounted() {
+
         this.searchQuery.on_display = true
         this.tableWidths = (typeof(this.settings.product_table_widths) != 'undefined') ? JSON.parse(this.settings.product_table_widths) : {}
         this.getLabels()

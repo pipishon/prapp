@@ -17,21 +17,17 @@ class TestController extends Controller
 {
     public function index (Request $request)
     {
-        $group_num = $request->input('group');
-        $last_id = $request->input('last_id');
-        $api = new PromApi;
-        $limit = '100';
-      $groups = DB::table('products')->groupBy('group_id')->select('group_id')->get()->pluck('group_id')->toArray();
-        $prom_products = $api->getList('products', array('group_id' => $groups[$group_num], 'last_id'=> $last_id, 'limit' => $limit))['products'];
-        foreach ($prom_products as $prom_product) {
-            Product::where('prom_id', $prom_product['id'])->update(array(
-                'status' => $prom_product['status'],
-                'presence' => $prom_product['presence'],
-            ));
-        }
-
-        //    $api->getList('groups')['groups'];
-        dd(array_column($prom_products, 'id'), count($groups));
+        $product_sku = 'AP047';
+        $product_id = Product::where('sku', $product_sku)->first()->id;
+        $product_ids = Product::all()->pluck('id');
+        $months = DB::table('orders')
+            ->join('order_products', 'orders.id', 'order_products.order_id')
+                ->where('orders.status', 'delivered')
+                ->whereIn('order_products.product_id', $product_ids)
+                ->select('order_products.product_id', DB::raw('count(order_products.quantity) as `qty`'), DB::raw('YEAR(orders.prom_date_created) year, MONTH(orders.prom_date_created) month'))
+                ->groupby('order_products.product_id', 'year','month')
+                ->get();
+        return $months;
     }
     /*
         $ttn = $request->input('ttn');

@@ -1,4 +1,5 @@
 <template>
+  <div>
   <v-dialog  v-model="showDialog" fullscreen transition="dialog-bottom-transition" >
     <a href="#" slot="activator"><slot></slot></a>
     <v-card v-if="showDialog">
@@ -136,9 +137,12 @@
             <span class="subheading font-weight-medium" >Заказы, всего</span>
           </v-flex>
           <v-flex md1 >
-            <input  :value="product.orders_count" readonly>
+            <input  :value="product.orders" readonly>
           </v-flex>
-          <v-flex offset-md4 md2 class="text-right pr-4">
+          <v-flex md1 >
+            <v-btn @click="showOrderStatistic" icon flat><v-icon>bar_chart</v-icon></v-btn>
+          </v-flex>
+          <v-flex offset-md3 md2 class="text-right pr-4">
             <span class="subheading font-weight-medium" >Сорт 1</span>
           </v-flex>
           <v-flex md1 >
@@ -188,12 +192,27 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog width="600" v-model="showDialogStatistics">
+
+    <v-card>
+      <div style="width: 600px; height: 600px;">
+        <linechart
+          :chart-data="chartData"
+          :options="{responsive: true}"
+        ></linechart>
+      </div>
+    </v-card>
+  </v-dialog>
+  </div>
 </template>
 <script>
     export default {
       props: ['product'],
       data() {
         return {
+          chartData: null,
+          showDialogStatistics: false,
           showDialog: false,
           suplierLink: '',
         }
@@ -219,6 +238,30 @@
       computed: {
       },
       methods: {
+        showOrderStatistic () {
+          this.showDialogStatistics = true
+          axios.get('api/product/ordermonth/' + this.product.id).then((res) => {
+            let labels = []
+            let datasets = [
+                {
+                  label: 'Заказано Товаров',
+                  data: [],
+                  backgroundColor: 'red',
+                  borderColor: 'red',
+                  fill: false,
+                  pointRadius: 0
+                },
+              ]
+            res.data.map((row) => {
+              labels.push(row.month + '.' + row.year)
+              datasets.map((dataset) => {
+                dataset.data.push(row.qty)
+              })
+            })
+            this.chartData = {labels, datasets}
+            console.log(this.chartData)
+          })
+        },
         goToLink (link) {
           const win = window.open(link, '_blank');
           win.focus();

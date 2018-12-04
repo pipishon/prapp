@@ -185,17 +185,15 @@ class SyncController extends Controller
         $sputnik_email->subscribe();
       }
 
-      //$customer = Customer::find($O_order->customer_id);
+        $order_crm = Order::where('prom_id', $order['id'])->first();
+        OrderStatus::firstOrCreate(array('order_id' => $order_crm->id));
+        $customer->recalcStatistics();
 
     }
 
     foreach ($new_orders_id as $id) {
-        $order = Order::where('prom_id', $id)->first();
-        //$order->mapDeliveryPayment();
-        OrderStatus::firstOrCreate(array('order_id' => $order->id));
-        $customer_id = $order->customer_id;
-        $customer = Customer::find($customer_id);
-        $customer->recalcStatistics();
+        $order_crm = Order::where('prom_id', $id)->first();
+        OrderStatus::firstOrCreate(array('order_id' => $order_crm->id));
     }
 
     $orders_to_update_status = Order::whereIn('status', ['pending', 'received'])->whereNotIn('prom_id', $new_orders_id)->get();

@@ -314,7 +314,13 @@ import { mapGetters } from 'vuex'
                 this.data[key] = this.item.ttn[key]
               }
             })
+            const place = { weight: '0.1', length: '5', width: '5', height: '5' }
             this.places = JSON.parse(this.item.ttn.crm_places)
+            if (this.item.statuses.shipment_place && this.item.statuses.shipment_place > 1) {
+              if (this.places.length < this.item.statuses.shipment_place) {
+                  this.places.push(place)
+              }
+            }
             const names = this.item.ttn.name.split(' ')
             // this.data.phone = (this.item.statuses.custom_phone != null) ? this.item.statuses.custom_phone : this.item.ttn.phone
             this.data.client_last_name = names[0] || ''
