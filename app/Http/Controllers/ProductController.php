@@ -79,8 +79,10 @@ class ProductController extends Controller
             ->join('order_products', 'orders.id', 'order_products.order_id')
                 ->where('orders.status', 'delivered')
                 ->where('order_products.product_id', $id)
-                ->select(DB::raw('count(order_products.quantity) as `qty`'), DB::raw('YEAR(orders.prom_date_created) year, MONTH(orders.prom_date_created) month'))
+                ->select(DB::raw('sum(order_products.quantity) as `qty`'), DB::raw('YEAR(orders.prom_date_created) year, MONTH(orders.prom_date_created) month'))
                 ->groupby('year','month')
+                ->orderBy('year', 'desc')
+                ->orderBy('month', 'desc')
                 ->get();
         return $months;
     }
@@ -305,7 +307,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $input = $request->except(array('orders_count', 'labels', 'supliers'));
+        $input = $request->except(array('orders', 'orders_count', 'labels', 'supliers'));
         $link_ids = array();
         foreach ($input['suplierlinks'] as $link) {
             if (!$link['link']) continue;

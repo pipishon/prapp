@@ -6,6 +6,10 @@
       <v-toolbar flat card dense fixed>
         <h3>Редактирование товара</h3>
         <v-spacer></v-spacer>
+          <table>
+            <tr><td class="pr-2">Создан</td><td>{{product.created_at}}</td></tr>
+            <tr><td class="pr-2">Обновлен</td><td>{{product.updated_at}}</td></tr>
+          </table>
         <v-toolbar-items>
           <v-btn flat @click.native="showDialog = false"><v-icon>close</v-icon></v-btn>
         </v-toolbar-items>
@@ -193,14 +197,16 @@
     </v-card>
   </v-dialog>
 
-  <v-dialog width="600" v-model="showDialogStatistics">
+  <v-dialog width="1100" v-model="showDialogStatistics">
 
     <v-card>
-      <div style="width: 600px; height: 600px;">
-        <linechart
+      <div style="width: 1100px; height: 700px;">
+        <barchart
+          :width="1100"
+          :height="700"
           :chart-data="chartData"
           :options="{responsive: true}"
-        ></linechart>
+        ></barchart>
       </div>
     </v-card>
   </v-dialog>
@@ -223,7 +229,7 @@
             if (this.product.suplierlinks.length == 0) {
               this.addSuplierLink()
             }
-            this.product.margin = (this.product.purchase_price) ? (this.product.price - this.product.purchase_price) * 100 / this.product.price : null
+            //this.product.margin = (this.product.purchase_price) ? (this.product.price - this.product.purchase_price) * 100 / this.product.price : null
           },
           deep: true
         },
@@ -249,15 +255,16 @@
                   backgroundColor: 'red',
                   borderColor: 'red',
                   fill: false,
-                  pointRadius: 0
                 },
               ]
+
             res.data.map((row) => {
               labels.push(row.month + '.' + row.year)
               datasets.map((dataset) => {
-                dataset.data.push(row.qty)
+                  dataset.data.push(row.qty)
               })
             })
+
             this.chartData = {labels, datasets}
             console.log(this.chartData)
           })

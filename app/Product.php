@@ -12,6 +12,7 @@ class Product extends Model
   protected $appends = ['orders'];
 
   public function getOrdersAttribute () {
+      return 0;
     return DB::table('products')
         ->join('order_products', 'products.id', 'order_products.product_id')
         ->join('orders', 'orders.id', 'order_products.order_id')
@@ -26,6 +27,18 @@ class Product extends Model
         if (isset($input[$type])) {
           $query = $query->where($type, 'LIKE', '%'.$input[$type].'%');
         }
+      }
+
+      if (isset($input['filter'])) {
+          foreach ($input['filter'] as $filter) {
+              $filter = json_decode($filter, true);
+              if ($filter['from']) {
+                  $query = $query->where($filter['name'], '>=', floatval($filter['from']));
+              }
+              if ($filter['to']) {
+                  $query = $query->where($filter['name'], '<=', floatval($filter['to']));
+              }
+          }
       }
 
       if (isset($input['price_from'])) {

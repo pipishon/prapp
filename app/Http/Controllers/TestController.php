@@ -17,17 +17,26 @@ class TestController extends Controller
 {
     public function index (Request $request)
     {
-        $product_sku = 'AP047';
+        $product_sku = $request->input('sku');
         $product_id = Product::where('sku', $product_sku)->first()->id;
-        $product_ids = Product::all()->pluck('id');
+        //$product_ids = Product::all()->pluck('id');
         $months = DB::table('orders')
             ->join('order_products', 'orders.id', 'order_products.order_id')
+            ->join('products', 'products.id', 'order_products.product_id')
                 ->where('orders.status', 'delivered')
-                ->whereIn('order_products.product_id', $product_ids)
-                ->select('order_products.product_id', DB::raw('count(order_products.quantity) as `qty`'), DB::raw('YEAR(orders.prom_date_created) year, MONTH(orders.prom_date_created) month'))
-                ->groupby('order_products.product_id', 'year','month')
-                ->get();
-        return $months;
+                ->where('order_products.product_id', $product_id)
+                ->select('orders.prom_id', 'order_products.quantity', DB::raw('YEAR(orders.prom_date_created) year, MONTH(orders.prom_date_created) month'), DB::raw('CONCAT(YEAR(orders.prom_date_created), "_" , MONTH(orders.prom_date_created)) as date'))
+                ->orderBy('year')
+                ->orderBy('month')
+                ->get()->toArray();
+echo '<table style="text-align: center"><thead><th>id</th><th>date</th><th>quantity</th></thead>';
+echo '<tbody>';
+        foreach ($months as $row) {
+            echo '<tr>';
+            echo '<td style="padding: 2px 5px">' . $row->prom_id . '</td><td>'. $row->date. '</td><td>'. $row->quantity . '</td>';
+            echo '</tr>';
+        }
+echo '</tbody></table>';
     }
     /*
         $ttn = $request->input('ttn');

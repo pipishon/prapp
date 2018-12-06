@@ -1,5 +1,16 @@
 <template>
   <div class="products">
+    <v-container fluid class="my-0 py-0">
+        <v-layout row>
+            <v-flex md3 >
+          <v-select  :hide-details="true" label="Фильтр пользователей" :items="Object.keys(filterMap)" v-model="selectedFilter" @input="showAddFilterDialog = true" ></v-select>
+            </v-flex>
+              <v-chip v-model="filterChips[item.filter]" v-for="item in filters" :key="item.filter" close>{{item.filter}}
+                <span v-if="item.from">&nbsp;от {{item.from}}</span>
+                <span v-if="item.to">&nbsp;до {{item.to}}</span>
+              </v-chip>
+        </v-layout>
+    </v-container>
     <btable
       :items="list"
       :fields="fields"
@@ -69,7 +80,7 @@
               <v-icon v-if="selected.length && isMassBusy" class="mass-loader">hourglass_empty</v-icon>
        </template>
       <template slot="row" slot-scope="data">
-        <tr v-for="(item, key) in data.items" :key="item.id" :class="{'green lighten-5': false}">
+        <tr v-for="item  in data.items" :key="item.id" :class="{'green lighten-5': false}">
 
           <td>
             <v-checkbox flat class="mt-0" :value="selected.indexOf(item) != -1" @change="changeMass(arguments[0], item)"> </v-checkbox>
@@ -229,6 +240,21 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog  v-model="showAddFilterDialog" width="300" persistent @keydown.esc="showAddFilterDialog = false">
+
+      <v-card v-if="showAddFilterDialog" >
+          <v-card-title class="primary white--text"><h5>{{selectedFilter}}</h5></v-card-title>
+          <div class="px-3">
+            <v-text-field label="От" v-model="filterFrom"></v-text-field>
+            <v-text-field label="До" v-model="filterTo"></v-text-field>
+          </div>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" flat @click="showAddFilterDialog = false" > Отмена </v-btn>
+            <v-btn color="primary" flat @click="setFilter" > Установить </v-btn>
+          </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -241,6 +267,16 @@
       },
       data() {
         return {
+          showAddFilterDialog: false,
+          selectedFilter: null,
+          filterFrom: null,
+          filterTo: null,
+          filters: [],
+          filterChips: {},
+          filterMap: {
+             'Закуп цена': 'purchase_price',
+             'Маржа': 'margin',
+          },
           imprt: {file: null, imported: 0, total: 1, done: false},
           mass: {label: '', name: '', value: ''},
           footerAvailable: false,
@@ -298,6 +334,10 @@
         }
       },
       watch: {
+        filterChips: {
+          handler: 'sendFilter',
+          deep: true
+        },
         isMassBusy (val) {
           if (!val) {
             this.getList()
@@ -317,6 +357,38 @@
       methods: {
         ...mapMutations(['massSelection']),
         ...mapActions(['massAction', 'updateSettings']),
+        setFilter () {
+          let oldFilter = this.filters.filter( el => el.filter == this.selectedFilter )[0]
+          if (typeof(oldFilter) != 'undefined') {
+            oldFilter.from = this.filterFrom
+            oldFilter.to = this.filterTo
+            this.filterChips[oldFilter.filter] = true
+          } else {
+            this.filters.push({
+              filter: this.selectedFilter,
+              from: this.filterFrom,
+              to: this.filterTo
+            })
+          }
+          this.filterFrom = null
+          this.filterTo = null
+          this.sendFilter()
+          this.showAddFilterDialog = false
+        },
+        sendFilter () {
+          let toFilter = []
+          for (let f of this.filters) {
+            if (typeof(this.filterChips[f.filter]) == 'undefined' || this.filterChips[f.filter]) {
+              const m = {
+                to: f.to,
+                from: f.from,
+                name: this.filterMap[f.filter]
+              }
+              toFilter.push(m)
+            }
+          }
+          this.getList({filter: toFilter})
+        },
         importFromApiProcess (lastId) {
           const params = {}
           if (typeof(lastId) != 'undefined') {
@@ -459,6 +531,7 @@
           params = Object.assign(this.searchQuery, params)
           axios.get('api/products', {params}).then((res) => {
             this.list = res.data.data
+            console.log(res.data)
             this.stats = res.data.stats
             this.curPage = res.data.current_page
             this.lastPage = res.data.last_page
