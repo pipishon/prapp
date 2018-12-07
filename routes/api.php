@@ -97,5 +97,6 @@ Route::prefix('mass')->group(function () {
 
 Route::get('import', 'ImportController@import');
 Route::get('importproducts', 'ImportController@importproducts');
+Route::get('importorderproducts', 'ImportController@processOrderProducts');
 
 Route::get('test', 'TestController@index');

@@ -17,10 +17,14 @@ class TestController extends Controller
 {
     public function index (Request $request)
     {
-        $product_sku = $request->input('sku');
-        $product_id = Product::where('sku', $product_sku)->first()->id;
+        $order_id = 65812451;
+        $api = new PromApi;
+        dd($api->getItem($order_id, 'orders')['order']);
+    }
+        //$product_sku = $request->input('sku');
+        //$product_id = Product::where('sku', $product_sku)->first()->id;
         //$product_ids = Product::all()->pluck('id');
-        $months = DB::table('orders')
+        /*$months = DB::table('orders')
             ->join('order_products', 'orders.id', 'order_products.order_id')
             ->join('products', 'products.id', 'order_products.product_id')
                 ->where('orders.status', 'delivered')
@@ -38,6 +42,7 @@ echo '<tbody>';
         }
 echo '</tbody></table>';
     }
+         */
     /*
         $ttn = $request->input('ttn');
         $id = $request->input('id');

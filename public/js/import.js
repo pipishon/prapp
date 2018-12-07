@@ -6,12 +6,26 @@ $('#import_products').click(function () {
   importProductsData(1)
 })
 
+$('#import_order_products').click(function () {
+  importOrderProducts(8301)
+})
+
 var imported = {
    'customer': 0,
    'product': 0,
    'phone': 0,
    'email': 0,
    'order': 0,
+}
+
+function importOrderProducts (start_row) {
+  var params = {'start_row': start_row}
+  $.get('/api/importorderproducts', params, function(res) {
+    console.log(start_row + 1*res)
+    if(res == 50) {
+      importOrderProducts (1*start_row + 1*res)
+    }
+  })
 }
 
 function importProductsData (start_row) {

@@ -92,6 +92,9 @@ class Order extends Model
           case 'Самовывоз':
               if (in_array($payment, ['не указан', 'Наложенный платеж'])) $status['Доставка'] = false;
               break;
+          case 'не указан':
+              $status['Доставка'] = false;
+              break;
       }
 
       if (in_array($delivery, ['Новая Почта', 'НП без риска'])) {

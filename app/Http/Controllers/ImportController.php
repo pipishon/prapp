@@ -42,6 +42,47 @@ class ImportController extends Controller
       return view('import', array( 'uploaded_file_name' => $filename, 'lines' => $linecount - 1));
     }
 
+    public function processOrderProducts (Request $request)
+    {
+        $result = 0;
+      $skip = 0;
+      $start_row = $request->input('start_row');
+      $i = 0;
+      $path = storage_path('app/csvfile').'/csvfile.csv';
+      $curr_order_id = 0;
+      if(($handle = fopen($path, 'r')) !== false) {
+          while(($data = fgets($handle)) !== false && $i < 50) {
+              if ($skip <  $start_row) {$skip++; continue;}
+              $i++;
+              $data = explode(';', iconv('cp1251', 'utf-8', $data));
+              $prom_order_id = $data[0];
+              $order = Order::where('prom_id', $prom_order_id)->first();
+              if ($order == null) continue;
+              $price = $data[18];
+              if ($curr_order_id != $prom_order_id) {
+                $curr_order_id = $prom_order_id;
+                $order->products()->delete();
+                $order->price = $price;
+                $order->save();
+              }
+              $sku = $data[12];
+              $qty = $data[14];
+
+              $product = Product::where('sku', $sku)->first();
+              if ($product == null) continue;
+
+
+                OrderProduct::firstOrCreate(array(
+                    'product_id' => $product->id,
+                    'order_id' => $order->id,
+                    'quantity' => $qty,
+                ));
+              $result++;
+
+          }
+      }
+      return $i;
+    }
 
     public function importproducts (Request $request)
     {
