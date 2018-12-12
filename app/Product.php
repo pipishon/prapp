@@ -20,6 +20,24 @@ class Product extends Model
         ->where('orders.status', 'delivered')->count();
   }
 
+    public static function createFromApi($prom_id)
+    {
+        $api = new PromApi;
+        $prom_product = $api->getItem($prom_id, 'products')['products'];
+        //dd($prom_id, $prom_product);
+        $product = Product::create(array(
+            'prom_id' => $prom_product['id'],
+            'name' => $prom_product['name'],
+            'sku' => (string) $prom_product['sku'],
+            'status' => $prom_product['status'],
+            'presence' => $prom_product['presence'],
+            'group_id' => $prom_product['group']['id'],
+            'category' => $prom_product['group']['name'],
+            'price' => $prom_product['price'],
+        ));
+        return $product;
+    }
+
   public function scopeSearch ($query, $input)
   {
 

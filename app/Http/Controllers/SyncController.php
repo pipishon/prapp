@@ -39,6 +39,30 @@ class SyncController extends Controller
     // TODO save products to database
   }
 
+    public function OrderProducts($orders = null)
+    {
+        $api = new PromApi;
+        $orders = $api->getOpenOrders();
+        foreach ($orders as $order) {
+            $prom_products = $order['products'];
+            $order = Order::where('prom_id', $order['id'])->first();
+            if ($order == null) continue;
+            $order->products()->delete();
+            foreach ($prom_products as $prom_product) {
+                $product = Product::where('prom_id', $prom_product['id'])->first();
+                if ($product == null) {
+                    continue;
+                }
+                $order_product = OrderProduct::firstOrCreate(array(
+                    'product_id' => $product->id,
+                    'order_id' => $order->id,
+                    'quantity' => $prom_product['quantity'],
+                    'price' => floatval(str_replace(',', '.', $prom_product['price'])),
+                ));
+            }
+        }
+    }
+
   public function orders($orders = null)
   {
     $api = new PromApi;

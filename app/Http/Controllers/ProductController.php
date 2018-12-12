@@ -339,4 +339,23 @@ class ProductController extends Controller
     {
         //
     }
+    public function getSuplierProducts (Request $request)
+    {
+        $suplier_name = $request->input('suplier');
+        $products = DB::table('products')->join('product_supliers', 'product_supliers.product_id', 'products.id')
+            ->join('supliers', 'product_supliers.suplier_id', 'supliers.id')
+            ->select('products.*', 'supliers.name as suplier_name')
+            ->where('supliers.name', 'like', '%'.$suplier_name.'%')->get();
+
+        $categories = array();
+        foreach ($products as $product) {
+            if (!isset($categories[$product->category])) {
+                $categories[$product->category] = array($product);
+            } else {
+                $categories[$product->category][] = $product;
+            }
+        }
+
+        return $categories;
+    }
 }

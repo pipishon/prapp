@@ -8,6 +8,7 @@ use App\MessageEmail;
 use App\Sms;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\PromApi;
 
 class Order extends Model
 {
@@ -52,6 +53,34 @@ class Order extends Model
   public function customer()
   {
     return $this->hasOne('App\Customer', 'id', 'customer_id');
+  }
+
+  public function updateFromApi ()
+  {
+    $order_id = $this->prom_id;
+    $api = new PromApi;
+    $prom_order = $api->getItem($order_id, 'orders')['order'];
+    $prom_products = $prom_order['products'];
+    if ($prom_products == null) return;
+    $this->products()->delete();
+    $total_price = 0;
+    foreach ($prom_products as $prom_product) {
+        $product = Product::where('prom_id', $prom_product['id'])->first();
+        if ($product == null) {
+            $product = Product::firstOrCreate(array(
+                'name' => $prom_product['name'],
+            ));
+        }
+        $order_product = OrderProduct::firstOrCreate(array(
+            'product_id' => $product->id,
+            'order_id' => $this->id,
+            'quantity' => $prom_product['quantity'],
+            'price' => floatval(str_replace(',', '.', $prom_product['price'])),
+        ));
+        $total_price += floatval(str_replace(',', '.', $prom_product['price']));
+    }
+    $this->price = floatval(str_replace(',', '.', $prom_order['price']));
+    $this->save();
   }
 
   public function mapDeliveryPayment()

@@ -15,6 +15,7 @@
         <dictionary v-if="mode == 'dictionary'"/>
         <settings v-if="mode == 'settings'"/>
         <nptrack v-if="mode == 'nptrack'"/>
+        <pivot v-if="mode == 'pivot'"/>
       </div>
     </v-app>
   </div>
@@ -35,6 +36,7 @@ import autoreceive from './components/AutoReceive'
 import dictionary from './components/Dictionary'
 import settings from './components/Settings'
 import nptrack from './components/NpTrack'
+import pivot from './components/Pivot'
     export default {
       data () {
         return {
@@ -53,7 +55,8 @@ import nptrack from './components/NpTrack'
         autoreceive,
         dictionary,
         settings,
-        nptrack
+        nptrack,
+        pivot
       },
       mounted() {
         //this.$store.dispatch('loadDictionary')

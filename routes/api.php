@@ -27,6 +27,7 @@ Route::get('customers/addphoneemail', 'CustomerController@addPhoneEmail');
 
 Route::get('orders/changestatus', 'OrderController@changeStatus');
 Route::get('orders/updatefromprom/{prom_id}', 'OrderController@updateFromProm');
+Route::get('orders/importfromapi', 'OrderController@ImportFromApi');
 
 Route::get('messages/send', 'MessageController@sendMessage');
 
@@ -40,6 +41,7 @@ Route::get('newpost/getttn', 'NewPostApiController@getTtn');
 Route::resource('products', 'ProductController');
 
 Route::prefix('product')->group(function () {
+  Route::get('suplier', 'ProductController@getSuplierProducts');
   Route::post('import', 'ProductController@importProcess');
   Route::get('importfromapi', 'ProductController@importFromApiProcess');
   Route::get('ordermonth/{id}', 'ProductController@getOrderMonth');
@@ -83,6 +85,7 @@ Route::prefix('statistics')->group(function () {
 Route::prefix('sync')->group(function () {
   Route::get('products', 'SyncController@products');
   Route::get('orders', 'SyncController@orders');
+  Route::get('orderproducts', 'SyncController@OrderProducts');
   Route::get('messages', 'SyncController@messages');
   Route::get('test', 'SyncController@testapi');
   Route::get('smsstatus', 'SyncController@smsStatus');

@@ -26,7 +26,8 @@
             'done_outline': 'autoreceive',
             'library_books': 'dictionary',
             'settings': 'settings',
-            'directions_car': 'nptrack'
+            'directions_car': 'nptrack',
+            'table_chart': 'pivot'
           }
         }
       },

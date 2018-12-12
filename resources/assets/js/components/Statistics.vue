@@ -1,5 +1,9 @@
 <template>
   <div class="container">
+    <v-btn @click="importOrderFromApi">Импорт всех заказов по апи</v-btn>
+      <v-progress-circular :size="60" :color="(imprt.done) ? 'green' : 'black'" :value="imprt.imported * 100 / imprt.total">
+        {{imprt.imported}}
+      </v-progress-circular>
     <button class="btn btn-default" @click="recalcCustomerStatistics(1)">Recalc customer statistics</button>
     <div>{{customerRecalcs.to}} / {{customerRecalcs.total}}</div>
     <button class="btn btn-default" @click="recalcOrderDayStatistics">Recalc order day statistics</button>
@@ -25,6 +29,11 @@
       props: ['imode'],
       data() {
         return {
+          imprt: {
+            imported: 0,
+            total: 1,
+            done: false
+          },
           customerRecalcs: {
             to: 0,
             total:0
@@ -38,6 +47,25 @@
         }
       },
       methods: {
+        importOrderFromApi (page) {
+          if (typeof(page) == 'undefined') {
+            this.imprt.imported = 0
+            this.imprt.done = false
+          }
+          const params = {page}
+          axios.get('api/orders/importfromapi', {params}).then((res) => {
+            console.log(res.data)
+            if (res.data.current_page != res.data.last_page) {
+              this.imprt.imported = res.data.to
+              this.imprt.total = res.data.total
+              console.log(res.data.current_page + 1)
+              this.importOrderFromApi(res.data.current_page + 1)
+            } else {
+              this.imprt.done = true
+              this.getList()
+            }
+          })
+        },
         recalcOrderDayStatistics () {
           let params = { day:  this.orderDayRecalcs.curDay }
           axios.get('api/statistics/recalc/orders', {params}).then((res) => {

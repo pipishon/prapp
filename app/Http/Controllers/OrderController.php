@@ -157,8 +157,9 @@ class OrderController extends Controller
         $api = new PromApi;
         $prom_order = $api->getItem($prom_id, 'orders')['order'];
         $order = Order::where('prom_id', $prom_id)->first();
+        $order->updateFromApi();
         //return $prom_order;
-        $product_ids = array();
+        /*$product_ids = array();
 
         foreach ($prom_order['products'] as $product) {
           $price = $product['price'];
@@ -185,6 +186,7 @@ class OrderController extends Controller
         OrderProduct::where('order_id', $order->id)->whereNotIn('product_id', $product_ids)->delete();
         //$order->load('statuses')->load('customer');
         //$order->customer->load('statistic');
+         */
         return $order;
     }
 
@@ -225,5 +227,17 @@ class OrderController extends Controller
       $customer = Customer::find($order->customer_id);
       $customer->recalcStatistics();
       return $api->setOrderStatus($order->prom_id, $order->status, $inputs['reason'], $inputs['reason_message']);
+    }
+
+    public function ImportFromApi (Request $request)
+    {
+        $orders = Order::paginate(10);
+        $req_count = 0;
+        foreach ($orders as $order) {
+            $req_count++;
+            $order->updateFromApi();
+        }
+        sleep(10);
+        return $orders;
     }
 }
