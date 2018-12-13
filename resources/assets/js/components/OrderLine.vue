@@ -53,7 +53,7 @@
         </td>
 
         <td class="text-nowrap">
-          <strong>{{data.item.price}}</strong>
+          <strong><span v-if="data.item.price.indexOf('грн') == -1">{{parseFloat(data.item.price).toFixed(2)}} грн.</span><span v-else>{{data.item.price}}</span></strong>
         </td>
 
         <td>

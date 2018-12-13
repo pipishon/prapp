@@ -231,13 +231,54 @@ class OrderController extends Controller
 
     public function ImportFromApi (Request $request)
     {
-        $orders = Order::paginate(10);
+
+        $last_id = $request->input('last_id');
+        $api = new PromApi;
+        $prom_params = array('limit' => 50);
+        if ($last_id) {
+            $prom_params['last_id'] = $last_id;
+        }
+        $prom_orders = $api->getList('orders', $prom_params)['orders'];
+        foreach ($prom_orders as $prom_order) {
+            $prom_products = $prom_order['products'];
+            $order = Order::where('prom_id', $prom_order['id'])->first();
+            if ($order == null) continue;
+            $order->products()->delete();
+            foreach ($prom_products as $prom_product) {
+                $product = Product::where('prom_id', $prom_product['id'])->first();
+                if ($product == null) {
+                    $product = Product::firstOrCreate(array(
+                        'name' => $prom_product['name'],
+                    ));
+                }
+                $order_product = OrderProduct::firstOrCreate(array(
+                    'product_id' => $product->id,
+                    'order_id' => $order->id,
+                    'quantity' => $prom_product['quantity'],
+                    'price' => floatval(str_replace(',', '.', $prom_product['price'])),
+                ));
+            }
+            $price = preg_replace('/\s+/u', '', $prom_order['price']);
+            $price = str_replace(',','.', $price);
+            $order->price = floatval($price);
+            $order->save();
+        }
+
+        $total = Order::count();
+        if (count($prom_orders) > 0) {
+            $ids = array_column($prom_orders, 'id');
+            $last_id = array_values(array_slice($ids, -1))[0];
+            return array('last_id' => $last_id, 'imported' => count($prom_orders), 'total' => $total);
+        } else {
+            return array('imported' => count($prom_orders), 'total' => $total);
+        }
+        /*$orders = Order::paginate(10);
         $req_count = 0;
         foreach ($orders as $order) {
             $req_count++;
             $order->updateFromApi();
         }
-        sleep(10);
-        return $orders;
+        sleep(10);*/
+        //return $orders;
     }
 }

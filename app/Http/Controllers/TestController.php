@@ -17,12 +17,14 @@ class TestController extends Controller
 {
     public function index (Request $request)
     {
-        /*$orders = Order::whereDate('prom_date_created', '>', Carbon::parse('01-07-2018'))->paginate(20);
         $api = new PromApi;
+         dd($api->getOpenOrders());
+             return
+        $orders = Order::whereDate('prom_date_created', '>', Carbon::parse('01-07-2018'))->paginate(20);
         foreach ($orders as $order) {
             $order->updateFromApi();
         }
-    }*/
+    }/*
         $product_sku = $request->input('sku');
         $product_id = Product::where('sku', $product_sku)->first()->id;
         $product_ids = Product::all()->pluck('id');
@@ -43,7 +45,7 @@ echo '<tbody>';
             echo '</tr>';
         }
 echo '</tbody></table>';
-    }
+    }*/
     /*
         $ttn = $request->input('ttn');
         $id = $request->input('id');

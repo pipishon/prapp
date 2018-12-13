@@ -42,6 +42,7 @@ Route::resource('products', 'ProductController');
 
 Route::prefix('product')->group(function () {
   Route::get('suplier', 'ProductController@getSuplierProducts');
+  Route::get('morders', 'ProductController@syncProductMonthOrders');
   Route::post('import', 'ProductController@importProcess');
   Route::get('importfromapi', 'ProductController@importFromApiProcess');
   Route::get('ordermonth/{id}', 'ProductController@getOrderMonth');

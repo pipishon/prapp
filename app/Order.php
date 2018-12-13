@@ -79,7 +79,9 @@ class Order extends Model
         ));
         $total_price += floatval(str_replace(',', '.', $prom_product['price']));
     }
-    $this->price = floatval(str_replace(',', '.', $prom_order['price']));
+    $price = preg_replace('/\s+/u', '', $prom_order['price']);
+    $price = str_replace(',','.', $price);
+    $this->price = floatval($price);
     $this->save();
   }
 

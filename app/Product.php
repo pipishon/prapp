@@ -97,6 +97,11 @@ class Product extends Model
     return $this->hasMany('App\ProductSuplier');
   }
 
+  public function morders()
+  {
+    return $this->hasMany('App\ProductMonthOrder');
+  }
+
   public function suplierlinks()
   {
     return $this->hasMany('App\ProductSuplierLink');

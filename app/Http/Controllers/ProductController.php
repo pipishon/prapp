@@ -9,6 +9,7 @@ use App\Order;
 use Illuminate\Support\Facades\DB;
 use App\ProductSuplierLink;
 use App\PromApi;
+use App\ProductMonthOrder;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -342,13 +343,25 @@ class ProductController extends Controller
     public function getSuplierProducts (Request $request)
     {
         $suplier_name = $request->input('suplier');
-        $products = DB::table('products')->join('product_supliers', 'product_supliers.product_id', 'products.id')
+        $products = Product::with('morders');
+        $products = $products->join('product_supliers', 'product_supliers.product_id', 'products.id')
             ->join('supliers', 'product_supliers.suplier_id', 'supliers.id')
             ->select('products.*', 'supliers.name as suplier_name')
             ->where('supliers.name', 'like', '%'.$suplier_name.'%')->get();
 
         $categories = array();
         foreach ($products as $product) {
+            /*$months = $this->getOrderMonth($product->id);
+            foreach ($months as $month) {
+                ProductMonthOrder::firstOrCreate(array(
+                    'product_id' => $product->id,
+                    'year' => $month->year,
+                    'month' => $month->month,
+                ),
+                array(
+                    'quantity' => $month->qty
+                ));
+            }*/
             if (!isset($categories[$product->category])) {
                 $categories[$product->category] = array($product);
             } else {
@@ -358,4 +371,24 @@ class ProductController extends Controller
 
         return $categories;
     }
+
+    public function syncProductMonthOrders (Request $request)
+    {
+        $products = Product::paginate(50);
+        foreach ($products as $product) {
+            $months = $this->getOrderMonth($product->id);
+            foreach ($months as $month) {
+                ProductMonthOrder::firstOrCreate(array(
+                    'product_id' => $product->id,
+                    'year' => $month->year,
+                    'month' => $month->month,
+                ),
+                array(
+                    'quantity' => $month->qty
+                ));
+            }
+        }
+        return $products;
+    }
+
 }

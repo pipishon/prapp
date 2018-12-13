@@ -1,9 +1,10 @@
 <template>
   <div class="container">
-    <v-btn @click="importOrderFromApi">Импорт всех заказов по апи</v-btn>
+    <v-btn @click="importOrderFromApi()">Импорт всех заказов по апи</v-btn>
       <v-progress-circular :size="60" :color="(imprt.done) ? 'green' : 'black'" :value="imprt.imported * 100 / imprt.total">
         {{imprt.imported}}
       </v-progress-circular>
+    <v-btn @click="importProdcutMonthOrders()">Актуализация продаж по месяцам</v-btn>
     <button class="btn btn-default" @click="recalcCustomerStatistics(1)">Recalc customer statistics</button>
     <div>{{customerRecalcs.to}} / {{customerRecalcs.total}}</div>
     <button class="btn btn-default" @click="recalcOrderDayStatistics">Recalc order day statistics</button>
@@ -47,20 +48,36 @@
         }
       },
       methods: {
-        importOrderFromApi (page) {
+        importProdcutMonthOrders(page) {
           if (typeof(page) == 'undefined') {
             this.imprt.imported = 0
             this.imprt.done = false
           }
-          const params = {page}
-          axios.get('api/orders/importfromapi', {params}).then((res) => {
-            console.log(res.data)
-            if (res.data.current_page != res.data.last_page) {
+          const params = { page }
+          axios.get('api/product/morders', {params}).then((res) => {
+            if (res.data.data.length > 0) {
               this.imprt.imported = res.data.to
               this.imprt.total = res.data.total
-              console.log(res.data.current_page + 1)
-              this.importOrderFromApi(res.data.current_page + 1)
+              this.importProdcutMonthOrders(res.data.current_page + 1)
             } else {
+              this.imprt.done = true
+            }
+          })
+        },
+        importOrderFromApi (lastId) {
+          if (typeof(lastId) == 'undefined') {
+            this.imprt.imported = 0
+            this.imprt.done = false
+          }
+          const params = {last_id: lastId}
+          axios.get('api/orders/importfromapi', {params}).then((res) => {
+            console.log(res.data)
+            if (typeof(res.data.last_id) != 'undefined') {
+              this.imprt.imported += res.data.imported
+              this.imprt.total = res.data.total
+              this.importOrderFromApi(res.data.last_id)
+            } else {
+              this.imprt.imported += res.data.imported
               this.imprt.done = true
               this.getList()
             }

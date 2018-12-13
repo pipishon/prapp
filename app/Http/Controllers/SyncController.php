@@ -43,9 +43,9 @@ class SyncController extends Controller
     {
         $api = new PromApi;
         $orders = $api->getOpenOrders();
-        foreach ($orders as $order) {
-            $prom_products = $order['products'];
-            $order = Order::where('prom_id', $order['id'])->first();
+        foreach ($orders as $prom_order) {
+            $prom_products = $prom_order['products'];
+            $order = Order::where('prom_id', $prom_order['id'])->first();
             if ($order == null) continue;
             $order->products()->delete();
             foreach ($prom_products as $prom_product) {
@@ -60,6 +60,10 @@ class SyncController extends Controller
                     'price' => floatval(str_replace(',', '.', $prom_product['price'])),
                 ));
             }
+            $price = preg_replace('/\s+/u', '', $prom_order['price']);
+            $price = str_replace(',','.', $price);
+            $order->price = floatval($price);
+            $order->save();
         }
     }
 
