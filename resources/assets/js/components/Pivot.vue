@@ -73,7 +73,6 @@
           <td :class="{'green lighten-5': getLastYear(product) > 0}">{{getLastYear(product)}}</td>
           <td :class="{'green lighten-5': getPreLastYear(product) > 0}">{{getPreLastYear(product)}}</td>
           <td v-for="item in monthHeader">
-            &nbsp;
             <template v-for="morder in product.morders">
               <span v-if="morder.year === item.year && morder.month === item.month">
                 {{morder.quantity}}
@@ -110,10 +109,10 @@
       computed: {
         monthHeader() {
           let header = []
-          for (let i = this.monthParams.minYear; i <= this.monthParams.maxYear; i++) {
+          for (let i = this.monthParams.maxYear; i >= this.monthParams.minYear; i--) {
             const startMonth = (i == this.monthParams.minYear) ? this.monthParams.minMonth : 1
             const endMonth = (i == this.monthParams.maxYear) ? this.monthParams.maxMonth : 12
-            for (let j = startMonth; j <= endMonth; j++) {
+            for (let j = endMonth; j >= startMonth; j--) {
               header.push({
                 year: i,
                 month: j,
