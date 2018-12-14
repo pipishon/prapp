@@ -40,7 +40,7 @@ import pivot from './components/Pivot'
     export default {
       data () {
         return {
-          mode: 'pivot'
+          mode: 'orders'
         }
       },
       components: {

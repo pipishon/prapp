@@ -343,7 +343,7 @@ class ProductController extends Controller
     public function getSuplierProducts (Request $request)
     {
         $suplier_name = $request->input('suplier');
-        $products = Product::with('morders');
+        $products = Product::with('morders')->with('suplierlinks');
         $products = $products->join('product_supliers', 'product_supliers.product_id', 'products.id')
             ->join('supliers', 'product_supliers.suplier_id', 'supliers.id')
             ->select('products.*', 'supliers.name as suplier_name')
