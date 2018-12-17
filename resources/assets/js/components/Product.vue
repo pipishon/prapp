@@ -1,7 +1,7 @@
 <template>
   <div>
   <v-dialog  v-model="showDialog" fullscreen transition="dialog-bottom-transition" >
-    <a href="#" slot="activator"><slot></slot></a>
+    <a href="#" @click.prevent slot="activator"><slot></slot></a>
     <v-card v-if="showDialog">
       <v-toolbar flat card dense fixed>
         <h3>Редактирование товара</h3>
@@ -30,7 +30,13 @@
           <v-flex md1 >
             <input  :value="product.sku" readonly>
           </v-flex>
-          <v-flex offset-md6 md-2>
+          <v-flex md3 class="text-right pr-4">
+            <span class="subheading font-weight-medium" >Aртикул поставщика</span>
+          </v-flex>
+          <v-flex md1 >
+            <input  v-model="product.suplier_sku">
+          </v-flex>
+          <v-flex offset-md2 md-2>
             <div class="ttl" style="padding-top: 0; padding-bottom: 5px;">Изображение</div>
             <img style="position: absolute" width="130" :src="product.main_image" />
           </v-flex>
@@ -58,7 +64,13 @@
           <v-flex md1 >
             <input :value="product.units" readonly>
           </v-flex>
-          <v-flex offset-md6 md-3>
+          <v-flex md3 class="text-right pr-4">
+            <span class="subheading font-weight-medium" >В упаковке</span>
+          </v-flex>
+          <v-flex md1 >
+            <input  v-model="product.pack_quantity">
+          </v-flex>
+          <v-flex offset-md2 md-3>
             <div class="ttl" style="padding-bottom: 0; padding-top: 30px;">Наличие</div>
           </v-flex>
         </v-layout>
@@ -67,7 +79,7 @@
             <span class="subheading font-weight-medium" >Мин. остаток</span>
           </v-flex>
           <v-flex md1 >
-            <input  :value="product.min_quantity" readonly>
+            <input  v-model="product.min_quantity" >
           </v-flex>
           <v-flex md2 offset-md4  class="text-right pr-4">
             <span class="subheading font-weight-medium" >Остаток</span>
@@ -111,7 +123,7 @@
             <span class="subheading font-weight-medium" >Закуп. цена</span>
           </v-flex>
           <v-flex md1 >
-            <input v-model="product.purchase_price">
+            <input v-model="product.purchase_price" @input="calcMargin">
           </v-flex>
           <v-flex md2 class="text-right pr-4">
             <span class="subheading font-weight-medium" >Маржа</span>
@@ -168,7 +180,7 @@
           <v-flex md2 class="text-right pr-4">
             <span class="subheading font-weight-medium" >Ссылка</span>
           </v-flex>
-          <v-flex md5 >
+          <v-flex md4 >
             <div>
               <div v-for="(item, index) in product.suplierlinks">
                 <input style="width:80%; display: inline-block;" v-model="item.link" />
@@ -185,6 +197,9 @@
               <v-btn class="ma-0 pa-0" @click="addSuplierLink" icon ><v-icon class="grey--text" >add_box</v-icon></v-btn>
               </div>
             </div>
+          </v-flex>
+          <v-flex md4 >
+            <v-textarea :rows="3" v-model="product.comment" label="Комментарий"></v-textarea>
           </v-flex>
         </v-layout>
       </v-container>
@@ -244,6 +259,9 @@
       computed: {
       },
       methods: {
+        calcMargin () {
+            this.product.margin = (this.product.purchase_price) ? (this.product.price - this.product.purchase_price) * 100 / this.product.price : null
+        },
         showOrderStatistic () {
           this.showDialogStatistics = true
           axios.get('api/product/ordermonth/' + this.product.id).then((res) => {

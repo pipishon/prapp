@@ -50,6 +50,10 @@ class Product extends Model
       if (isset($input['filter'])) {
           foreach ($input['filter'] as $filter) {
               $filter = json_decode($filter, true);
+              if ($filter['from'] == '-' || $filter['to'] == '-') {
+                $query = $query->whereNull($filter['name']);
+                continue;
+              }
               if ($filter['from']) {
                   $query = $query->where($filter['name'], '>=', floatval($filter['from']));
               }
@@ -77,11 +81,15 @@ class Product extends Model
         });
       }*/
 
-      if (isset($input['suplier']) && $input['suplier'] != '') {
+      if (isset($input['suplier']) && $input['suplier'] != '' && $input['suplier'] != '-') {
           $query = $query->join('product_supliers', 'product_supliers.product_id', 'products.id')
               ->join('supliers', 'product_supliers.suplier_id', 'supliers.id')
               ->select('products.*')
               ->where('supliers.name', 'like', '%'.$input['suplier'].'%');
+      }
+
+      if (isset($input['suplier']) && $input['suplier'] == '-') {
+        $query = $query->whereDoesntHave('supliers');
       }
 
 

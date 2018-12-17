@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="showDialog"  >
-    <a href="#" slot="activator"><slot></slot></a>
+    <a href="#" @click.prevent slot="activator"><slot></slot></a>
     <v-card v-if="showDialog" class="customer">
       <v-toolbar flat card dense>
         <v-spacer></v-spacer>

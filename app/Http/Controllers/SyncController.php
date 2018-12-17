@@ -190,13 +190,12 @@ class SyncController extends Controller
         $product_price = preg_replace('/\s+/u', '', $product_price);
         $product_price = str_replace(',','.', $product_price);
         $product_price = floatval($product_price);
-        $O_product = Product::updateOrCreate(array('sku' => $product['sku']),
+        $O_product = Product::updateOrCreate(array('prom_id' => $product['id']),
             array(
               'sku' => $product['sku'],
               'name' => $product['name'],
               'price' => $product_price,
               'main_image' => (string) $product['image'],
-              'prom_id' => (string) $product['id'],
               'presence' => 'available',
               'status' => 'on_display',
             ));

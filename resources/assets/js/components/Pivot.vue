@@ -7,7 +7,7 @@
       <strong>{{category}}</strong>
       <v-container fluid>
       <v-layout row>
-        <v-flex md6 >
+        <v-flex style="max-width: 600px;" >
       <table>
         <th></th><th></th><th></th><th></th><th></th><th>нал</th><th>пок</th><th>прод</th><th>марж</th><th>есть</th><th>купить</th><th>будет</th>
         <tr v-for="(product, index) in products">
@@ -20,8 +20,8 @@
             </div>
           </td>
           <td>
-            <div style="width: 200px; overflow: hidden; white-space: nowrap;">
-              {{product.name}}
+            <div style="width: 200px; line-height: 0.8; overflow: hidden; white-space: nowrap;">
+              <product :product="product" @update="">{{product.name}}</product>
             </div>
           </td>
           <td>
@@ -29,7 +29,9 @@
           </td>
           <td >
             <div style="width: 50px; overflow: hidden; white-space: nowrap;">
-              <a :href="product.suplierlinks[0]">{{product.sku}}</a>
+
+              <a v-if="product.suplierlinks.length > 0 && product.suplierlinks[0].link != ''" :href="product.suplierlinks[0].link">{{product.sku}}</a>
+              <span v-else>{{product.sku}}</span>
               <span v-if="product.suplierlinks.length > 1">({{product.suplierlinks.length}})</span>
             </div>
           </td>
@@ -61,17 +63,22 @@
         </tr>
       </table>
       </v-flex>
-      <v-flex class="pr-2 month-table" md5>
+      <v-flex class="pr-2" style="max-width: 82px;">
       <table class="">
         <th class="text-nowrap">6 мec</th>
         <th>ПГ</th>
         <th>ППГ</th>
-        <th v-for="item in monthHeader">{{item.name}}</th>
-        <th></th>
         <tr v-for="(product, index) in products">
           <td :class="{'green lighten-5': getLastYear(product) > 0}">{{getLastMonths(product)}}</td>
           <td :class="{'green lighten-5': getLastYear(product) > 0}">{{getLastYear(product)}}</td>
           <td :class="{'green lighten-5': getPreLastYear(product) > 0}">{{getPreLastYear(product)}}</td>
+        </tr>
+      </table>
+      </v-flex>
+      <v-flex class="pr-2 month-table" style="max-width: calc(100% - 720);">
+      <table class="">
+        <th v-for="item in monthHeader">{{item.name}}</th>
+        <tr v-for="(product, index) in products">
           <td v-for="item in monthHeader">
             <template v-for="morder in product.morders">
               <span v-if="morder.year === item.year && morder.month === item.month">
@@ -79,7 +86,14 @@
               </span>
             </template>
           </td>
-          <td>{{getSumMonths(product.morders)}}</td>
+        </tr>
+      </table>
+      </v-flex>
+      <v-flex class="pr-2" style="max-width: 40px;">
+      <table class="">
+        <th>&nbsp;</th>
+        <tr v-for="(product, index) in products">
+          <td >{{getSumMonths(product.morders)}}</td>
         </tr>
       </table>
       </v-flex>
@@ -91,7 +105,11 @@
 <script>
   import * as moment from 'moment'
   import { extendMoment } from 'moment-range';
+  import product from './Product'
     export default {
+      components: {
+        product
+      },
       data() {
         return {
           supliers: [],
@@ -227,12 +245,14 @@
 <style scoped>
 table {
   table-layout: fixed;
+  position: relative;
 }
 table th,
 table td {
   font-size: 10px;
   padding: 2px;
   border: 1px solid black;
+  white-space: nowrap;
 }
 .month-table {
   overflow-x: scroll;

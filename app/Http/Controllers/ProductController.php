@@ -101,15 +101,17 @@ class ProductController extends Controller
         $prom_products = $api->getList('products', $prom_params)['products'];
         $total = Product::count();
         foreach ($prom_products as $prom_product) {
-            Product::where('prom_id', $prom_product['id'])->update(array(
-                'name' => $prom_product['name'],
-                'sku' => (string) $prom_product['sku'],
-                'status' => $prom_product['status'],
-                'presence' => $prom_product['presence'],
-                'group_id' => $prom_product['group']['id'],
-                'category' => $prom_product['group']['name'],
-                'price' => $prom_product['price'],
-            ));
+            Product::updateOrCreate(array('prom_id' => $prom_product['id']),
+              array(
+                    'name' => $prom_product['name'],
+                    'main_image' => $prom_product['main_image'],
+                    'sku' => (string) $prom_product['sku'],
+                    'status' => $prom_product['status'],
+                    'presence' => $prom_product['presence'],
+                    'group_id' => $prom_product['group']['id'],
+                    'category' => $prom_product['group']['name'],
+                    'price' => $prom_product['price'],
+              ));
         }
         $ids = array_column($prom_products, 'id');
         if (count($ids) == 100) {
@@ -308,7 +310,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $input = $request->except(array('orders', 'orders_count', 'labels', 'supliers'));
+        $input = $request->except(array('orders', 'suplier_name', 'suplier_links', 'morders', 'orders_count', 'labels', 'supliers'));
         $link_ids = array();
         foreach ($input['suplierlinks'] as $link) {
             if (!$link['link']) continue;
@@ -343,7 +345,8 @@ class ProductController extends Controller
     public function getSuplierProducts (Request $request)
     {
         $suplier_name = $request->input('suplier');
-        $products = Product::with('morders')->with('suplierlinks');
+//'labels', 'supliers',
+        $products = Product::with(['labels', 'supliers','morders','suplierlinks']);
         $products = $products->join('product_supliers', 'product_supliers.product_id', 'products.id')
             ->join('supliers', 'product_supliers.suplier_id', 'supliers.id')
             ->select('products.*', 'supliers.name as suplier_name')

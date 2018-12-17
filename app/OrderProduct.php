@@ -16,6 +16,7 @@ class OrderProduct extends Model
   }
     //
   public function getSkuAttribute ($val) {
+
     return $this->product->sku;
   }
 
