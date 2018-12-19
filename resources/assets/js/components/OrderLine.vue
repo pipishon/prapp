@@ -54,6 +54,7 @@
 
         <td class="text-nowrap">
           <strong><span v-if="data.item.price.indexOf('грн') == -1">{{parseFloat(data.item.price).toFixed(2)}} грн.</span><span v-else>{{data.item.price}}</span></strong>
+          <div :class="{'primary--text': isAllPurchase, 'error--text': !isAllPurchase}">{{earn.toFixed(0)}} грн ({{(earn * 100 /data.item.statuses.payment_price).toFixed(0)}}%)</div>
         </td>
 
         <td>
@@ -184,6 +185,20 @@
       },
       computed: {
         ...mapGetters(['selected']),
+        isAllPurchase () {
+          let all = true
+          this.item.products.map((product) => {
+            if (!product.purchase) all = false
+          })
+          return all
+        },
+        earn () {
+          let sum = 0
+          this.item.products.map((product) => {
+            sum += product.purchase * product.quantity
+          })
+          return this.item.statuses.payment_price - sum
+        },
         ttnCreated () {
          return !(this.item.statuses.ttn_string == null || this.item.statuses.ttn_string == '')
         },

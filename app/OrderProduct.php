@@ -8,7 +8,7 @@ class OrderProduct extends Model
 {
 	protected $guarded = [];
 
-  protected $appends = ['sku', 'name', 'price', 'prom_id'];
+  protected $appends = ['sku', 'name', 'price', 'prom_id', 'purchase'];
 
   public function product()
   {
@@ -16,8 +16,11 @@ class OrderProduct extends Model
   }
     //
   public function getSkuAttribute ($val) {
-
     return $this->product->sku;
+  }
+
+  public function getPurchaseAttribute ($val) {
+    return $this->product->purchase_price;
   }
 
   public function getNameAttribute ($val) {

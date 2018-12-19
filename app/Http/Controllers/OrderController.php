@@ -33,6 +33,7 @@ class OrderController extends Controller
       foreach ($orders as $order) {
         if ($order->statuses->payment_price == 0) {
           $order->statuses->payment_price = (float) str_replace(',', '.', preg_replace('/\s+/u', '', $order->price));
+          $order->statuses->save();
         }
         $order->customer->load('statistic');
         if (is_object($order->ttn)) {

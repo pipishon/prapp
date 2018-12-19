@@ -8,6 +8,17 @@
     <button class="btn btn-default" @click="recalcCustomerStatistics(1)">Recalc customer statistics</button>
     <div>{{customerRecalcs.to}} / {{customerRecalcs.total}}</div>
     <button class="btn btn-default" @click="recalcOrderDayStatistics">Recalc order day statistics</button>
+    <div>{{dateRange[0]}} - {{dateRange[1]}}</div>
+    <v-btn @click="rangeDialog = true">Установить промежуток</v-btn>
+    <v-dialog v-model="rangeDialog" width="640">
+      <v-card>
+        <v-daterange no-presets :first-day-of-week="1" locale="ru-Ru" :options="dateRangeOptions" @input="dateRange = arguments[0]"></v-daterange>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" flat @click="rangeDialog = false" > Закрыть </v-btn>
+          </v-card-actions>
+      </v-card>
+    </v-dialog>
     <div>
       <strong>{{orderDayRecalcs.curDay}}</strong>
       <table>
@@ -26,10 +37,18 @@
   </div>
 </template>
 <script>
+import * as moment from 'moment';
     export default {
       props: ['imode'],
       data() {
         return {
+          rangeDialog: false,
+          dateRange: [moment().subtract(8, 'days').format('Y-MM-DD'), moment().format('Y-MM-DD')],
+          dateRangeOptions: {
+            startDate: moment().subtract(8, 'days').format('Y-MM-DD'),
+            endDate: moment().format('Y-MM-DD'),
+            format: 'YYYY-MM-DD'
+          },
           imprt: {
             imported: 0,
             total: 1,
@@ -48,6 +67,9 @@
         }
       },
       methods: {
+        onDateRangeChange(val) {
+          console.log(val)
+        },
         importProdcutMonthOrders(page) {
           if (typeof(page) == 'undefined') {
             this.imprt.imported = 0
@@ -148,29 +170,8 @@
       }
     }
 </script>
-<style scoped>
-.wrap {
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  width: 3rem;
-  background: black;
-  padding: 0.2rem 0;
-}
-.icons-wrap{
-  margin-top: 3rem;
-}
-.icon-wrap {
-  width: 3rem;
-  cursor: pointer;
-  text-align: center;
-}
-.icon {
-  margin: 1rem 0;
-  fill: white;
-}
-.active .icon{
-  fill: #ffc107;
+<style>
+.date-range__pickers label{
+  display: none;
 }
 </style>

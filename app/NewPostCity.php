@@ -25,9 +25,10 @@ class NewPostCity extends Model
             $cities = NewPostCity::whereRaw("LOCATE(description_ua, '".$address."') <> 0")->get();
         }
         foreach ($cities as $city) {
-          $warehouse = NewPostWarehouse::whereRaw("LOCATE(description, '".$address."') <> 0")->where('city_ref', $city->ref)->first();
+          $adr_m_city = str_replace($city->description, '', $address);
+          $warehouse = NewPostWarehouse::whereRaw("LOCATE(description, '".$adr_m_city."') <> 0")->where('city_ref', $city->ref)->first();
           if ($warehouse == null) {
-              $warehouse = NewPostWarehouse::whereRaw("LOCATE(description_ua, '".$address."') <> 0")->where('city_ref', $city->ref)->first();
+              $warehouse = NewPostWarehouse::whereRaw("LOCATE(description_ua, '".$adr_m_city."') <> 0")->where('city_ref', $city->ref)->first();
           }
           if ($warehouse != null) {
             $res = array('city' => $city->description, 'warehouse' => $warehouse->description);

@@ -32,8 +32,16 @@
       </v-layout>
       <div class="row">
         <div class="col">
-          <label>Products</label>
-          <btable :items="order.products" :fields="productFields"></btable>
+          <label>Товары</label>
+          <btable :items="order.products" :fields="productFields">
+
+          <template slot="footer">
+            <td colspan="2"></td>
+            <td>{{sumPrice.toFixed(2)}} грн.</td>
+            <td>{{sumPurchase.toFixed(2)}} грн.</td>
+            <td colspan="2"></td>
+          </template>
+          </btable>
         </div>
       </div>
       </v-container>
@@ -54,23 +62,24 @@
           customer: null,
           showDialog: false,
           orderFields: [
-            { key: 'prom_id', label: 'Prom id' },
-            { key: 'status', label: 'Status' },
-            { key: 'delivery_option', label: 'Delivery' },
-            { key: 'payment_option', label: 'Payment' },
-            { key: 'price', label: 'Price' },
-            { key: 'phone', label: 'Phone' },
+            { key: 'prom_id', label: 'Id' },
+            { key: 'status', label: 'Статус' },
+            { key: 'delivery_option', label: 'Доставка' },
+            { key: 'payment_option', label: 'Оплата' },
+            { key: 'price', label: 'Цена' },
+            { key: 'phone', label: 'Телефон' },
             { key: 'email', label: 'Email' },
-            { key: 'client_first_name', label: 'Client' },
-            { key: 'delivery_address', label: 'Adress' },
-            { key: 'prom_date_created', label: 'Date' },
+            { key: 'client_first_name', label: 'Клиент' },
+            { key: 'delivery_address', label: 'Адрес' },
+            { key: 'prom_date_created', label: 'Дата' },
           ],
           productFields: [
-            { key: 'sku', label: 'SKU' },
-            { key: 'name', label: 'Name' },
-            { key: 'price', label: 'Price' },
-            { key: 'quantity', label: 'Quatity' },
-            { key: 'prom_id', label: 'Prom id' },
+            { key: 'sku', label: 'Артикул' },
+            { key: 'name', label: 'Название' },
+            { key: 'price', label: 'Цена' },
+            { key: 'purchase', label: 'Закуп. цена' },
+            { key: 'quantity', label: 'Кол-во' },
+            { key: 'prom_id', label: 'Id' },
           ]
         }
       },
@@ -84,6 +93,20 @@
         }
       },
       computed: {
+        sumPrice () {
+          let sum = 0
+          this.order.products.map((product) => {
+            sum += product.price * product.quantity
+          })
+          return sum
+        },
+        sumPurchase () {
+          let sum = 0
+          this.order.products.map((product) => {
+            sum += product.purchase * product.quantity
+          })
+          return sum
+        },
         phones () {
           if (this.customer == null) return []
           let a = []

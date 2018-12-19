@@ -78,6 +78,7 @@ Route::resource('labelp', 'LabelpController');
 
 Route::prefix('statistics')->group(function () {
   Route::get('recalc/customers', 'CustomerController@recalcStatistics');
+  Route::get('calctoday', 'OrderDayStatisticController@calcToday');
   Route::get('recalc/orders', 'OrderDayStatisticController@recalcStatistics');
 });
 

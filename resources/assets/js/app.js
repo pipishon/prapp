@@ -10,10 +10,12 @@ require('./bootstrap');
 window.Vue = require('vue');
 
 import Vuetify from 'vuetify'
-
+import VDateRange from 'vuetify-daterange-picker';
+import 'vuetify-daterange-picker/dist/vuetify-daterange-picker.css';
 import * as moment from 'moment';
 
 Vue.use(Vuetify)
+Vue.use(VDateRange)
 
 import Vuex from 'vuex'
 Vue.use(Vuex)
