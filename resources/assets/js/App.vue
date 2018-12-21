@@ -16,6 +16,7 @@
         <settings v-if="mode == 'settings'"/>
         <nptrack v-if="mode == 'nptrack'"/>
         <pivot v-if="mode == 'pivot'"/>
+        <dashboard v-if="mode == 'dashboard'"/>
       </div>
     </v-app>
   </div>
@@ -37,10 +38,11 @@ import dictionary from './components/Dictionary'
 import settings from './components/Settings'
 import nptrack from './components/NpTrack'
 import pivot from './components/Pivot'
+import dashboard from './components/Dashboard'
     export default {
       data () {
         return {
-          mode: 'statistics'
+          mode: 'orders'
         }
       },
       components: {
@@ -56,7 +58,8 @@ import pivot from './components/Pivot'
         dictionary,
         settings,
         nptrack,
-        pivot
+        pivot,
+        dashboard
       },
       mounted() {
         //this.$store.dispatch('loadDictionary')

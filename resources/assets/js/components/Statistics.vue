@@ -5,20 +5,11 @@
         {{imprt.imported}}
       </v-progress-circular>
     <v-btn @click="importProdcutMonthOrders()">Актуализация продаж по месяцам</v-btn>
-    <button class="btn btn-default" @click="recalcCustomerStatistics(1)">Recalc customer statistics</button>
-    <div>{{customerRecalcs.to}} / {{customerRecalcs.total}}</div>
-    <button class="btn btn-default" @click="recalcOrderDayStatistics">Recalc order day statistics</button>
-    <div>{{dateRange[0]}} - {{dateRange[1]}}</div>
-    <v-btn @click="rangeDialog = true">Установить промежуток</v-btn>
-    <v-dialog v-model="rangeDialog" width="640">
-      <v-card>
-        <v-daterange no-presets :first-day-of-week="1" locale="ru-Ru" :options="dateRangeOptions" @input="dateRange = arguments[0]"></v-daterange>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="primary" flat @click="rangeDialog = false" > Закрыть </v-btn>
-          </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <div v-if="false">
+      <button class="btn btn-default" @click="recalcCustomerStatistics(1)">Recalc customer statistics</button>
+      <div>{{customerRecalcs.to}} / {{customerRecalcs.total}}</div>
+      <button class="btn btn-default" @click="recalcOrderDayStatistics">Recalc order day statistics</button>
+    </div>
     <div>
       <strong>{{orderDayRecalcs.curDay}}</strong>
       <table>
@@ -28,12 +19,14 @@
         </tr>
       </table>
     </div>
-    <linechart
-      :chart-data="chartData"
-      :width="1000"
-      :height="800"
-      :options="{responsive: false}"
-    ></linechart>
+    <div >
+      <linechart
+        :chart-data="chartData"
+        :width="1000"
+        :height="800"
+        :options="{responsive: false}"
+      ></linechart>
+    </div>
   </div>
 </template>
 <script>
@@ -42,13 +35,6 @@ import * as moment from 'moment';
       props: ['imode'],
       data() {
         return {
-          rangeDialog: false,
-          dateRange: [moment().subtract(8, 'days').format('Y-MM-DD'), moment().format('Y-MM-DD')],
-          dateRangeOptions: {
-            startDate: moment().subtract(8, 'days').format('Y-MM-DD'),
-            endDate: moment().format('Y-MM-DD'),
-            format: 'YYYY-MM-DD'
-          },
           imprt: {
             imported: 0,
             total: 1,
@@ -63,13 +49,11 @@ import * as moment from 'moment';
             avr: null
           },
           orderDayStatistics: [],
-          chartData: null
+          chartData: null,
+          chartBarData: null
         }
       },
       methods: {
-        onDateRangeChange(val) {
-          console.log(val)
-        },
         importProdcutMonthOrders(page) {
           if (typeof(page) == 'undefined') {
             this.imprt.imported = 0
@@ -125,10 +109,11 @@ import * as moment from 'moment';
               this.recalcCustomerStatistics(res.data.current_page + 1)
             }
           })
-        }
+        },
       },
       mounted() {
         this.mode = this.imode
+
         axios.get('api/orderdaystatistic').then((res) => {
           let labels = []
           let datasets = [
@@ -165,13 +150,9 @@ import * as moment from 'moment';
             })
           })
           this.chartData = {labels, datasets}
-          console.log(this.chartData)
         })
       }
     }
 </script>
 <style>
-.date-range__pickers label{
-  display: none;
-}
 </style>

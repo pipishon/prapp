@@ -28,7 +28,6 @@ export default {
 						scaleLabel: {
 							display: true,
 						},
-            barThickness: 10,
 					}],
 					yAxes: [{
             ticks: {

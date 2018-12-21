@@ -394,4 +394,32 @@ class ProductController extends Controller
         return $products;
     }
 
+    public function calcABC (Request $request)
+    {
+
+        $products = DB::table('products')
+            ->join('order_products', 'order_products.product_id', 'products.id')
+            ->join('order_statuses', 'order_products.order_id', 'order_statuses.order_id')
+            ->groupBy('products.id')
+            ->select('products.prom_id', DB::Raw('SUM((order_products.price - products.purchase_price)*order_products.quantity) as earn'))->orderBy('earn', 'desc')->get();
+        $sum = $products->sum('earn');
+        $agr = 0;
+        $products = $products->map(function ($item) use ($sum, &$agr) {
+            $agr += $item->earn * 100 / $sum;
+            $abc = 'D';
+            if ($agr < 50) {
+                $abc = 'A';
+            }
+            if ($agr > 50 && $agr < 80) {
+                $abc = 'B';
+            }
+            if ($agr > 80 && $agr < 95) {
+                $abc = 'C';
+            }
+            return ['id' => $item->prom_id, 'abc' => $abc, 'earn' => $item->earn, 'percent' => $item->earn * 100 / $sum, 'agr' => $agr];
+        });
+
+        return $products;
+    }
+
 }

@@ -41,6 +41,7 @@ Route::get('newpost/getttn', 'NewPostApiController@getTtn');
 Route::resource('products', 'ProductController');
 
 Route::prefix('product')->group(function () {
+  Route::get('calcabc', 'ProductController@calcABC');
   Route::get('suplier', 'ProductController@getSuplierProducts');
   Route::get('morders', 'ProductController@syncProductMonthOrders');
   Route::post('import', 'ProductController@importProcess');
@@ -79,6 +80,7 @@ Route::resource('labelp', 'LabelpController');
 Route::prefix('statistics')->group(function () {
   Route::get('recalc/customers', 'CustomerController@recalcStatistics');
   Route::get('calctoday', 'OrderDayStatisticController@calcToday');
+  Route::get('calcmonth', 'OrderDayStatisticController@calcMonth');
   Route::get('recalc/orders', 'OrderDayStatisticController@recalcStatistics');
 });
 

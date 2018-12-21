@@ -158,6 +158,7 @@
         <input type="file" @change="imprt.file = arguments[0].target.files" />
         <v-btn @click="importProcess(0)">Импорт csv</v-btn>
         <v-btn @click="importFromApiProcess()">Импорт api</v-btn>
+        <v-btn @click="calcABC()">Расчет ABC</v-btn>
         <v-progress-circular :size="60" :color="(imprt.done) ? 'green' : 'black'" :value="imprt.imported * 100 / imprt.total">
           {{imprt.imported}}
         </v-progress-circular>
@@ -388,6 +389,11 @@
             }
           }
           this.getList({filter: toFilter})
+        },
+        calcABC () {
+          axios.get('api/product/calcabc').then((res) => {
+            console.log(res.data)
+          })
         },
         importFromApiProcess (lastId) {
           const params = {}

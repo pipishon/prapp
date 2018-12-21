@@ -13,27 +13,48 @@ class OrderDayStatisticController extends Controller
 {
     public function calcToday (Request $request)
     {
-        $orders_pending = Order::whereDate('prom_date_created', Carbon::today())->where('status', '<>', 'canceled')->get();
-        $orders_count = Order::whereDate('prom_date_created', Carbon::today())->where('status', '<>', 'canceled')->count();
-        $orders_sum = Order::whereDate('prom_date_created', Carbon::today())->where('status', '<>', 'canceled')->join('order_statuses', 'order_statuses.order_id', 'orders.id')->sum('order_statuses.payment_price');
-        $orders_delivered_sum = Order::whereDate('order_statuses.delivered', Carbon::today())->where('status', 'delivered')->select('orders.*')->join('order_statuses', 'order_statuses.order_id', 'orders.id')->sum('order_statuses.payment_price');
-        $orders_delivered_count = Order::whereDate('order_statuses.delivered', Carbon::today())->where('status', 'delivered')->select('orders.*')->join('order_statuses', 'order_statuses.order_id', 'orders.id')->count();
-        $orders_delivered = Order::join('order_statuses', 'order_statuses.order_id', 'orders.id')->select('orders.*')->whereDate('order_statuses.delivered', Carbon::today())->where('status', 'delivered')->with('products')->get();
-        $purchase_sum = 0;
+        $this->calcStatisticForDay(Carbon::today(), true);
+        return;
+    }
 
-        echo '<strong>Принятые</strong>';
-        echo '<table style="text-align: center;">';
-        echo '<tr>';
-            echo '<th>id</th>';
-            echo '<th>К оплате</th>';
-        echo '</tr>';
-        foreach ($orders_pending as $order) {
-            echo '<tr>';
-            echo '<td>'.$order->prom_id.'</td>';
-            echo '<td>'.$order->statuses->payment_price.'</td>';
-            echo '</tr>';
+    public function calcMonth (Request $request)
+    {
+        $end = Carbon::today();
+        $start = Carbon::today();
+        $start->subMonth();
+        $period = CarbonPeriod::create($start, $end);
+        foreach ($period as $date) {
+            $this->calcStatisticForDay($date);
         }
-        echo '</table>';
+        return;
+    }
+
+    public function calcStatisticForDay ($date = null, $debug = false)
+    {
+        if ($date == null) {
+            $date = Carbon::today();
+        }
+        $orders_pending = Order::whereDate('prom_date_created', $date)->where('status', '<>', 'canceled')->get();
+        $orders_count = Order::whereDate('prom_date_created', $date)->where('status', '<>', 'canceled')->count();
+        $orders_sum = Order::whereDate('prom_date_created', $date)->where('status', '<>', 'canceled')->join('order_statuses', 'order_statuses.order_id', 'orders.id')->sum('order_statuses.payment_price');
+        $orders_delivered_sum = Order::whereDate('order_statuses.delivered', $date)->where('status', 'delivered')->select('orders.*')->join('order_statuses', 'order_statuses.order_id', 'orders.id')->sum('order_statuses.payment_price');
+        $orders_delivered_count = Order::whereDate('order_statuses.delivered', $date)->where('status', 'delivered')->select('orders.*')->join('order_statuses', 'order_statuses.order_id', 'orders.id')->count();
+        $orders_delivered = Order::join('order_statuses', 'order_statuses.order_id', 'orders.id')->select('orders.*')->whereDate('order_statuses.delivered', $date)->where('status', 'delivered')->with('products')->get();
+        $purchase_sum = 0;
+        if ($debug) {
+            echo '<strong>Принятые</strong>';
+            echo '<table style="text-align: center;">';
+            echo '<tr>';
+                echo '<th>id</th>';
+                echo '<th>К оплате</th>';
+            echo '</tr>';
+            foreach ($orders_pending as $order) {
+                echo '<tr>';
+                echo '<td>'.$order->prom_id.'</td>';
+                echo '<td>'.$order->statuses->payment_price.'</td>';
+                echo '</tr>';
+            }
+            echo '</table>';
 
         echo '<strong>Выполненные</strong>';
         echo '<table style="text-align: center;">';
@@ -42,23 +63,30 @@ class OrderDayStatisticController extends Controller
             echo '<th>К оплате</th>';
             echo '<th>Прибыль</th>';
         echo '</tr>';
+        }
         foreach ($orders_delivered as $order) {
             $sum = 0;
-            echo '<tr>';
-            echo '<td>'.$order->prom_id.'</td>';
-            echo '<td>'.$order->statuses->payment_price.'</td>';
+            if ($debug) {
+                echo '<tr>';
+                echo '<td>'.$order->prom_id.'</td>';
+                echo '<td>'.$order->statuses->payment_price.'</td>';
+            }
             foreach ($order->products as $product) {
                 $sum += $product->purchase * $product->quantity;
             }
-            echo '<td>'.($order->statuses->payment_price - $sum).'</td>';
-            echo '</tr>';
+            if ($debug) {
+                echo '<td>'.($order->statuses->payment_price - $sum).'</td>';
+                echo '</tr>';
+            }
             $purchase_sum += $sum;
         }
-        echo '</table>';
+        if ($debug) {
+            echo '</table>';
+        }
         $earn = $orders_delivered_sum - $purchase_sum;
 
         $margin = ($orders_delivered_sum != 0) ? $earn * 100 / $orders_delivered_sum : 0;
-        OrderDayStatistic::updateOrCreate(array('date'=> Carbon::today()), array(
+        OrderDayStatistic::updateOrCreate(array('date'=> $date), array(
             'quantity' => $orders_count,
             'quantity_delivered' => $orders_delivered_count,
             'price_pending' => round($orders_sum),
@@ -67,8 +95,10 @@ class OrderDayStatisticController extends Controller
             'margin_delivered' => round($margin)
         ));
 
-        echo '<div><strong>Итого</strong></div>';
-        echo 'Кол-во:'.$orders_count.'шт. Сумма за день:'. round($orders_sum) . ' грн. Кол-во выполненных:'.$orders_delivered_count.' Сумма выполненых:'. round($orders_delivered_sum). ' грн. Заработано:' . round($earn) .'грн Маржа:' . round($margin) .'%';
+        if ($debug) {
+            echo '<div><strong>Итого</strong></div>';
+            echo 'Кол-во:'.$orders_count.'шт. Сумма за день:'. round($orders_sum) . ' грн. Кол-во выполненных:'.$orders_delivered_count.' Сумма выполненых:'. round($orders_delivered_sum). ' грн. Заработано:' . round($earn) .'грн Маржа:' . round($margin) .'%';
+        }
     }
 
     public function recalcStatistics (Request $request)
@@ -108,8 +138,12 @@ class OrderDayStatisticController extends Controller
         return $result;
     }
 
-    public function index ()
+    public function index (Request $request)
     {
+        $this->calcStatisticForDay();
+        if ($request->has('from')) {
+            return OrderDayStatistic::whereDate('date', '>=', $request->input('from'))->whereDate('date', '<=', $request->input('to'))->orderBy('date', 'asc')->get();
+        }
         return OrderDayStatistic::all();
     }
     //
