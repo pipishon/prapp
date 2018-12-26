@@ -41,7 +41,9 @@ Route::get('newpost/getttn', 'NewPostApiController@getTtn');
 Route::resource('products', 'ProductController');
 
 Route::prefix('product')->group(function () {
+  Route::get('dashboardstats', 'ProductController@dashboardStats');
   Route::get('calcabc', 'ProductController@calcABC');
+  Route::get('calcabcqty', 'ProductController@calcABCQty');
   Route::get('suplier', 'ProductController@getSuplierProducts');
   Route::get('morders', 'ProductController@syncProductMonthOrders');
   Route::post('import', 'ProductController@importProcess');

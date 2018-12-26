@@ -11,6 +11,7 @@ use App\ProductSuplierLink;
 use App\PromApi;
 use App\ProductMonthOrder;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class ProductController extends Controller
 {
@@ -312,19 +313,21 @@ class ProductController extends Controller
     {
         $input = $request->except(array('orders', 'suplier_name', 'suplier_links', 'morders', 'orders_count', 'labels', 'supliers'));
         $link_ids = array();
-        foreach ($input['suplierlinks'] as $link) {
-            if (!$link['link']) continue;
-            if (isset($link['id'])) {
-                $suplier_link = ProductSuplierLink::find($link['id']);
-                $suplier_link->update($link);
-            } else {
-                $suplier_link = ProductSuplierLink::create($link);
-            }
+        if (isset($input['suplierlinks'])) {
+          foreach ($input['suplierlinks'] as $link) {
+              if (!$link['link']) continue;
+              if (isset($link['id'])) {
+                  $suplier_link = ProductSuplierLink::find($link['id']);
+                  $suplier_link->update($link);
+              } else {
+                  $suplier_link = ProductSuplierLink::create($link);
+              }
 
-            $link_ids[] = $suplier_link->id;
+              $link_ids[] = $suplier_link->id;
+          }
+          ProductSuplierLink::where('product_id', $product->id)->whereNotIn('id', $link_ids)->delete();
+          unset($input['suplierlinks']);
         }
-        ProductSuplierLink::where('product_id', $product->id)->whereNotIn('id', $link_ids)->delete();
-        unset($input['suplierlinks']);
 
         /*$price = $input['purchase_price'];
         $input['margin'] = ($input['price'] - $price) * 100 / $input['price'];*/
@@ -345,13 +348,24 @@ class ProductController extends Controller
     public function getSuplierProducts (Request $request)
     {
         $suplier_name = $request->input('suplier');
+
 //'labels', 'supliers',
         $products = Product::with(['labels', 'supliers','morders','suplierlinks']);
+        if ($request->has('on_display')) {
+          $products = $products->where('status', 'on_display');
+        }
         $products = $products->join('product_supliers', 'product_supliers.product_id', 'products.id')
             ->join('supliers', 'product_supliers.suplier_id', 'supliers.id')
             ->select('products.*', 'supliers.name as suplier_name')
-            ->where('supliers.name', 'like', '%'.$suplier_name.'%')->get();
+            ->orderBy('products.category')
+            ->orderBy('products.sort2');
+        if ($request->input('sort') == 'name') {
+          $products = $products->orderBy('products.name');
+        } else {
+          $products = $products->orderBy('products.sku');
+        }
 
+        $products = $products->where('supliers.name', 'like', '%'.$suplier_name.'%')->get();
         $categories = array();
         foreach ($products as $product) {
             /*$months = $this->getOrderMonth($product->id);
@@ -381,7 +395,7 @@ class ProductController extends Controller
         foreach ($products as $product) {
             $months = $this->getOrderMonth($product->id);
             foreach ($months as $month) {
-                ProductMonthOrder::firstOrCreate(array(
+                ProductMonthOrder::firstOrUpdate(array(
                     'product_id' => $product->id,
                     'year' => $month->year,
                     'month' => $month->month,
@@ -400,8 +414,11 @@ class ProductController extends Controller
         $products = DB::table('products')
             ->join('order_products', 'order_products.product_id', 'products.id')
             ->join('order_statuses', 'order_products.order_id', 'order_statuses.order_id')
+            ->join('orders', 'orders.id', 'order_products.order_id')
+            ->whereDate('orders.prom_date_created', '>', '2018-09-01')
+            ->whereDate('orders.prom_date_created', '<', '2018-12-01')
             ->groupBy('products.id')
-            ->select('products.prom_id', DB::Raw('SUM((order_products.price - products.purchase_price)*order_products.quantity) as earn'))->orderBy('earn', 'desc')->get();
+            ->select('products.id', 'products.prom_id', DB::Raw('SUM((order_products.price - products.purchase_price)*order_products.quantity) as earn'))->orderBy('earn', 'desc')->get();
         $sum = $products->sum('earn');
         $agr = 0;
         $products = $products->map(function ($item) use ($sum, &$agr) {
@@ -416,10 +433,69 @@ class ProductController extends Controller
             if ($agr > 80 && $agr < 95) {
                 $abc = 'C';
             }
+            Product::find($item->id)->update(array('abc_earn' => $abc));
             return ['id' => $item->prom_id, 'abc' => $abc, 'earn' => $item->earn, 'percent' => $item->earn * 100 / $sum, 'agr' => $agr];
         });
-
         return $products;
+    }
+
+    public function calcABCQty (Request $request)
+    {
+
+        $products = DB::table('products')
+            ->join('order_products', 'order_products.product_id', 'products.id')
+            ->join('order_statuses', 'order_products.order_id', 'order_statuses.order_id')
+            ->join('orders', 'orders.id', 'order_products.order_id')
+            ->whereDate('orders.prom_date_created', '>', '2018-09-01')
+            ->whereDate('orders.prom_date_created', '<', '2018-12-01')
+            ->groupBy('products.id')
+            ->select('products.id', 'products.prom_id', DB::Raw('SUM(order_products.quantity) as qty'))->orderBy('qty', 'desc')->get();
+        $sum = $products->sum('qty');
+        $agr = 0;
+        $products = $products->map(function ($item) use ($sum, &$agr) {
+            $agr += $item->qty * 100 / $sum;
+            $abc = 'D';
+            if ($agr < 50) {
+                $abc = 'A';
+            }
+            if ($agr > 50 && $agr < 80) {
+                $abc = 'B';
+            }
+            if ($agr > 80 && $agr < 95) {
+                $abc = 'C';
+            }
+            Product::find($item->id)->update(array('abc_qty' => $abc));
+            return ['id' => $item->prom_id, 'abc' => $abc, 'qty' => $item->qty, 'percent' => $item->qty * 100 / $sum, 'agr' => $agr];
+        });
+        return $products;
+    }
+
+    public function dashboardStats ()
+    {
+      $sums = array(
+        'qty' => Product::where('status', 'on_display')->count(),
+        'sklad' => Product::where('status', 'on_display')->sum('quantity'),
+        'purchase' => DB::table('products')->where('status', 'on_display')->select(DB::Raw('SUM(products.purchase_price * products.quantity) as purchase'))->first()->purchase,
+        'price' => DB::table('products')->where('status', 'on_display')->select(DB::Raw('SUM(products.price * products.quantity) as price'))->first()->price
+      );
+      $stat_abc = DB::table('products')->where('status', 'on_display')->select(
+          'abc_earn',
+          'abc_qty',
+          DB::Raw('COUNT(products.id) as qty'),
+          DB::Raw('SUM(products.quantity) as sklad'),
+          DB::Raw('SUM(products.purchase_price * products.quantity) as purchase'),
+          DB::Raw('SUM(products.price * products.quantity) as price')
+      )->groupBy('abc_earn')->groupBy('abc_qty')->get();
+      /*$qty_abc = $qty_abc->map(function ($item) use ($sums) {
+        return array(
+          'qty' => $item->qty * 100 / $sums['qty'],
+          'sklad' => $item->sklad * 100/ $sums['sklad'],
+          'purchase' => $item->purchase * 100/ $sums['purchase'],
+          'price' => $item->price * 100 / $sums['price'],
+        );
+      });*/
+
+      return array('sums' => $sums, 'stat_abc' => $stat_abc);
     }
 
 }

@@ -15,7 +15,7 @@
       :items="list"
       :fields="fields"
       :notstriped="true"
-      :search="['sku', 'name', 'category', 'suplier']"
+      :search="['sku', 'abc_earn', 'abc_qty', 'name', 'category', 'suplier']"
       @search="onSearch"
       :select-all="true"
       class="mb-5"
@@ -127,6 +127,12 @@
           <td>
             {{item.sort2}}
           </td>
+          <td>
+            {{item.abc_earn}}
+          </td>
+          <td>
+            {{item.abc_qty}}
+          </td>
         </tr>
       </template>
       <template slot="footer">
@@ -134,7 +140,7 @@
         <td>{{(stats.supliers * 100/stats.all).toFixed(2)}} %</td>
         <td colspan="2"></td>
         <td>{{((stats.all - stats.purchase_price) * 100/stats.all).toFixed(2)}} %</td>
-        <td colspan="5"></td>
+        <td colspan="7"></td>
       </template>
     </btable>
 
@@ -326,6 +332,8 @@
             { key: 'label', label: 'Метки товара' },
             { key: 'sort1', label: 'Сорт1' },
             { key: 'sort2', label: 'Сорт2' },
+            { key: 'abc_earn', label: 'ABC приб' },
+            { key: 'abc_qty', label: 'ABC кол' },
           ],
           list: [],
           groups: [],

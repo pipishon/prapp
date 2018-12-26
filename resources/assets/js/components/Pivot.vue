@@ -7,9 +7,9 @@
       <strong>{{category}}</strong>
       <v-container fluid>
       <v-layout row>
-        <v-flex style="max-width: 600px;" >
+        <v-flex style="max-width: 730px;" >
       <table>
-        <th></th><th></th><th></th><th></th><th></th><th>нал</th><th>пок</th><th>прод</th><th>марж</th><th>есть</th><th>купить</th><th>будет</th>
+        <th></th><th></th><th></th><th></th><th></th><th>sort2</th><th>пок</th><th>прод</th><th>марж</th><th>есть</th><th>купить</th><th>будет</th>
         <tr v-for="(product, index) in products">
           <td>
             {{index + 1}}
@@ -20,12 +20,13 @@
             </div>
           </td>
           <td>
-            <div style="width: 200px; line-height: 0.8; overflow: hidden; white-space: nowrap;">
+            <div style="width: 300px;">
               <product :product="product" @update="">{{product.name}}</product>
             </div>
           </td>
           <td>
-            &nbsp;A
+            <span v-if="product.abc_earn">{{product.abc_earn}}{{product.abc_qty}}</span>
+            <span v-else>&nbsp;- -&nbsp;</span>
           </td>
           <td >
             <div style="width: 50px; overflow: hidden; white-space: nowrap;">
@@ -36,7 +37,7 @@
             </div>
           </td>
           <td class="text-center">
-            +
+            <input style="width: 20px" :value="product.sort2" @blur="$event.target.value = product.sort2" @keypress.enter="changeSort($event.target.value, product)" />
           </td>
           <td>
             &nbsp;{{product.purchase_price}}
@@ -45,19 +46,20 @@
             &nbsp;{{product.price}}
           </td>
           <td>
-            &nbsp;
-            <span v-if="product.margin">
+            <div v-if="product.margin">
               {{product.margin.toFixed(2)}}
-            </span>
+              &nbsp;
+            </div>
           </td>
           <td>
-            &nbsp;
-            {{product.quantity}}
+            <div>{{product.quantity}}</div>
+            <div>&nbsp;</div>
           </td>
           <td>
-            <input style="width: 35px">
+            <input :value="product.toBuy" ref="tobuys" @keypress.enter="focusNextInput($event, product)" style="width: 35px">
           </td>
           <td>
+            {{calcFeatureQty(product)}}
             &nbsp;
           </td>
         </tr>
@@ -69,17 +71,24 @@
         <th>ПГ</th>
         <th>ППГ</th>
         <tr v-for="(product, index) in products">
-          <td :class="{'green lighten-5': getLastYear(product) > 0}">{{getLastMonths(product)}}</td>
-          <td :class="{'green lighten-5': getLastYear(product) > 0}">{{getLastYear(product)}}</td>
-          <td :class="{'green lighten-5': getPreLastYear(product) > 0}">{{getPreLastYear(product)}}</td>
+          <td :class="{'green lighten-5': getLastYear(product) > 0}">{{getLastMonths(product)}}
+            <div>&nbsp;</div>
+          </td>
+          <td :class="{'green lighten-5': getLastYear(product) > 0}">{{getLastYear(product)}}
+            <div>&nbsp;</div>
+          </td>
+          <td :class="{'green lighten-5': getPreLastYear(product) > 0}">{{getPreLastYear(product)}}
+            <div>&nbsp;</div>
+          </td>
         </tr>
       </table>
       </v-flex>
-      <v-flex class="pr-2 month-table" style="max-width: calc(100% - 720);">
+      <v-flex class="pr-2 month-table" style="max-width: calc(100% - 850);">
       <table class="">
         <th v-for="item in monthHeader">{{item.name}}</th>
         <tr v-for="(product, index) in products">
           <td v-for="item in monthHeader">
+            <div>&nbsp;</div>
             <template v-for="morder in product.morders">
               <span v-if="morder.year === item.year && morder.month === item.month">
                 {{morder.quantity}}
@@ -100,6 +109,12 @@
     </v-layout>
     </v-container>
     </template>
+    <v-footer fixed class="pa-3" >
+      <v-btn @click="getProducts()" class="primary">Обновить</v-btn>
+      <v-btn @click="onDisplay = !onDisplay; getProducts()" :class="{primary: onDisplay}">Опубликованные</v-btn>
+      <v-btn @click="sort = 'name'; getProducts()" :class="{primary: sort=='name'}">По наименованию</v-btn>
+      <v-btn @click="sort = 'sku'; getProducts()" :class="{primary: sort=='sku'}">По артикулу</v-btn>
+    </v-footer>
   </div>
 </template>
 <script>
@@ -112,6 +127,8 @@
       },
       data() {
         return {
+          onDisplay: true,
+          sort: 'name',
           supliers: [],
           categories: [],
           suplier: null,
@@ -142,6 +159,27 @@
         }
       },
       methods: {
+        focusNextInput (e, product) {
+          this.$set(product, 'toBuy', e.target.value)
+          const index = this.$refs.tobuys.indexOf(e.target)
+          if (typeof(this.$refs.tobuys[index + 1]) != 'undefined') {
+            this.$refs.tobuys[index + 1].focus()
+          }
+        },
+        calcFeatureQty(product) {
+          const inPack = product.pack_quantity || 1
+          const toBuy = product.toBuy || 0
+          return product.quantity + toBuy * inPack
+        },
+        changeSort (val, product) {
+          const params = {
+            sort2: val
+          }
+          product.sort2 = val
+          axios.put('api/products/' + product.id, params ).then((res) => {
+            //this.getProducts()
+          })
+        },
         getLastMonths (product) {
           const morders = product.morders
           const emoment = extendMoment(moment)
@@ -230,7 +268,10 @@
           }
         },
         getProducts () {
-          const params = {suplier: this.suplier}
+          const params = {suplier: this.suplier, sort: this.sort}
+          if (this.onDisplay) {
+            params.on_display = true
+          }
           axios.get('api/product/suplier', {params}).then((res) => {
             this.categories = res.data
             this.getMonthParams()
@@ -252,7 +293,6 @@ table td {
   font-size: 10px;
   padding: 2px;
   border: 1px solid black;
-  white-space: nowrap;
 }
 .month-table {
   overflow-x: scroll;

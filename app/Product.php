@@ -41,9 +41,13 @@ class Product extends Model
   public function scopeSearch ($query, $input)
   {
 
-      foreach (['name', 'sku', 'id', 'category', 'presence', 'status', 'description', 'prom_id'] as $type) {
+      foreach (['name', 'sku', 'abc_earn', 'abc_qty', 'id', 'category', 'presence', 'status', 'description', 'prom_id'] as $type) {
         if (isset($input[$type])) {
-          $query = $query->where($type, 'LIKE', '%'.$input[$type].'%');
+          if ($input[$type] == '-') {
+            $query = $query->whereNull($type);
+          } else {
+            $query = $query->where($type, 'LIKE', '%'.$input[$type].'%');
+          }
         }
       }
 

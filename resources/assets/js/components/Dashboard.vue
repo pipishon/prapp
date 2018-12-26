@@ -37,6 +37,31 @@
           </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <h4>Статистика товаров</h4>
+    <table class="table" v-if="productStats != null">
+      <tr>
+        <th>Группа</th>
+        <th> %, от ассортимента</th>
+        <th> %, от кол-ва товаров</th>
+        <th> %, от цены закупки</th>
+        <th> %, от цены продажи</th>
+      </tr>
+      <tr v-for="stat in productStats.stat_abc">
+        <td><span v-if="stat.abc_earn == null"> - </span>{{stat.abc_earn}}<span v-if="stat.abc_qty == null"> - </span>{{stat.abc_qty}}</td>
+        <td>{{(stat.qty * 100 / productStats.sums.qty).toFixed(2) }}% ({{stat.qty}} шт)</td>
+        <td>{{(stat.sklad * 100 / productStats.sums.sklad).toFixed(2) }}% ({{stat.sklad}} шт)</td>
+        <td>{{(stat.purchase * 100 / productStats.sums.purchase).toFixed(2) }}% ({{stat.purchase}} грн)</td>
+        <td>{{(stat.price * 100 / productStats.sums.price).toFixed(2) }}% ({{stat.price}} грн)</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>{{(100*productStats.stat_abc.reduce((a, b) => {return a + 1*b.qty}, 0) / productStats.sums.qty).toFixed(0)}}%({{productStats.sums.qty}} шт)</td>
+        <td>{{(100*productStats.stat_abc.reduce((a, b) => {return a + 1*b.sklad}, 0) / productStats.sums.sklad).toFixed(0)}}%({{productStats.sums.sklad}} шт)</td>
+        <td>{{(100*productStats.stat_abc.reduce((a, b) => {return a + 1*b.purchase}, 0) / productStats.sums.purchase).toFixed(0)}}%({{productStats.sums.purchase.toFixed(0)}} грн)</td>
+        <td>{{(100*productStats.stat_abc.reduce((a, b) => {return a + 1*b.price}, 0) / productStats.sums.price).toFixed(0)}}%({{productStats.sums.price.toFixed(0)}} грн)</td>
+      </tr>
+    </table>
   </div>
 </template>
 <script>
@@ -55,7 +80,8 @@ import * as moment from 'moment';
             'earn_delivered': 0,
             'margin_delivered': 0,
           },
-          chartBarData: null
+          chartBarData: null,
+          productStats: null
         }
       },
       computed: {
@@ -118,6 +144,9 @@ import * as moment from 'moment';
       },
       mounted() {
         this.getSumOrderDayStatistic()
+        axios.get('api/product/dashboardstats').then((res) => {
+          this.productStats = res.data
+        })
       }
     }
 </script>
