@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="overflow-x: scroll; padding-bottom: 400px;">
     <div style="width: 200px">
       <v-select label="Поставщик" v-model="suplier" @change="getProducts" :items="supliers" item-text="name" item-value="name"></v-select>
     </div>
@@ -7,32 +7,42 @@
       <strong>{{category}}</strong>
       <v-container fluid>
       <v-layout row>
-        <v-flex style="max-width: 730px;" >
+        <v-flex >
       <table>
-        <th></th><th></th><th></th><th></th><th></th><th>sort2</th><th>пок</th><th>прод</th><th>марж</th><th>есть</th><th>купить</th><th>будет</th>
+        <th></th><th></th><th></th><th></th><th></th><th></th><th>sort2</th><th>пок</th><th>прод</th><th>марж</th><th>есть</th><th>купить</th><th>будет</th>
+        <th class="text-nowrap">6 мec</th>
+        <th>ПГ</th>
+        <th>ППГ</th>
+        <th>Сумма</th>
+        <th></th>
+        <th v-for="item in monthHeader">{{item.name}}</th>
         <tr v-for="(product, index) in products">
           <td>
             {{index + 1}}
           </td>
+          <td style="position: relative; width: 40px;" class="image-td">
+            <img style="width: 40px; height: auto" :src="product.main_image" />
+            <img class="big-image" style="width: 400px; left: 100%; height: auto; position: absolute; z-index: 100" :src="product.main_image" />
+          </td>
           <td>
-            <div style=" width: 65px; overflow: hidden; white-space: nowrap;">
+            <div style="width: 65px; overflow: hidden; white-space: nowrap;">
               {{product.sku}}
             </div>
           </td>
           <td>
-            <div style="width: 300px;">
+            <div style="width: 300px;" >
               <product :product="product" @update="">{{product.name}}</product>
             </div>
           </td>
           <td>
             <span v-if="product.abc_earn">{{product.abc_earn}}{{product.abc_qty}}</span>
-            <span v-else>&nbsp;- -&nbsp;</span>
+            <span style="white-space: nowrap;" v-else>&nbsp;- -&nbsp;</span>
           </td>
           <td >
             <div style="width: 50px; overflow: hidden; white-space: nowrap;">
 
-              <a v-if="product.suplierlinks.length > 0 && product.suplierlinks[0].link != ''" :href="product.suplierlinks[0].link">{{product.sku}}</a>
-              <span v-else>{{product.sku}}</span>
+              <a v-if="product.suplierlinks.length > 0 && product.suplierlinks[0].link != ''" :href="product.suplierlinks[0].link" target="_blank">{{suplierSku(product)}}</a>
+              <span v-else>{{suplierSku(product)}}</span>
               <span v-if="product.suplierlinks.length > 1">({{product.suplierlinks.length}})</span>
             </div>
           </td>
@@ -43,17 +53,16 @@
             &nbsp;{{product.purchase_price}}
           </td>
           <td>
-            &nbsp;{{product.price}}
+            <div style="margin-top: 3px; margin-bottom: 2px;">&nbsp;{{product.price}}</div>
           </td>
           <td>
-            <div v-if="product.margin">
-              {{product.margin.toFixed(2)}}
-              &nbsp;
-            </div>
+            <span v-if="product.margin">
+             {{product.margin.toFixed(2)}}
+            </span>
+
           </td>
           <td>
             <div>{{product.quantity}}</div>
-            <div>&nbsp;</div>
           </td>
           <td>
             <input :value="product.toBuy" ref="tobuys" @keypress.enter="focusNextInput($event, product)" style="width: 35px">
@@ -62,47 +71,33 @@
             {{calcFeatureQty(product)}}
             &nbsp;
           </td>
-        </tr>
-      </table>
-      </v-flex>
-      <v-flex class="pr-2" style="max-width: 82px;">
-      <table class="">
-        <th class="text-nowrap">6 мec</th>
-        <th>ПГ</th>
-        <th>ППГ</th>
-        <tr v-for="(product, index) in products">
-          <td :class="{'green lighten-5': getLastYear(product) > 0}">{{getLastMonths(product)}}
-            <div>&nbsp;</div>
+          <td >
+            <div :class="{'green lighten-4': getLastMonths(product) > 0}" style="margin-top: 3px; margin-bottom: 2px;">{{getLastMonths(product)}}</div>
           </td>
-          <td :class="{'green lighten-5': getLastYear(product) > 0}">{{getLastYear(product)}}
-            <div>&nbsp;</div>
+          <td >
+            <div :class="{'green lighten-4': getLastYear(product) > 0}">{{getLastYear(product)}}</div>
           </td>
-          <td :class="{'green lighten-5': getPreLastYear(product) > 0}">{{getPreLastYear(product)}}
-            <div>&nbsp;</div>
+          <td >
+            <div :class="{'green lighten-4': getPreLastYear(product) > 0}">{{getPreLastYear(product)}}</div>
           </td>
-        </tr>
-      </table>
-      </v-flex>
-      <v-flex class="pr-2 month-table" style="max-width: calc(100% - 850);">
-      <table class="">
-        <th v-for="item in monthHeader">{{item.name}}</th>
-        <tr v-for="(product, index) in products">
+          <td >
+            <div style="margin-top: 3px; margin-bottom: 2px;">
+              {{getSumMonths(product.morders)}}
+            </div>
+          </td>
+          <td >
+            <v-btn @click="showOrderStatistic(product)" icon flat><v-icon>bar_chart</v-icon></v-btn>
+          </td>
           <td v-for="item in monthHeader">
-            <div>&nbsp;</div>
-            <template v-for="morder in product.morders">
-              <span v-if="morder.year === item.year && morder.month === item.month">
-                {{morder.quantity}}
-              </span>
-            </template>
+            <div style="margin-top: 3px; margin-bottom: 2px; white-space: nowrap;">
+              <template v-for="morder in product.morders">
+                <span  v-if="morder.year === item.year && morder.month === item.month">
+                  {{morder.quantity}}
+                </span>
+              </template>
+              &nbsp;
+            </div>
           </td>
-        </tr>
-      </table>
-      </v-flex>
-      <v-flex class="pr-2" style="max-width: 40px;">
-      <table class="">
-        <th>&nbsp;</th>
-        <tr v-for="(product, index) in products">
-          <td >{{getSumMonths(product.morders)}}</td>
         </tr>
       </table>
       </v-flex>
@@ -112,9 +107,24 @@
     <v-footer fixed class="pa-3" >
       <v-btn @click="getProducts()" class="primary">Обновить</v-btn>
       <v-btn @click="onDisplay = !onDisplay; getProducts()" :class="{primary: onDisplay}">Опубликованные</v-btn>
+      <v-btn @click="sort2 = !sort2; getProducts()" :class="{primary: sort2}">Sort2</v-btn>
       <v-btn @click="sort = 'name'; getProducts()" :class="{primary: sort=='name'}">По наименованию</v-btn>
       <v-btn @click="sort = 'sku'; getProducts()" :class="{primary: sort=='sku'}">По артикулу</v-btn>
+      <v-btn @click="sort = 'abc'; getProducts()" :class="{primary: sort=='abc'}">По ABC</v-btn>
     </v-footer>
+  <v-dialog width="1100" v-model="showDialogStatistics">
+
+    <v-card>
+      <div style="width: 1100px; height: 700px;">
+        <barchart
+          :width="1100"
+          :height="700"
+          :chart-data="chartData"
+          :options="{responsive: true}"
+        ></barchart>
+      </div>
+    </v-card>
+  </v-dialog>
   </div>
 </template>
 <script>
@@ -127,7 +137,10 @@
       },
       data() {
         return {
+          chartData: null,
+          showDialogStatistics: false,
           onDisplay: true,
+          sort2: true,
           sort: 'name',
           supliers: [],
           categories: [],
@@ -159,6 +172,9 @@
         }
       },
       methods: {
+        suplierSku(product) {
+          return product.suplier_sku || product.sku
+        },
         focusNextInput (e, product) {
           this.$set(product, 'toBuy', e.target.value)
           const index = this.$refs.tobuys.indexOf(e.target)
@@ -272,11 +288,39 @@
           if (this.onDisplay) {
             params.on_display = true
           }
+          if (this.sort2) {
+            params.sort2 = true
+          }
           axios.get('api/product/suplier', {params}).then((res) => {
             this.categories = res.data
             this.getMonthParams()
           })
-        }
+        },
+        showOrderStatistic (product) {
+          this.showDialogStatistics = true
+          axios.get('api/product/ordermonth/' + product.id).then((res) => {
+            let labels = []
+            let datasets = [
+                {
+                  label: 'Заказано Товаров',
+                  data: [],
+                  backgroundColor: 'red',
+                  borderColor: 'red',
+                  fill: false,
+                },
+              ]
+
+            res.data.map((row) => {
+              labels.push(row.month + '.' + row.year)
+              datasets.map((dataset) => {
+                  dataset.data.push(row.qty)
+              })
+            })
+
+            this.chartData = {labels, datasets}
+            console.log(this.chartData)
+          })
+        },
       },
       mounted() {
         this.getSupliers()
@@ -290,11 +334,30 @@ table {
 }
 table th,
 table td {
-  font-size: 10px;
+  font-size: 14px;
+  line-height: 1.3;
   padding: 2px;
   border: 1px solid black;
 }
+table td input {
+  background: #fafafa;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+table tr:hover {
+  background-color: #FFF9C4;
+}
+
+table tr:hover input{
+  border: 1px solid lightgray;
+}
 .month-table {
   overflow-x: scroll;
+}
+.image-td .big-image {
+  display: none;
+}
+.image-td:hover .big-image {
+  display: block;
 }
 </style>

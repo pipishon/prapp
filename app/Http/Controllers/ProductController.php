@@ -356,13 +356,18 @@ class ProductController extends Controller
         }
         $products = $products->join('product_supliers', 'product_supliers.product_id', 'products.id')
             ->join('supliers', 'product_supliers.suplier_id', 'supliers.id')
+           // ->select('products.*', DB::raw('IF( products.sort2 IS NOT NULL, products.sort2, 1000000) sort2'), 'supliers.name as suplier_name')
             ->select('products.*', 'supliers.name as suplier_name')
-            ->orderBy('products.category')
-            ->orderBy('products.sort2');
+            ->orderBy('products.category');
+        if ($request->has('sort2')) {
+          $products = $products->orderByRaw('ISNULL(sort2), sort2 ASC');
+        }
         if ($request->input('sort') == 'name') {
           $products = $products->orderBy('products.name');
-        } else {
+        } elseif ($request->input('sort') == 'sku') {
           $products = $products->orderBy('products.sku');
+        } else {
+          $products = $products->orderBy('products.abc_earn')->orderBy('products.abc_qty');
         }
 
         $products = $products->where('supliers.name', 'like', '%'.$suplier_name.'%')->get();
