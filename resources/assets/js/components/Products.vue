@@ -80,7 +80,7 @@
               <v-icon v-if="selected.length && isMassBusy" class="mass-loader">hourglass_empty</v-icon>
        </template>
       <template slot="row" slot-scope="data">
-        <tr v-for="item  in data.items" :key="item.id" :class="{'green lighten-5': false}">
+        <tr v-for="item  in data.items" :key="item.id" :class="{'pink lighten-5': item.on_sale}">
 
           <td>
             <v-checkbox flat class="mt-0" :value="selected.indexOf(item) != -1" @change="changeMass(arguments[0], item)"> </v-checkbox>
@@ -95,8 +95,12 @@
             {{item.sku}}
           </td>
           <td>
-            <div>{{mapStatus[item.status]}}</div>
-            <div>{{mapPresence[item.presence]}}</div>
+            <div :class="{'red--text text--lighten-1': item.presence != 'available'}">
+              <div>{{mapPresence[item.presence]}}</div>
+              <div>{{item.quantity}}</div>
+              <v-icon style="font-size: 18px;color: #616161;" v-if="item.status == 'on_display'">visibility</v-icon>
+              <v-icon style="font-size: 18px;color: #E57373;" v-else>visibility_off</v-icon>
+            </div>
           </td>
           <td>
             {{item.category}}
@@ -107,7 +111,11 @@
           <td>
           </td>
           <td>
-            {{item.orders}}
+            <a href="#" v-if="item.morders" @click.prevent="showOrderStatistic(item)">
+              {{item.morders.reduce((a, b) => {
+                return {quantity: a.quantity + b.quantity}
+                }, {quantity: 0}).quantity}}
+            </a>
           </td>
           <td>
             {{item.purchase_price}}
@@ -147,7 +155,9 @@
     <v-footer fixed class="pa-3" >
       <span>Всего товаров: {{stats.all}}  шт</span>
       <v-btn  flat @click="showAvailable" :class="{primary: footerAvailable}">B наличии</v-btn>
+      <v-btn  flat @click="showNotAvailable" :class="{primary: footerNotAvailable}">Нет в наличии</v-btn>
       <v-btn  flat @click="showOnDisplay" :class="{primary: footerOnDisplay}">Опубликованные</v-btn>
+      <v-btn  flat @click="showOnSale" :class="{primary: footerOnSale}">Выводим</v-btn>
       <v-spacer></v-spacer>
       <pagination :current="curPage" :last="lastPage" @change="loadPage"/>
       <v-btn @click="ShowSuplierDrawer = !ShowSuplierDrawer">Поставщики</v-btn>
@@ -262,6 +272,19 @@
           </v-card-actions>
       </v-card>
     </v-dialog>
+  <v-dialog width="1100" v-model="showDialogStatistics">
+
+    <v-card>
+      <div style="width: 1100px; height: 700px;">
+        <barchart
+          :width="1100"
+          :height="700"
+          :chart-data="chartData"
+          :options="{responsive: true}"
+        ></barchart>
+      </div>
+    </v-card>
+  </v-dialog>
   </div>
 </template>
 
@@ -274,6 +297,8 @@
       },
       data() {
         return {
+          chartData: null,
+          showDialogStatistics: false,
           showAddFilterDialog: false,
           selectedFilter: null,
           filterFrom: null,
@@ -287,7 +312,9 @@
           imprt: {file: null, imported: 0, total: 1, done: false},
           mass: {label: '', name: '', value: ''},
           footerAvailable: false,
+          footerNotAvailable: false,
           footerOnDisplay: true,
+          footerOnSale: false,
           mapStatus: {
             'on_display': 'Опубликован',
             'draft': '',
@@ -366,6 +393,31 @@
       methods: {
         ...mapMutations(['massSelection']),
         ...mapActions(['massAction', 'updateSettings']),
+        showOrderStatistic (product) {
+          this.showDialogStatistics = true
+          axios.get('api/product/ordermonth/' + product.id).then((res) => {
+            let labels = []
+            let datasets = [
+                {
+                  label: 'Заказано Товаров',
+                  data: [],
+                  backgroundColor: 'red',
+                  borderColor: 'red',
+                  fill: false,
+                },
+              ]
+
+            res.data.map((row) => {
+              labels.push(row.month + '.' + row.year)
+              datasets.map((dataset) => {
+                  dataset.data.push(row.qty)
+              })
+            })
+
+            this.chartData = {labels, datasets}
+            console.log(this.chartData)
+          })
+        },
         setFilter () {
           let oldFilter = this.filters.filter( el => el.filter == this.selectedFilter )[0]
           if (typeof(oldFilter) != 'undefined') {
@@ -458,14 +510,28 @@
             })
           }
         },
+        showNotAvailable () {
+          this.footerNotAvailable  = !this.footerNotAvailable
+          this.footerAvailable  = !this.footerNotAvailable
+          this.searchQuery.not_available = this.footerNotAvailable
+          this.searchQuery.available = !this.footerNotAvailable
+          this.getList()
+        },
         showAvailable () {
           this.footerAvailable  = !this.footerAvailable
+          this.footerNotAvailable  = !this.footerAvailable
           this.searchQuery.available = this.footerAvailable
+          this.searchQuery.not_available = !this.footerAvailable
           this.getList()
         },
         showOnDisplay () {
           this.footerOnDisplay  = !this.footerOnDisplay
           this.searchQuery.on_display = this.footerOnDisplay
+          this.getList()
+        },
+        showOnSale () {
+          this.footerOnSale  = !this.footerOnSale
+          this.searchQuery.on_sale = this.footerOnSale
           this.getList()
         },
         processMass () {

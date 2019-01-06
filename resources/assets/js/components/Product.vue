@@ -103,7 +103,16 @@
           </v-flex>
         </v-layout>
         <v-layout row align-center class="px-4">
-          <v-flex md2 offset-md7  class="text-right pr-4">
+          <v-flex md2 class="text-right pr-4">
+            <span class="subheading font-weight-medium" >Комплекты</span>
+          </v-flex>
+          <v-flex md3 class="text-left">
+            <a href="#" @click.prevent v-for="packitem in product.packitems"><pack :productpromid="packitem.product_promid">{{packitem.product_promid}}</pack></a>
+          </v-flex>
+          <v-flex md2 class="text-right pr-4">
+            <pack :productpromid="product.prom_id"><v-btn flat>Редактировать комплект</v-btn></pack>
+          </v-flex>
+          <v-flex md2 class="text-right pr-4">
             <span class="subheading font-weight-medium" >Наличие</span>
           </v-flex>
           <v-flex md1 >
@@ -139,12 +148,24 @@
           <v-flex md1 >
             <input  :value="product.price" readonly>
           </v-flex>
+          <v-flex md2 class="text-right pr-4">
+            <span class="subheading font-weight-medium" >Ид подгруппы</span>
+          </v-flex>
+          <v-flex md1 >
+            <input  v-model="product.part_id">
+          </v-flex>
         </v-layout>
         <v-layout row align-center class="px-4">
           <v-flex md2 class="text-right pr-4">
             <div class="ttl" >Продажи</div>
           </v-flex>
-          <v-flex offset-md7 md-3>
+          <v-flex offset-md1 md2 class="text-right pr-4">
+            <span class="subheading font-weight-medium" >Коэффициент части</span>
+          </v-flex>
+          <v-flex md1 >
+            <input  v-model="product.part_koef">
+          </v-flex>
+          <v-flex offset-md3 md-3>
             <div class="ttl" >Сортировка</div>
           </v-flex>
         </v-layout>
@@ -153,12 +174,15 @@
             <span class="subheading font-weight-medium" >Заказы, всего</span>
           </v-flex>
           <v-flex md1 >
-            <input  :value="product.orders" readonly>
+            <input  :value="orders" readonly>
           </v-flex>
           <v-flex md1 >
             <v-btn @click="showOrderStatistic" icon flat><v-icon>bar_chart</v-icon></v-btn>
           </v-flex>
-          <v-flex offset-md3 md2 class="text-right pr-4">
+          <v-flex offset-md1 md2 >
+            <v-checkbox  label="Выводим" v-model="product.on_sale"></v-checkbox>
+          </v-flex>
+          <v-flex md2 class="text-right pr-4">
             <span class="subheading font-weight-medium" >Сорт 1</span>
           </v-flex>
           <v-flex md1 >
@@ -198,6 +222,8 @@
               </div>
             </div>
           </v-flex>
+          <v-flex md2 class="text-right pr-4">
+          </v-flex>
           <v-flex md4 >
             <v-textarea :rows="3" v-model="product.comment" label="Комментарий"></v-textarea>
           </v-flex>
@@ -228,8 +254,12 @@
   </div>
 </template>
 <script>
+import pack from './Pack'
     export default {
       props: ['product'],
+      components: {
+        pack
+      },
       data() {
         return {
           chartData: null,
@@ -257,6 +287,11 @@
         }
       },
       computed: {
+        orders () {
+          return this.product.morders.reduce((a, b) => {
+            return {quantity: a.quantity + b.quantity}
+          }, {quantity: 0}).quantity
+        }
       },
       methods: {
         calcMargin () {
@@ -306,7 +341,7 @@
         save () {
           axios.put('api/products/' + this.product.id, {...this.product}).then((res) => {
             this.$emit('update')
-            this.product.magrin = res.data.margin
+            this.product.margin = res.data.margin
             this.showDialog = false
           })
         }

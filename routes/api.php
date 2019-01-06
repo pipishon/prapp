@@ -40,6 +40,13 @@ Route::get('newpost/getttn', 'NewPostApiController@getTtn');
 
 Route::resource('products', 'ProductController');
 
+Route::get('purchase', 'PurchaseController@index');
+
+Route::prefix('purchase')->group(function () {
+  Route::post('/save', 'PurchaseController@store');
+  Route::get('/getsaveddates', 'PurchaseController@getSavedDates');
+});
+
 Route::prefix('product')->group(function () {
   Route::get('dashboardstats', 'ProductController@dashboardStats');
   Route::get('calcabc', 'ProductController@calcABC');
@@ -109,3 +116,6 @@ Route::get('importproducts', 'ImportController@importproducts');
 Route::get('importorderproducts', 'ImportController@processOrderProducts');
 
 Route::get('test', 'TestController@index');
+
+
+Route::resource('pack', 'PackController');

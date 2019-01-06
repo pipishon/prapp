@@ -97,22 +97,22 @@ class NewPostTtnTrackController extends Controller
                 $np_track = NewPostTtnTrack::where('int_doc_number', $track['Number'])->first();
                 if ($np_track == null) continue;
                 $np_track->update(array(
-                    'estimate_delivery_date' => Carbon::parse($track['ScheduledDeliveryDate']),
+                    'estimate_delivery_date' => isset($track['ScheduledDeliveryDate']) ? Carbon::parse($track['ScheduledDeliveryDate']) : null,
                     'status' => $track['Status'],
                     'status_code' => (int) $track['StatusCode'],
-                    'redelivery' => $track['Redelivery'],
+                    'redelivery' => isset($track['Redelivery']) ? $track['Redelivery'] : null,
                     'redelivery_sum' => $track['RedeliverySum'],
-                    'phone' => $track['PhoneRecipient'],
-                    'full_name' => $track['RecipientFullNameEW'],
-                    'city' => $track['CityRecipient'],
-                    'warehouse' => $track['WarehouseRecipient'],
+                    'phone' => isset($track['PhoneRecipient']) ? $track['PhoneRecipient'] : '',
+                    'full_name' => isset($track['RecipientFullNameEW']) ? $track['RecipientFullNameEW'] : '',
+                    'city' => isset($track['CityRecipient']) ? $track['CityRecipient'] : null,
+                    'warehouse' => isset($track['WarehouseRecipient']) ? $track['WarehouseRecipient'] : null ,
                     'warehouse_ref' => isset($track['WarehouseRecipientRef']) ? isset($track['WarehouseRecipientRef']) : '',
                     'recipient_address' => $track['RecipientAddress'],
-                    'date_created' => Carbon::parse($track['DateCreated']),
+                    'date_created' => isset($track['DateCreated']) ? Carbon::parse($track['DateCreated']) : null,
                     'date_first_day_storage' => isset($track['DateFirstDayStorage']) ? Carbon::parse($track['DateFirstDayStorage']) : null,
-                    'document_weight' => $track['DocumentWeight'],
-                    'check_weight' => $track['CheckWeight'],
-                    'document_cost' => $track['DocumentCost'],
+                    'document_weight' => isset($track['DocumentWeight']) ? $track['DocumentWeight'] : null,
+                    'check_weight' => isset($track['CheckWeight']) ? $track['CheckWeight'] : null,
+                    'document_cost' => isset($track['DocumentCost']) ? $track['DocumentCost'] : null,
                 ));
                 switch ($status) {
                     case 7:

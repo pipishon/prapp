@@ -75,6 +75,14 @@ class Product extends Model
           $query = $query->where('presence', 'available');
       }
 
+      if (isset($input['not_available']) && $input['not_available'] == 'true') {
+          $query = $query->where('presence', 'not_available');
+      }
+
+      if (isset($input['on_sale']) && $input['on_sale'] == 'true') {
+          $query = $query->where('on_sale', 1);
+      }
+
       if (isset($input['on_display']) && $input['on_display'] == 'true') {
           $query = $query->where('status', 'on_display');
       }
@@ -112,6 +120,16 @@ class Product extends Model
   public function morders()
   {
     return $this->hasMany('App\ProductMonthOrder');
+  }
+
+  public function pack()
+  {
+    return $this->hasMany('App\Pack', 'id', 'product_id');
+  }
+
+  public function packitems()
+  {
+    return $this->hasMany('App\Pack', 'item_id', 'id');
   }
 
   public function suplierlinks()

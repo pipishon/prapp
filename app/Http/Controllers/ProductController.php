@@ -9,6 +9,7 @@ use App\Order;
 use Illuminate\Support\Facades\DB;
 use App\ProductSuplierLink;
 use App\PromApi;
+use App\Pack;
 use App\ProductMonthOrder;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -48,7 +49,7 @@ class ProductController extends Controller
               'purchase_price' => Product::whereNull('purchase_price')->count(),
           );
       }
-      $products = $products->with(['labels', 'supliers', 'suplierlinks'])->orderBy('name')->paginate($per_page);
+      $products = $products->with(['packitems','morders', 'labels', 'supliers', 'suplierlinks'])->orderBy('name')->paginate($per_page);
 
       $custom = collect([
         'stats' => $stats,
@@ -77,16 +78,56 @@ class ProductController extends Controller
     }
 
     public function getOrderMonth ($id) {
+        $pack = Pack::where('item_id', $id)->get()->pluck('product_id')->toArray();
+        //$ids = array_merge($pack, array((int) $id));
+        $result = array();
         $months = DB::table('orders')
             ->join('order_products', 'orders.id', 'order_products.order_id')
                 ->where('orders.status', 'delivered')
                 ->where('order_products.product_id', $id)
                 ->select(DB::raw('sum(order_products.quantity) as `qty`'), DB::raw('YEAR(orders.prom_date_created) year, MONTH(orders.prom_date_created) month'))
-                ->groupby('year','month')
+                ->groupBy('year','month')
                 ->orderBy('year', 'desc')
                 ->orderBy('month', 'desc')
                 ->get();
-        return $months;
+        foreach ($months as $month) {
+          $result[$month->year.$month->month] = $month;
+        }
+
+        $pack_months = DB::table('orders')
+            ->join('order_products', 'orders.id', 'order_products.order_id')
+            ->join('packs', 'order_products.product_id', 'packs.product_id')
+                ->where('orders.status', 'delivered')
+                ->whereIn('order_products.product_id', $pack)
+                ->select(DB::raw('sum(order_products.quantity*packs.koef) as `qty`'), DB::raw('YEAR(orders.prom_date_created) year, MONTH(orders.prom_date_created) month'))
+                ->groupBy('year','month')
+                ->orderBy('year', 'desc')
+                ->orderBy('month', 'desc')
+                ->get();
+        foreach ($pack_months as $month) {
+          if (isset($result[$month->year.$month->month])) {
+            $result[$month->year.$month->month]->qty += $month->qty;
+          } else {
+            $result[$month->year.$month->month] = $month;
+          }
+        }
+        /*foreach ($months as $key => $month) {
+          foreach ($pack_months as $pack_key => $pack_month) {
+            if ($month->year == $pack_month->year &&
+              $month->month == $pack_month->month) {
+              $months[$key]->qty = $pack_month->qty;
+            }
+            if ($months->count() > $key + 1 &&
+                $months[$key]->year < $pack_month->year &&
+                $months[$key + 1]->year > $pack_month->year &&
+                $months[$key]->month < $pack_month->month &&
+                $months[$key + 1]->month > $pack_month->month
+            ) {
+             $months->splice($key, 0, [$pack_month]);
+            }
+          }
+        }*/
+        return array_values($result);
     }
 
     public function importFromApiProcess (Request $request)
@@ -286,9 +327,9 @@ class ProductController extends Controller
      * @param  \App\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function show(Product $product)
+    public function show($id)
     {
-        //
+      return Product::where('prom_id', $id)->first();
     }
 
     /**
@@ -350,7 +391,7 @@ class ProductController extends Controller
         $suplier_name = $request->input('suplier');
 
 //'labels', 'supliers',
-        $products = Product::with(['labels', 'supliers','morders','suplierlinks']);
+        $products = Product::with(['packitems', 'labels', 'supliers','morders','suplierlinks']);
         if ($request->has('on_display')) {
           $products = $products->where('status', 'on_display');
         }
@@ -400,7 +441,7 @@ class ProductController extends Controller
         foreach ($products as $product) {
             $months = $this->getOrderMonth($product->id);
             foreach ($months as $month) {
-                ProductMonthOrder::firstOrUpdate(array(
+                ProductMonthOrder::updateOrCreate(array(
                     'product_id' => $product->id,
                     'year' => $month->year,
                     'month' => $month->month,
