@@ -358,12 +358,23 @@
             //this.getProducts()
           })
         },
-        getLastMonths (products) {
+        getOrdersInRange(products, range) {
+          let packs = []
+          products.map((product) => {
+            product.packitems.map((pack) => {
+              for (let cat in this.categories) {
+                const allProducts = this.categories[cat]
+                let pck = JSON.parse(JSON.stringify(allProducts.filter((el) => el.id == pack.product_id)[0]))
+                pck.morders.map((el) => el.quantity =  el.quantity * pack.koef)
+                packs.push(pck)
+              }
+            })
+          })
+          products = [...products, ...packs]
+
           let qty = 0
           products.map((product) => {
             const morders = product.morders
-            const emoment = extendMoment(moment)
-            const range = emoment.rangeFromInterval('month', -1*this.countMonth, moment().subtract(1, 'month'))
             let sum = 0;
             for (let item of range.by('month')) {
               let month = item.format('M');
@@ -377,46 +388,21 @@
             qty += (sum - product.quantity) * product.part_koef
           })
           return Math.round(qty * 10) / 10
+        },
+        getLastMonths (products) {
+          const emoment = extendMoment(moment)
+          const range = emoment.rangeFromInterval('month', -1*this.countMonth, moment().subtract(1, 'month'))
+          return this.getOrdersInRange(products, range)
         },
         getLastYear (products) {
-          let qty = 0
-          products.map((product) => {
-            const morders = product.morders
-            const emoment = extendMoment(moment)
-            const range = emoment.rangeFromInterval('month', this.countMonth, moment().subtract(1, 'year'))
-            let sum = 0;
-            for (let item of range.by('month')) {
-              let month = item.format('M');
-              let year = item.format('Y');
-              morders.map((morder) => {
-                if (morder.year == year && morder.month == month) {
-                  sum += morder.quantity
-                }
-              })
-            }
-            qty += (sum - product.quantity) * product.part_koef
-          })
-          return Math.round(qty * 10) / 10
+          const emoment = extendMoment(moment)
+          const range = emoment.rangeFromInterval('month', this.countMonth, moment().subtract(1, 'year'))
+          return this.getOrdersInRange(products, range)
         },
         getPreLastYear (products) {
-          let qty = 0
-          products.map((product) => {
-            const morders = product.morders
-            const emoment = extendMoment(moment)
-            const range = emoment.rangeFromInterval('month', this.countMonth, moment().subtract(2, 'year'))
-            let sum = 0;
-            for (let item of range.by('month')) {
-              let month = item.format('M');
-              let year = item.format('Y');
-              morders.map((morder) => {
-                if (morder.year == year && morder.month == month) {
-                  sum += morder.quantity
-                }
-              })
-            }
-            return sum - product.quantity
-          })
-          return Math.round(qty * 10) / 10
+          const emoment = extendMoment(moment)
+          const range = emoment.rangeFromInterval('month', this.countMonth, moment().subtract(2, 'year'))
+          return this.getOrdersInRange(products, range)
         },
         getSumMonths (morders) {
           let sum = 0

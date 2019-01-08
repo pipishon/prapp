@@ -28,10 +28,14 @@ class NewPostTtnTrackController extends Controller
                   $query->where('status_code', '!=', '11')->where('redelivery', 1);
               });
           });
+
+          $np_track = $np_track->where('current', 1);
       }
       if ($request->has('today')) {
           $np_track = $np_track->whereDate('date_created', '=', Db::Raw('CURDATE()'));
       }
+
+      $np_track = $np_track->orderByRaw("FIELD(status_code, '102', '103', '104', '108') DESC");
 
       $np_track = $np_track->orderByRaw('ISNULL(date_first_day_storage), date_first_day_storage', 'asc');
       $np_track = $np_track->orderBy('date_created', 'asc');
@@ -40,7 +44,7 @@ class NewPostTtnTrackController extends Controller
           'nums' => array(
             'all' => NewPostTtnTrack::all()->count(),
             'today' => NewPostTtnTrack::whereDate('date_created', '=', Db::Raw('CURDATE()'))->count(),
-            'usual' => NewPostTtnTrack::whereNotIn('status_code', array(9, 11))->count()
+            'usual' => NewPostTtnTrack::whereNotIn('status_code', array(9, 11))->where('current', 1)->count()
         )
       ));
 
@@ -70,6 +74,7 @@ class NewPostTtnTrackController extends Controller
         );
         return $track;
     }
+
     public function checkStatus()
     {
         //$np_tracks = NewPostTtnTrack::whereNotIn('status_code', array(9, 11))->get();
@@ -124,6 +129,10 @@ class NewPostTtnTrackController extends Controller
                     case 9:
                     case 10:
                     case 11:
+                    case 102:
+                    case 103:
+                    case 104:
+                    case 108:
                         if ($np_track->date_delivered == null) {
                             $np_track->delivery_days = 0;
                             $np_track->date_delivered = Carbon::now();
@@ -148,5 +157,11 @@ class NewPostTtnTrackController extends Controller
             $np_track->save();
         }
     }
+
+    public function update (NewPostTtnTrack $nptrack, Request $request)
+    {
+      $nptrack->update($request->only(['current']));
+    }
+
     //
 }

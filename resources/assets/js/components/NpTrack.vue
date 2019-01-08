@@ -15,7 +15,10 @@
     >
 
       <template slot="row" slot-scope="data">
-        <tr v-for="item in data.items" :class="{'green lighten-5': (item.redelivery && item.status_code == 11) || (!item.redelivery && item.status_code == 9)}">
+        <tr v-for="item in data.items" :class="{
+          'green lighten-5': (item.redelivery && item.status_code == 11) || (!item.redelivery && item.status_code == 9),
+          'pink lighten-5': item.status_code > 100
+          }">
           <td>
 
           </td>
@@ -143,6 +146,9 @@
             <div v-if="item.ttn != null && item.document_cost != item.ttn.cost_on_site">{{deliveryCost(item, item.ttn.cost_on_site)}}</div>
             {{deliveryCost(item, item.document_cost)}}
           </td>
+          <td>
+            <v-checkbox v-model="item.current" @change="updateTrack(item)"></v-checkbox>
+          </td>
         </tr>
       </template>
 
@@ -183,6 +189,7 @@
             { key: 'timetable', label: 'График доставки' },
             { key: 'weight', label: 'Вес' },
             { key: 'document_cost', label: 'Цена' },
+            { key: 'current', label: 'Тек.' },
           ],
           list: [],
           curPage: 0,
@@ -206,6 +213,12 @@
       },
       methods: {
         ...mapActions(['updateSettings']),
+        updateTrack (item) {
+          axios.put('api/nptrack/' + item.id, {...item}).then((res) => {
+            console.log(res.data)
+            this.getList()
+          })
+        },
         updateWidths () {
           this.updateSettings({name: 'nptrack_table_widths', value: JSON.stringify(this.tableWidths)})
         },
@@ -293,6 +306,22 @@
     }
 </script>
 <style scope>
+.loader-overlay {
+  left: -30px;
+  right: 0;
+  width: 100vw;
+  height: 100%;
+  z-index: 100;
+  position: fixed;
+  z-index: 10000;
+}
+.loader {
+  width: 200px;
+  height: 200px;
+  position: fixed;
+  left: calc(50vw - 100px);
+  top: calc(50vh - 100px);
+}
 .ttn-track .table .table{
   background: none !important;
 }

@@ -78,9 +78,9 @@ class ProductController extends Controller
     }
 
     public function getOrderMonth ($id) {
-        $pack = Pack::where('item_id', $id)->get()->pluck('product_id')->toArray();
+        //$pack = Pack::where('item_id', $id)->get()->pluck('product_id')->toArray();
         //$ids = array_merge($pack, array((int) $id));
-        $result = array();
+        //$result = array();
         $months = DB::table('orders')
             ->join('order_products', 'orders.id', 'order_products.order_id')
                 ->where('orders.status', 'delivered')
@@ -90,7 +90,7 @@ class ProductController extends Controller
                 ->orderBy('year', 'desc')
                 ->orderBy('month', 'desc')
                 ->get();
-        foreach ($months as $month) {
+        /*foreach ($months as $month) {
           $result[$month->year.$month->month] = $month;
         }
 
@@ -110,7 +110,7 @@ class ProductController extends Controller
           } else {
             $result[$month->year.$month->month] = $month;
           }
-        }
+        }*/
         /*foreach ($months as $key => $month) {
           foreach ($pack_months as $pack_key => $pack_month) {
             if ($month->year == $pack_month->year &&
@@ -127,7 +127,7 @@ class ProductController extends Controller
             }
           }
         }*/
-        return array_values($result);
+        return $months;
     }
 
     public function importFromApiProcess (Request $request)
