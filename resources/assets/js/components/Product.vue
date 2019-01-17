@@ -107,7 +107,10 @@
             <span class="subheading font-weight-medium" >Комплекты</span>
           </v-flex>
           <v-flex md3 class="text-left">
-            <a href="#" @click.prevent v-for="packitem in product.packitems"><pack :productpromid="packitem.product_promid">{{packitem.product_promid}}</pack></a>
+            <a href="#" @click.prevent v-for="(packitem, index) in product.packitems">
+              <pack :productpromid="packitem.product_promid">{{packitem.product_promid}}<span v-if="typeof(product.packitems) != 'undefined' && index < product.packitems.length - 1">,</span>&nbsp;
+              </pack>
+              </a>
           </v-flex>
           <v-flex md2 class="text-right pr-4">
             <pack :productpromid="product.prom_id"><v-btn flat>Редактировать комплект</v-btn></pack>

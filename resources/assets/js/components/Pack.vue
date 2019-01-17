@@ -1,5 +1,4 @@
 <template>
-  <div>
   <v-dialog  v-model="showDialog" fullscreen transition="dialog-bottom-transition" >
     <span slot="activator"><slot></slot></span>
     <v-card v-if="showDialog">
@@ -34,7 +33,6 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-  </div>
 </template>
 <script>
     export default {

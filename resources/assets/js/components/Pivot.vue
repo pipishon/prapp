@@ -269,8 +269,15 @@
           }
           this.listLoading = true
           axios.get('api/purchase', {params}).then((res) => {
-            this.newProducts = JSON.parse(res.data[0].products)
-            let id_qty_buy = JSON.parse(res.data[0].id_qty_buy)
+            this.newProducts = []
+            if (typeof(res.data[0].products) != 'undefined') {
+              this.newProducts = JSON.parse(res.data[0].products)
+            }
+
+            let id_qty_buy = []
+            if (typeof(res.data[0].id_qty_buy) != 'undefined') {
+              id_qty_buy = JSON.parse(res.data[0].id_qty_buy)
+            }
 
             for (let category in this.categories) {
               this.categories[category].map((product) => {
@@ -364,9 +371,11 @@
             product.packitems.map((pack) => {
               for (let cat in this.categories) {
                 const allProducts = this.categories[cat]
-                let pck = JSON.parse(JSON.stringify(allProducts.filter((el) => el.id == pack.product_id)[0]))
-                pck.morders.map((el) => el.quantity =  el.quantity * pack.koef)
-                packs.push(pck)
+                if (allProducts.filter((el) => el.id == pack.product_id).length > 0) {
+                  let pck = JSON.parse(JSON.stringify(allProducts.filter((el) => el.id == pack.product_id)[0]))
+                  pck.morders.map((el) => el.quantity =  1 * el.quantity * pack.koef)
+                  packs.push(pck)
+                }
               }
             })
           })
@@ -381,7 +390,7 @@
               let year = item.format('Y');
               morders.map((morder) => {
                 if (morder.year == year && morder.month == month) {
-                  sum += morder.quantity
+                  sum += 1*morder.quantity
                 }
               })
             }

@@ -33,7 +33,20 @@
       <div class="row">
         <div class="col">
           <label>Товары</label>
-          <btable :items="order.products" :fields="productFields">
+          <btable :items="order.products" :notstriped="true" :fields="productFields">
+          <template slot="row" slot-scope="data">
+            <tr v-for="(item, index)  in data.items" :key="item.id" :class="{'pink lighten-5': item.on_sale}">
+              <td>{{index}}</td>
+              <td><img width="40" :src="item.image" /></td>
+              <td>{{item.name}}</td>
+              <td>{{item.sku}}</td>
+              <td>{{item.quantity}}</td>
+              <td>{{item.purchase}}</td>
+              <td>{{item.price}}</td>
+              <td>{{item.discount}}</td>
+              <td>{{item.quantity*item.price*(1-item.discount/100)}}</td>
+            </tr>
+          </template>
 
           <template slot="footer">
             <td colspan="2"></td>
@@ -74,12 +87,15 @@
             { key: 'prom_date_created', label: 'Дата' },
           ],
           productFields: [
-            { key: 'sku', label: 'Артикул' },
+            { key: 'idx', label: '' },
+            { key: 'image', label: '' },
             { key: 'name', label: 'Название' },
-            { key: 'price', label: 'Цена' },
-            { key: 'purchase', label: 'Закуп. цена' },
+            { key: 'sku', label: 'Артикул' },
             { key: 'quantity', label: 'Кол-во' },
-            { key: 'prom_id', label: 'Id' },
+            { key: 'purchase', label: 'Закуп. цена' },
+            { key: 'price', label: 'Цена' },
+            { key: 'discount', label: 'Скидка' },
+            { key: 'sum', label: 'Сумма' },
           ]
         }
       },
@@ -146,4 +162,12 @@
     }
 </script>
 <style scoped>
+
+table tr:hover {
+  background-color: #FFF9C4;
+}
+
+table tr:hover input{
+  border: 1px solid lightgray;
+}
 </style>
