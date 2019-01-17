@@ -252,11 +252,12 @@ class OrderController extends Controller
                         'name' => $prom_product['name'],
                     ));
                 }
-                $order_product = OrderProduct::firstOrCreate(array(
+                $order_product = OrderProduct::updateOrCreate(array(
                     'product_id' => $product->id,
                     'order_id' => $order->id,
+                ),array(
                     'quantity' => $prom_product['quantity'],
-                    'price' => floatval(str_replace(',', '.', $prom_product['price'])),
+                    'prom_price' => floatval(str_replace(',', '.', $prom_product['price'])),
                 ));
             }
             $price = preg_replace('/\s+/u', '', $prom_order['price']);

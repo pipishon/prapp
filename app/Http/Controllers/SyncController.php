@@ -53,11 +53,12 @@ class SyncController extends Controller
                 if ($product == null) {
                     continue;
                 }
-                $order_product = OrderProduct::firstOrCreate(array(
+                $order_product = OrderProduct::updateOrCreate(array(
                     'product_id' => $product->id,
                     'order_id' => $order->id,
+                ), array(
                     'quantity' => $prom_product['quantity'],
-                    'price' => floatval(str_replace(',', '.', $prom_product['price'])),
+                    'prom_price' => floatval(str_replace(',', '.', $prom_product['price'])),
                 ));
             }
             $price = preg_replace('/\s+/u', '', $prom_order['price']);
@@ -194,15 +195,18 @@ class SyncController extends Controller
             array(
               'sku' => $product['sku'],
               'name' => $product['name'],
-              'price' => $product_price,
+            //  'price' => $product_price,
               'main_image' => (string) $product['image'],
               'presence' => 'available',
               'status' => 'on_display',
             ));
 
-          $order_product = OrderProduct::firstOrCreate(array(
+          $order_product = OrderProduct::updateOrCreate(array(
             'product_id' => $O_product->id,
             'order_id' => $O_order->id,
+            ),
+            array(
+            'prom_price' => $product_price,
             'quantity' => $product['quantity'],
           ));
       }

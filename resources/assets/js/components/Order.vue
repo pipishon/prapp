@@ -36,23 +36,35 @@
           <btable :items="order.products" :notstriped="true" :fields="productFields">
           <template slot="row" slot-scope="data">
             <tr v-for="(item, index)  in data.items" :key="item.id" :class="{'pink lighten-5': item.on_sale}">
-              <td>{{index}}</td>
+              <td>{{index + 1}}</td>
               <td><img width="40" :src="item.image" /></td>
               <td>{{item.name}}</td>
               <td>{{item.sku}}</td>
               <td>{{item.quantity}}</td>
               <td>{{item.purchase}}</td>
-              <td>{{item.price}}</td>
-              <td>{{item.discount}}</td>
-              <td>{{item.quantity*item.price*(1-item.discount/100)}}</td>
+              <td>
+                {{item.price}}
+                <span class="grey--text" v-if="item.prom_price && item.prom_price != item.price">{({item.prom_price}})</span>
+              </td>
+              <td>
+                <input
+                   :value="item.discount"
+                   @keypress.enter="saveDiscount($event, item)"
+                   @focus="if(item.discount == 0) item.discount = ''"
+                  @blur="if(item.discount == '') item.discount = 0"
+                   ref="discounts"
+                />
+              </td>
+              <td>{{Math.round(item.quantity*item.price*(1-item.discount/100) * 100) / 100}}</td>
             </tr>
           </template>
 
           <template slot="footer">
-            <td colspan="2"></td>
-            <td>{{sumPrice.toFixed(2)}} грн.</td>
+            <td colspan="5"></td>
             <td>{{sumPurchase.toFixed(2)}} грн.</td>
-            <td colspan="2"></td>
+            <td>{{sumPrice.toFixed(2)}} грн.</td>
+            <td></td>
+            <td>{{sumPriceWithDiscount.toFixed(2)}} грн.</td>
           </template>
           </btable>
         </div>
@@ -123,6 +135,13 @@
           })
           return sum
         },
+        sumPriceWithDiscount () {
+          let sum = 0
+          this.order.products.map((item) => {
+            sum += item.quantity*item.price*(1-item.discount/100)
+          })
+          return sum
+        },
         phones () {
           if (this.customer == null) return []
           let a = []
@@ -137,6 +156,20 @@
         }
       },
       methods: {
+        saveDiscount (e, item) {
+          item.discount = e.target.value
+          axios.put('api/orderproducts/' + item.id, { discount: item.discount || 0 }).then((res) => {
+            console.log(res.data)
+          })
+          const index = this.$refs.discounts.indexOf(e.target)
+          if (typeof(this.$refs.discounts[index + 1]) != 'undefined') {
+            const next = this.$refs.discounts[index + 1]
+            if (next.value == 0) {
+              next.value = ''
+            }
+            next.focus()
+          }
+        },
         refreshOrder () {
           axios.get('api/orders/updatefromprom/' + this.order.prom_id).then((res) => {
             this.$emit('update')
@@ -169,5 +202,13 @@ table tr:hover {
 
 table tr:hover input{
   border: 1px solid lightgray;
+}
+
+
+table td input {
+  background-color: #fff;
+  padding: 2px 4px;
+  border-radius: 3px;
+  width: 50px;
 }
 </style>

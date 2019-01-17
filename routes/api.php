@@ -40,6 +40,8 @@ Route::get('newpost/getttn', 'NewPostApiController@getTtn');
 
 Route::resource('products', 'ProductController');
 
+Route::resource('orderproducts', 'OrderProductController');
+
 Route::get('purchase', 'PurchaseController@index');
 
 Route::prefix('purchase')->group(function () {

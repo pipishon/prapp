@@ -17,13 +17,16 @@ class TestController extends Controller
 {
     public function index (Request $request)
     {
-        $api = new PromApi;
+        $pdf = \PDF::loadView('pdf.invoice', array());
+        return $pdf->stream();//$pdf->download('invoice.pdf');
+
+        /*$api = new PromApi;
          dd($api->getOpenOrders());
              return
         $orders = Order::whereDate('prom_date_created', '>', Carbon::parse('01-07-2018'))->paginate(20);
         foreach ($orders as $order) {
             $order->updateFromApi();
-        }
+        }*/
     }/*
         $product_sku = $request->input('sku');
         $product_id = Product::where('sku', $product_sku)->first()->id;
