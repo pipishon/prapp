@@ -41,6 +41,7 @@ Route::get('newpost/getttn', 'NewPostApiController@getTtn');
 Route::resource('products', 'ProductController');
 
 Route::resource('orderproducts', 'OrderProductController');
+Route::post('orderproducts/massdiscount', 'OrderProductController@massDiscount');
 
 Route::get('purchase', 'PurchaseController@index');
 
@@ -121,3 +122,5 @@ Route::get('test', 'TestController@index');
 
 
 Route::resource('pack', 'PackController');
+
+Route::get('pdf/invoice/{id}', 'PdfController@invoice');

@@ -25,7 +25,10 @@
         <v-flex xs6 md3 >
           <v-btn icon @click="clear"><v-icon>clear</v-icon></v-btn>
         </v-flex>
-        <v-flex xs6 offset-md3 md3 >
+        <v-flex xs6 md3 >
+          <v-btn flat><a :href="'api/pdf/invoice/' + order.id" target="_blank">Скачать PDF</a></v-btn>
+        </v-flex>
+        <v-flex xs6 md3 >
           <v-btn @click="refreshOrder" flat><v-icon small class="mr-2" >refresh</v-icon>Обновить заказ</v-btn>
 
         </v-flex>
@@ -36,15 +39,15 @@
           <btable :items="order.products" :notstriped="true" :fields="productFields">
           <template slot="row" slot-scope="data">
             <tr v-for="(item, index)  in data.items" :key="item.id" :class="{'pink lighten-5': item.on_sale}">
-              <td>{{index + 1}}</td>
-              <td><img width="40" :src="item.image" /></td>
+              <td style="width: 40px;">{{index + 1}}</td>
+              <td style="width: 63px;"><img width="40" :src="img40(item.image)" /></td>
               <td>{{item.name}}</td>
               <td>{{item.sku}}</td>
               <td>{{item.quantity}}</td>
               <td>{{item.purchase}}</td>
               <td>
                 {{item.price}}
-                <span class="grey--text" v-if="item.prom_price && item.prom_price != item.price">{({item.prom_price}})</span>
+                <span class="grey--text" v-if="item.prom_price && item.prom_price != item.price">({{item.prom_price}})</span>
               </td>
               <td>
                 <input
@@ -63,7 +66,7 @@
             <td colspan="5"></td>
             <td>{{sumPurchase.toFixed(2)}} грн.</td>
             <td>{{sumPrice.toFixed(2)}} грн.</td>
-            <td></td>
+            <td><input class="mass-discount" @keypress.enter="setMassDiscount" /></td>
             <td>{{sumPriceWithDiscount.toFixed(2)}} грн.</td>
           </template>
           </btable>
@@ -156,6 +159,17 @@
         }
       },
       methods: {
+        img40(img) {
+          return img.replace(/w\d+/, 'w40').replace(/h\d+/, 'h40')
+        },
+        setMassDiscount (e) {
+          this.order.products.map((item) => {
+            item.discount = e.target.value
+          })
+          axios.post('api/orderproducts/massdiscount', { items: this.order.products}).then((res) => {
+            console.log(res.data)
+          })
+        },
         saveDiscount (e, item) {
           item.discount = e.target.value
           axios.put('api/orderproducts/' + item.id, { discount: item.discount || 0 }).then((res) => {
@@ -210,5 +224,8 @@ table td input {
   padding: 2px 4px;
   border-radius: 3px;
   width: 50px;
+}
+.mass-discount {
+  border: 1px solid lightgray;
 }
 </style>

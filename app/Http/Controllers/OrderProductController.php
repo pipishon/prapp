@@ -12,4 +12,14 @@ class OrderProductController extends Controller
         $product = OrderProduct::find($id);
         $product->update($request->only(['discount']));
     }
+
+    public function massDiscount (Request $request)
+    {
+      $products = $request->only(['items'])['items'];
+      foreach ($products as $product) {
+        OrderProduct::find($product['id'])->update(array(
+          'discount' => $product['discount']
+        ));
+      }
+    }
 }

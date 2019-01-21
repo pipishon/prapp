@@ -57,7 +57,7 @@ class SyncController extends Controller
                     'product_id' => $product->id,
                     'order_id' => $order->id,
                 ), array(
-                    'quantity' => $prom_product['quantity'],
+                    'quantity' => str_replace(',','.', $prom_product['quantity']),
                     'prom_price' => floatval(str_replace(',', '.', $prom_product['price'])),
                 ));
             }
@@ -207,7 +207,7 @@ class SyncController extends Controller
             ),
             array(
             'prom_price' => $product_price,
-            'quantity' => $product['quantity'],
+            'quantity' => str_replace(',','.', $product['quantity']),
           ));
       }
       if (isset($order['email'])) {

@@ -1,5 +1,5 @@
 <template>
-  <div style="overflow-x: scroll; padding-bottom: 400px;">
+  <div class="pivot" >
     <div class="loader-overlay" v-if="listLoading">
       <div class="loader" >
         <img src="imgs/loader.svg">
@@ -14,12 +14,12 @@
       <v-layout row>
         <v-flex >
       <table>
-        <th></th><th></th><th></th><th></th><th></th><th></th><th>sort2</th><th>пок</th><th>прод</th><th>марж</th><th>есть</th><th>купить</th><th>будет</th>
+        <th>№</th><th>Изобр.</th><th>Артикул</th><th>Название</th><th>ABC</th><th>Пост. артикул</th><th>sort2</th><th>пок</th><th>прод</th><th>марж</th><th>есть</th><th>купить</th><th>будет</th>
         <th class="text-nowrap">6 мec</th>
         <th>ПГ</th>
         <th>ППГ</th>
         <th>Сумма</th>
-        <th></th>
+        <th>Граф.</th>
         <th v-for="item in monthHeader">{{item.name}}</th>
         <tr v-for="(product, index) in products" :class="{part: product.prom_id != product.part_id, 'pink lighten-5': product.on_sale}">
           <td>
@@ -57,7 +57,7 @@
               <span v-if="product.suplierlinks.length > 1">({{product.suplierlinks.length}})</span>
             </div>
           </td>
-          <td class="text-center">
+          <td class="text-center" :class="{blink: sortSaved[product.id]}">
             <input style="width: 20px" :value="product.sort2" @blur="$event.target.value = product.sort2" @keypress.enter="changeSort($event.target.value, product)" />
           </td>
           <td>
@@ -234,7 +234,8 @@
             minMonth: 100,
             maxMonth: 0,
           },
-          countMonth: 5
+          countMonth: 5,
+          sortSaved: {},
         }
       },
       computed: {
@@ -285,12 +286,12 @@
                   id_qty_buy[category].map((savedProduct) => {
                     if (product.id == savedProduct.id) {
                       product.quantity = savedProduct.qty
-                      this.$set(product, 'toBuy', savedProduct.buy)
+                      product.toBuy = savedProduct.buy
+                      //this.$set(product, 'toBuy', savedProduct.buy)
                     }
                   })
                 }
               })
-
             }
             this.savedDatesMenu = false
             this.listLoading = false
@@ -362,6 +363,10 @@
           }
           product.sort2 = val
           axios.put('api/products/' + product.id, params ).then((res) => {
+            this.$set(this.sortSaved, product.id, true);
+            setTimeout(() => {
+              this.sortSaved[product.id] = false;
+            }, 500)
             //this.getProducts()
           })
         },
@@ -379,9 +384,23 @@
               }
             })
           })
-          products = [...products, ...packs]
+          //products = [...products, ...packs]
 
           let qty = 0
+          packs.map((product) => {
+            const morders = product.morders
+            let sum = 0;
+            for (let item of range.by('month')) {
+              let month = item.format('M');
+              let year = item.format('Y');
+              morders.map((morder) => {
+                if (morder.year == year && morder.month == month) {
+                  sum += 1*morder.quantity
+                }
+              })
+            }
+            qty += (sum) * product.part_koef
+          })
           products.map((product) => {
             const morders = product.morders
             let sum = 0;
@@ -405,12 +424,12 @@
         },
         getLastYear (products) {
           const emoment = extendMoment(moment)
-          const range = emoment.rangeFromInterval('month', this.countMonth, moment().subtract(1, 'year'))
+          const range = emoment.rangeFromInterval('month', this.countMonth, moment().subtract(1, 'year').add(1, 'month'))
           return this.getOrdersInRange(products, range)
         },
         getPreLastYear (products) {
           const emoment = extendMoment(moment)
-          const range = emoment.rangeFromInterval('month', this.countMonth, moment().subtract(2, 'year'))
+          const range = emoment.rangeFromInterval('month', this.countMonth, moment().subtract(2, 'year').add(1, 'month'))
           return this.getOrdersInRange(products, range)
         },
         getSumMonths (morders) {
@@ -426,6 +445,12 @@
           })
         },
         getMonthParams() {
+          this.monthParams  = {
+            minYear: 10000,
+            maxYear: 0,
+            minMonth: 100,
+            maxMonth: 0,
+          }
           for (let cat in this.categories) {
             const products = this.categories[cat]
             products.map((product) => {
@@ -437,10 +462,12 @@
                   this.monthParams.minYear = month.year
                 }
               })
+
               product.morders.map((month) => {
                 if (this.monthParams.maxMonth < month.month &&
                     this.monthParams.maxYear == month.year
                 ) {
+                  console.log(month.month, month.year, this.monthParams)
                   this.monthParams.maxMonth = month.month
                 }
                 if (this.monthParams.minMonth > month.month &&
@@ -505,8 +532,8 @@
       },
       mounted() {
         this.getSupliers()
-//        this.suplier = 'Aliexpress (мобили)'
-//        this.getProducts()
+        //this.suplier = 'Aliexpress (мобили)'
+        //this.getProducts()
       }
     }
 </script>
@@ -561,5 +588,22 @@ table tr:hover input{
   position: fixed;
   left: calc(50vw - 100px);
   top: calc(50vh - 100px);
+}
+.pivot {
+ overflow-x: scroll;
+ padding-bottom: 400px;
+}
+
+.pivot .blink {
+  animation: blink 500ms infinite;  /* IE 10+, Fx 29+ */
+}
+
+@-webkit-keyframes blink {
+  0%, 49% {
+    background-color: #e8f5e9;
+  }
+  50%, 100% {
+    background-color: #fafafa;
+  }
 }
 </style>

@@ -256,13 +256,14 @@ class OrderController extends Controller
                     'product_id' => $product->id,
                     'order_id' => $order->id,
                 ),array(
-                    'quantity' => $prom_product['quantity'],
+                    'quantity' => str_replace(',','.', $prom_product['quantity']),
                     'prom_price' => floatval(str_replace(',', '.', $prom_product['price'])),
                 ));
             }
             $price = preg_replace('/\s+/u', '', $prom_order['price']);
             $price = str_replace(',','.', $price);
             $order->price = floatval($price);
+            $order->status = $prom_order['status'];
             $order->save();
         }
 

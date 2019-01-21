@@ -143,7 +143,7 @@ class ProductController extends Controller
         $prom_products = $api->getList('products', $prom_params)['products'];
         $total = Product::count();
         foreach ($prom_products as $prom_product) {
-            Product::updateOrCreate(array('prom_id' => $prom_product['id']),
+            $product = Product::updateOrCreate(array('prom_id' => $prom_product['id']),
               array(
                     'name' => $prom_product['name'],
                     'main_image' => $prom_product['main_image'],
@@ -154,6 +154,10 @@ class ProductController extends Controller
                     'category' => $prom_product['group']['name'],
                     'price' => $prom_product['price'],
               ));
+            if ($product->part_id == null) {
+              $product->part_id = $prom_product['id'];
+              $product->save();
+            }
         }
         $ids = array_column($prom_products, 'id');
         if (count($ids) == 100) {
@@ -352,7 +356,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $input = $request->except(array('orders', 'suplier_name', 'suplier_links', 'morders', 'orders_count', 'labels', 'supliers'));
+        $input = $request->except(array('packitems', 'orders', 'suplier_name', 'suplier_links', 'morders', 'orders_count', 'labels', 'supliers'));
         $link_ids = array();
         if (isset($input['suplierlinks'])) {
           foreach ($input['suplierlinks'] as $link) {
