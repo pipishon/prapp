@@ -8,8 +8,18 @@
     <div style="width: 200px">
       <v-select label="Поставщик" v-model="suplier" @change="getProducts" :items="supliers" item-text="name" item-value="name"></v-select>
     </div>
-    <template v-for="(products, category) in categories">
-      <strong>{{category}}</strong>
+    <div>
+      <v-btn
+        :class="{primary: activeCategory == category}"
+                                                                                                             @click="changeCategory(category)"
+        v-for="(products, category) in categories"
+        flat
+        :key="category">
+          {{category}}
+      </v-btn>
+    </div>
+    <template v-if="activeCategory != null">
+      <strong>{{activeCategory}}</strong>
       <v-container fluid>
       <v-layout row>
         <v-flex >
@@ -21,7 +31,7 @@
         <th>Сумма</th>
         <th>Граф.</th>
         <th v-for="item in monthHeader">{{item.name}}</th>
-        <tr v-for="(product, index) in products" :class="{part: product.prom_id != product.part_id, 'pink lighten-5': product.on_sale}">
+        <tr v-for="(product, index) in categories[activeCategory]" :key="product.id" :class="{part: product.prom_id != product.part_id, 'pink lighten-5': product.on_sale}">
           <td>
             {{index + 1}}
           </td>
@@ -29,7 +39,7 @@
             <img style="width: 40px; height: auto" :src="product.main_image" />
             <img class="big-image" style="width: 400px; left: 100%; height: auto; position: absolute; z-index: 100" :src="product.main_image" />
           </td>
-          <td>
+          <td @click="copyToClipboard(product.sku)">
             <div style="width: 65px; overflow: hidden; white-space: nowrap;">
               {{product.sku}}
             </div>
@@ -49,7 +59,7 @@
             <span v-if="product.abc_earn">{{product.abc_earn}}{{product.abc_qty}}</span>
             <span style="white-space: nowrap;" v-else>&nbsp;- -&nbsp;</span>
           </td>
-          <td >
+          <td @click="copyToClipboard(suplierSku(product))">
             <div style="width: 50px; overflow: hidden; white-space: nowrap;">
 
               <a v-if="product.suplierlinks.length > 0 && product.suplierlinks[0].link != ''" :href="product.suplierlinks[0].link" target="_blank">{{suplierSku(product)}}</a>
@@ -74,12 +84,18 @@
           </td>
           <td :class="{'pink lighten-5': product.quantity <= 0}">
             <div>
-              {{sumQuantity(products.filter((el) => el.part_id == product.part_id))}}
-              <div v-if="products.filter((el) => el.part_id == product.part_id).length > 1" class="grey--text">{{Math.round(product.quantity * product.part_koef * 10) / 10}}</div>
+              {{sumQuantity(categories[activeCategory].filter((el) => el.part_id == product.part_id))}}
+              <div v-if="categories[activeCategory].filter((el) => el.part_id == product.part_id).length > 1" class="grey--text">{{Math.round(product.quantity * product.part_koef * 10) / 10}}</div>
             </div>
           </td>
-          <td>
-            <input :value="product.toBuy" ref="tobuys" @keypress.enter="focusNextInput($event, product)" style="width: 35px">
+          <td :class="toBuyClass(product)" @click="changeProductColor(product)">
+            <input
+              @click.stop
+              :value="product.toBuy"
+              ref="tobuys"
+              @keypress.enter="focusNextInput($event, product)"
+              style="width: 35px"
+            >
           </td>
           <td>
             {{calcFeatureQty(product)}}
@@ -87,13 +103,13 @@
           </td>
           <template v-if="product.prom_id == product.part_id">
             <td >
-              <div :class="{'green lighten-4': getLastMonths(products.filter((el) => el.part_id == product.part_id)) > 0}" style="margin-top: 3px; margin-bottom: 2px;">{{getLastMonths(products.filter((el) => el.part_id == product.part_id))}}</div>
+              <div :class="{'green lighten-4': monthStats[product.id].month > 0}" style="margin-top: 3px; margin-bottom: 2px;">{{monthStats[product.id].month}}</div>
             </td>
             <td >
-              <div :class="{'green lighten-4': getLastYear(products.filter((el) => el.part_id == product.part_id)) > 0}">{{getLastYear(products.filter((el) => el.part_id == product.part_id))}}</div>
+              <div :class="{'green lighten-4': monthStats[product.id].ly > 0}">{{monthStats[product.id].ly}}</div>
             </td>
             <td >
-              <div :class="{'green lighten-4': getPreLastYear(products.filter((el) => el.part_id == product.part_id)) > 0}">{{getPreLastYear(products.filter((el) => el.part_id == product.part_id))}}</div>
+              <div :class="{'green lighten-4': monthStats[product.id].ply > 0}">{{monthStats[product.id].ply}}</div>
             </td>
             <td >
               <div style="margin-top: 3px; margin-bottom: 2px;">
@@ -119,8 +135,8 @@
             </div>
           </td>
         </tr>
-        <template v-if="typeof(newProducts[category]) != 'undefined'">
-        <tr v-for="(product, index) in newProducts[category]">
+        <template v-if="typeof(newProducts[activeCategory]) != 'undefined'">
+        <tr v-for="(product, index) in newProducts[activeCategory]">
           <td></td>
           <td></td>
           <td></td>
@@ -141,7 +157,7 @@
     </v-layout>
     <v-layout row>
       <v-flex >
-        <v-btn @click="newProductDialogShow = true; newProductCategory = category" >Добавить товар</v-btn>
+        <v-btn @click="newProductDialogShow = true; newProductCategory = activeCategory" >Добавить товар</v-btn>
       </v-flex>
     </v-layout>
     </v-container>
@@ -212,6 +228,8 @@
       },
       data() {
         return {
+          monthStats: {},
+          activeCategory: null,
           listLoading: false,
           savedDatesMenu: false,
           savedDate: '',
@@ -256,6 +274,33 @@
         }
       },
       methods: {
+        changeProductColor (product) {
+          if (typeof(product.color) == 'undefined') {
+            this.$set(product, 'color', 0)
+          } else {
+            console.log(product.color)
+            product.color = (product.color == 2) ? 0 : product.color + 1
+          }
+        },
+        toBuyClass (product) {
+          const colors = ['light-blue lighten-4', 'green lighten-4', 'pink lighten-5']
+          if (typeof(product.toBuy) == 'undefined' || product.toBuy == 0) {
+            return ''
+          }
+          if (typeof(product.color) == 'undefined')  {
+            return colors[0]
+          }
+          return colors[product.color]
+        },
+        copyToClipboard (text) {
+          this.$copyText(text).then(function (e) {
+          }, function (e) {
+            counsole.log('Can not copy')
+          })
+        },
+        changeCategory (category) {
+          this.activeCategory = category
+        },
         sumQuantity (products) {
           let sum = 0;
           products.map((product) => {
@@ -286,8 +331,10 @@
                   id_qty_buy[category].map((savedProduct) => {
                     if (product.id == savedProduct.id) {
                       product.quantity = savedProduct.qty
-                      product.toBuy = savedProduct.buy
-                      //this.$set(product, 'toBuy', savedProduct.buy)
+                      //product.toBuy = savedProduct.buy
+                      const color = savedProduct.color || 0
+                      this.$set(product, 'color', color)
+                      this.$set(product, 'toBuy', savedProduct.buy)
                     }
                   })
                 }
@@ -312,6 +359,7 @@
                 id: product.id,
                 qty: product.quantity,
                 buy: 1*product.toBuy || 0,
+                color: product.color || 0
               })
             })
 
@@ -347,6 +395,7 @@
         },
         focusNextInput (e, product) {
           this.$set(product, 'toBuy', e.target.value)
+          this.$set(product, 'color', 0)
           const index = this.$refs.tobuys.indexOf(e.target)
           if (typeof(this.$refs.tobuys[index + 1]) != 'undefined') {
             this.$refs.tobuys[index + 1].focus()
@@ -445,12 +494,6 @@
           })
         },
         getMonthParams() {
-          this.monthParams  = {
-            minYear: 10000,
-            maxYear: 0,
-            minMonth: 100,
-            maxMonth: 0,
-          }
           for (let cat in this.categories) {
             const products = this.categories[cat]
             products.map((product) => {
@@ -478,7 +521,26 @@
               })
             })
           }
+          let curMonth = moment().format('M');
+          let curYear = moment().format('Y');
+          if (this.monthParams.maxYear >= curYear &&
+              this.monthParams.maxMonth >= curMonth
+          ) {
+            this.monthParams.maxYear = curYear
+            this.monthParams.maxMonth = curMonth
+          }
         },
+        calcMonthStats () {
+          for (let category in this.categories) {
+            this.categories[category].map((product) => {
+              this.monthStats[product.id] = {}
+              this.monthStats[product.id].months = this.getLastMonths(this.categories[category].filter((el) => el.part_id == product.part_id))
+              this.monthStats[product.id].ly = this.getLastYear(this.categories[category].filter((el) => el.part_id == product.part_id))
+              this.monthStats[product.id].ply = this.getPreLastYear(this.categories[category].filter((el) => el.part_id == product.part_id))
+            })
+          }
+        },
+
         getProducts () {
           const params = {suplier: this.suplier, sort: this.sort}
           if (this.onDisplay) {
@@ -492,8 +554,11 @@
           axios.get('api/product/suplier', {params}).then((res) => {
             this.listLoading = false
             this.categories = res.data
+            this.activeCategory = Object.keys(res.data)[0]
+            console.log(this.activeCategory)
             this.getMonthParams()
             this.getSavedDates()
+            this.calcMonthStats()
           })
         },
         getSavedDates () {
@@ -532,8 +597,8 @@
       },
       mounted() {
         this.getSupliers()
-        //this.suplier = 'Aliexpress (мобили)'
-        //this.getProducts()
+      //  this.suplier = 'SHINWON FELT'
+      //  this.getProducts()
       }
     }
 </script>

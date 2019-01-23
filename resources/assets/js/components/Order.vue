@@ -27,6 +27,7 @@
         </v-flex>
         <v-flex xs6 md3 >
           <v-btn flat><a :href="'api/pdf/invoice/' + order.id" target="_blank">Скачать PDF</a></v-btn>
+          <v-btn flat><a :href="'api/pdf/invoice/' + order.id + '?with_discount=true'" target="_blank">Скачать PDF (скидки)</a></v-btn>
         </v-flex>
         <v-flex xs6 md3 >
           <v-btn @click="refreshOrder" flat><v-icon small class="mr-2" >refresh</v-icon>Обновить заказ</v-btn>

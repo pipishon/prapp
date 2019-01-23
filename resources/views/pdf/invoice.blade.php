@@ -3,31 +3,38 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <style>
   body {
-    font-size: 10px;
-    padding: 40px;
+    font-size: 11px;
+    padding: 10px 20px 30px 20px;
+	color: black;
   }
   .head-table td{
     padding: 8px 0;
-  }
+	font-size: 12px;
+	 }
   h3 {
+	font-size: 16px;
     display: block;
     text-align: center;
+	color: black;
   }
 h4 {
 font-size: 12px;
 }
   .products-table {
     border-collapse: collapse;
-  }
+	  }
   .products-table th{
     text-align: center;
     padding: 4px;
-    font-weight: normal;
-    border: 1px solid gray;
+	height: 30;
+	font-weight: normal;
+    border: 1px solid black;
+	border-width: thin;
   }
   .products-table td{
     padding: 0 4px;
-    border: 1px solid gray;
+    border: 1px solid black;
+	border-width: thin;
   }
 </style>
 
@@ -36,7 +43,7 @@ font-size: 12px;
 <table class="head-table">
     <tr>
         <td>
-            <strong>Поставщик</strong>
+            <strong>Поставщик:</strong>
         </td>
         <td>
             Арт-студия Helgamade, 0661805460
@@ -48,7 +55,7 @@ font-size: 12px;
         </td>
         <td>
             {{$data['customer']}}
-        </td>
+      </td>
     </tr>
     <tr>
         <td>
@@ -61,9 +68,18 @@ font-size: 12px;
 </table>
 <h3>ЗАКАЗ № {{$data['order_id']}} от {{$data['date']}}</h3>
 
-<table class="products-table">
+<table width="490" class="products-table">
     <tr>
-        <th>№</th><th>Артикул</th><th>Наименование товара</th> <th>Кол.</th><th>Цена</th><th>Сумма</th>
+        <th width="15">№</th><th width="60">Артикул</th><th>Наименование товара</th> <th width="25">Кол.</th>
+        @if ($data['with_discount'])
+            <th width="30">Цена</th>
+            <th width="30">Скидка, %</th>
+            <th width="30">Цена со скидкой</th>
+            <th width="35">Сумма со скидкой</th>
+        @else
+            <th width="30">Цена</th>
+            <th width="35">Сумма</th>
+        @endif
     </tr>
     @foreach($data['products'] as $index => $product)
     <tr>
@@ -79,19 +95,38 @@ font-size: 12px;
         <td style="text-align: center;">
           {{$product->quantity}}
         </td>
-        <td style="text-align: right;">
-          {{$product->prom_price}}
-        </td>
-        <td style="text-align: right;">
-          {{$product->prom_price * $product->quantity}}
-        </td>
+        @if ($data['with_discount'])
+            <td style="text-align: right;">
+              {{number_format($product->price, 2)}}
+            </td>
+            <td style="text-align: right;">
+              {{number_format($product->discount, 2)}}
+            </td>
+            <td style="text-align: right;">
+              {{number_format(($product->price - $product->price * $product->discount / 100), 2)}}
+            </td>
+            <td style="text-align: right;">
+              {{number_format(($product->price - $product->price * $product->discount / 100) * $product->quantity, 2)}}
+            </td>
+        @else
+            <td style="text-align: right;">
+              {{number_format(($product->price - $product->price * $product->discount / 100), 2)}}
+            </td>
+            <td style="text-align: right;">
+              {{number_format(($product->price - $product->price * $product->discount / 100) * $product->quantity, 2)}}
+            </td>
+        @endif
     </tr>
     @endforeach
     <tr>
       <td style="border: none;" colspan="3"></td>
-      <td><strong>{{$data['sums']['quantity']}}</strong></td>
+      <td style="text-align:center; font-size: 12px;"><strong>{{$data['sums']['quantity']}}</strong></td>
+      @if ($data['with_discount'])
+      <td style="border: none; text-align: right;" colspan="3"><strong>Итого:</strong></td>
+      @else
       <td style="border: none; text-align: right;" ><strong>Итого:</strong></td>
-      <td><strong>{{$data['sums']['price']}}</strong></td>
+      @endif
+      <td style="text-align:right; font-size: 12px;"><strong>{{number_format($data['sums']['price'], 2)}}</strong></td>
     </tr>
 </table>
 

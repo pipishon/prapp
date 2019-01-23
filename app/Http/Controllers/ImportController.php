@@ -72,9 +72,10 @@ class ImportController extends Controller
               if ($product == null) continue;
 
 
-                OrderProduct::firstOrCreate(array(
+                OrderProduct::updateOrCreate(array(
                     'product_id' => $product->id,
                     'order_id' => $order->id,
+                ), array(
                     'quantity' => $qty,
                 ));
               $result++;

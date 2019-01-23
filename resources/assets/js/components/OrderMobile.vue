@@ -139,6 +139,7 @@ import * as moment from 'moment';
           return _.orderBy(this.order.products, [ 'product.sort1', 'product.name'])
         },
         maxPrice () {
+          if (this.order.products.length == 0) return {product: {}}
           return this.order.products.reduce((acc, curr) => {
             if (typeof(acc.product) == 'undefined') return curr
             return (acc.product.price > curr.product.price) ? acc : curr

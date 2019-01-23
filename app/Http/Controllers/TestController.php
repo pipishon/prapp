@@ -16,39 +16,41 @@ use Carbon\Carbon;
 
 class TestController extends Controller
 {
+
+    public function instagram ()
+    {
+        $inst_ids = Customer::all()->pluck('instagram_id');
+        $i = 0;
+        foreach ($inst_ids as $inst_id) {
+            if ($inst_id != null) {
+                $i++;
+                echo '<div>'.$inst_id.'</div>';
+            }
+        }
+        echo '<div><strong>'.'Кол-во:'.$i.'</strong></div>';
+      return ;
+    }
+
+    public function test1 (Request $request)
+    {
+      Order::where('prom_id', 53188064)->first()->updateFromApi();
+    }
+
     public function index (Request $request)
     {
-      $order = Order::find(5000);
-      $sums = array(
-        'quantity' => 0,
-        'price' => 0
-      );
-      foreach ($order->products as $product) {
-        $sums['quantity'] += $product->quantity;
-        $sums['price'] += $product->quantity * $product->prom_price;
-      }
-      $numberToWords = new NumberToWords();
-      $currencyTransformer = $numberToWords->getCurrencyTransformer('ru');
-      $title = $currencyTransformer->toWords($sums['price']*100, 'UAH');
-      $sums['text'] =  mb_strtoupper(mb_substr($title, 0, 1, 'UTF-8'), 'UTF-8') . mb_substr($title, 1, null,'UTF-8');
-      $data = array(
-        'customer' => $order->client_first_name.$order->client_last_name,
-        'order_id' => $order->prom_id,
-        'date' => Carbon::parse($order->prom_date_created)->format('d.m.Y'),
-        'products' => $order->products,
-        'sums' => $sums
-      );
-      $pdf = \PDF::loadView('pdf.invoice', array('data' => $data));
-      return $pdf->download('order-'.$order->prom_id.'.pdf');
-
-        /*$api = new PromApi;
-         dd($api->getOpenOrders());
-             return
-        $orders = Order::whereDate('prom_date_created', '>', Carbon::parse('01-07-2018'))->paginate(20);
+/*        $api = new PromApi;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://prom.ua/captcha');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $result = curl_exec($ch);
+        return $result;
+        return var_dump($api->getList('orders'));
+        /*$orders = Order::whereDate('prom_date_created', '>', Carbon::parse('01-07-2018'))->paginate(20);
+        $api = new PromApi;
         foreach ($orders as $order) {
             $order->updateFromApi();
-        }*/
-    }/*
+        }
+    }*/
         $product_sku = $request->input('sku');
         $product_id = Product::where('sku', $product_sku)->first()->id;
         $product_ids = Product::all()->pluck('id');
@@ -69,7 +71,7 @@ echo '<tbody>';
             echo '</tr>';
         }
 echo '</tbody></table>';
-    }*/
+    }
     /*
         $ttn = $request->input('ttn');
         $id = $request->input('id');

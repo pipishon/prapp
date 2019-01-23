@@ -71,11 +71,12 @@ class Order extends Model
                 'name' => $prom_product['name'],
             ));
         }
-        $order_product = OrderProduct::firstOrCreate(array(
+        $order_product = OrderProduct::updateOrCreate(array(
             'product_id' => $product->id,
             'order_id' => $this->id,
-            'quantity' => $prom_product['quantity'],
-            'price' => floatval(str_replace(',', '.', $prom_product['price'])),
+        ),array(
+            'quantity' => str_replace(',','.', $prom_product['quantity']),
+            'prom_price' => floatval(str_replace(',', '.', $prom_product['price'])),
         ));
         $total_price += floatval(str_replace(',', '.', $prom_product['price']));
     }

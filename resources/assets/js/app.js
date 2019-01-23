@@ -13,9 +13,12 @@ import Vuetify from 'vuetify'
 import VDateRange from 'vuetify-daterange-picker';
 import 'vuetify-daterange-picker/dist/vuetify-daterange-picker.css';
 import * as moment from 'moment';
+import VueClipboard from 'vue-clipboard2'
 
 Vue.use(Vuetify)
 Vue.use(VDateRange)
+VueClipboard.config.autoSetContainer = true
+Vue.use(VueClipboard)
 
 import Vuex from 'vuex'
 Vue.use(Vuex)

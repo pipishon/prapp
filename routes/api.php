@@ -119,8 +119,10 @@ Route::get('importproducts', 'ImportController@importproducts');
 Route::get('importorderproducts', 'ImportController@processOrderProducts');
 
 Route::get('test', 'TestController@index');
+Route::get('test/instagram', 'TestController@instagram');
 
 
 Route::resource('pack', 'PackController');
 
 Route::get('pdf/invoice/{id}', 'PdfController@invoice');
+Route::get('pdf/view/{id}', 'PdfController@view');

@@ -468,7 +468,7 @@ class ProductController extends Controller
             ->whereDate('orders.prom_date_created', '>', '2018-09-01')
             ->whereDate('orders.prom_date_created', '<', '2018-12-01')
             ->groupBy('products.id')
-            ->select('products.id', 'products.prom_id', DB::Raw('SUM((order_products.price - products.purchase_price)*order_products.quantity) as earn'))->orderBy('earn', 'desc')->get();
+            ->select('products.id', 'products.prom_id', DB::Raw('SUM((order_products.prom_price - products.purchase_price)*order_products.quantity) as earn'))->orderBy('earn', 'desc')->get();
         $sum = $products->sum('earn');
         $agr = 0;
         $products = $products->map(function ($item) use ($sum, &$agr) {
