@@ -62,8 +62,9 @@ class Order extends Model
     $prom_order = $api->getItem($order_id, 'orders')['order'];
     $prom_products = $prom_order['products'];
     if ($prom_products == null) return;
-    $this->products()->delete();
+    //$this->products()->delete();
     $total_price = 0;
+    $ids = array();
     foreach ($prom_products as $prom_product) {
         $product = Product::where('prom_id', $prom_product['id'])->first();
         if ($product == null) {
@@ -71,6 +72,7 @@ class Order extends Model
                 'name' => $prom_product['name'],
             ));
         }
+        $ids[] = $product->id;
         $order_product = OrderProduct::updateOrCreate(array(
             'product_id' => $product->id,
             'order_id' => $this->id,
@@ -80,6 +82,7 @@ class Order extends Model
         ));
         $total_price += floatval(str_replace(',', '.', $prom_product['price']));
     }
+    OrderProduct::where('order_id', $this->id)->whereNotIn('product_id', $ids)->delete();
     $price = preg_replace('/\s+/u', '', $prom_order['price']);
     $price = str_replace(',','.', $price);
     $this->price = floatval($price);

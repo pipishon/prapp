@@ -9,17 +9,19 @@ class OrderProductController extends Controller
 {
     public function update ($id, Request $request)
     {
-        $product = OrderProduct::find($id);
-        $product->update($request->only(['discount']));
+        $order_product = OrderProduct::find($id);
+        $order_product->discount = $request->input('discount');
+        $order_product->save();
+        return $order_product;
     }
 
     public function massDiscount (Request $request)
     {
       $products = $request->only(['items'])['items'];
       foreach ($products as $product) {
-        OrderProduct::find($product['id'])->update(array(
-          'discount' => $product['discount']
-        ));
+        $order_product = OrderProduct::find($product['id']);
+        $order_product->discount = $product['discount'];
+        $order_product->save();
       }
     }
 }

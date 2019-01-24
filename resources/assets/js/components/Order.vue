@@ -173,6 +173,7 @@
         },
         saveDiscount (e, item) {
           item.discount = e.target.value
+
           axios.put('api/orderproducts/' + item.id, { discount: item.discount || 0 }).then((res) => {
             console.log(res.data)
           })

@@ -47,12 +47,14 @@ class SyncController extends Controller
             $prom_products = $prom_order['products'];
             $order = Order::where('prom_id', $prom_order['id'])->first();
             if ($order == null) continue;
-            $order->products()->delete();
+            //$order->products()->delete();
+            $ids = array();
             foreach ($prom_products as $prom_product) {
                 $product = Product::where('prom_id', $prom_product['id'])->first();
                 if ($product == null) {
                     continue;
                 }
+                $ids[] = $product->id;
                 $order_product = OrderProduct::updateOrCreate(array(
                     'product_id' => $product->id,
                     'order_id' => $order->id,
@@ -61,6 +63,7 @@ class SyncController extends Controller
                     'prom_price' => floatval(str_replace(',', '.', $prom_product['price'])),
                 ));
             }
+            OrderProduct::where('order_id', $this->id)->whereNotIn('product_id', $ids)->delete();
             $price = preg_replace('/\s+/u', '', $prom_order['price']);
             $price = str_replace(',','.', $price);
             $order->price = floatval($price);

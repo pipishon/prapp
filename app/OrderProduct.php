@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderProduct extends Model
 {
-	protected $guarded = [];
+	//protected $guarded = [];
+	protected $fillable = ['product_id', 'order_id', 'quantity', 'prom_price'];
 
   protected $appends = ['image', 'sku', 'name', 'price', 'prom_id', 'purchase'];
 

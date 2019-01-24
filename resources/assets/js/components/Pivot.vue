@@ -84,7 +84,7 @@
           </td>
           <td :class="{'pink lighten-5': product.quantity <= 0}">
             <div>
-              {{sumQuantity(categories[activeCategory].filter((el) => el.part_id == product.part_id))}}
+              {{parseInt(sumQuantity(categories[activeCategory].filter((el) => el.part_id == product.part_id)) * 10) / 10}}
               <div v-if="categories[activeCategory].filter((el) => el.part_id == product.part_id).length > 1" class="grey--text">{{Math.round(product.quantity * product.part_koef * 10) / 10}}</div>
             </div>
           </td>
@@ -98,12 +98,12 @@
             >
           </td>
           <td>
-            {{calcFeatureQty(product)}}
+            {{parseInt(calcFeatureQty(product) * 10) / 10}}
             &nbsp;
           </td>
           <template v-if="product.prom_id == product.part_id">
             <td >
-              <div :class="{'green lighten-4': monthStats[product.id].month > 0}" style="margin-top: 3px; margin-bottom: 2px;">{{monthStats[product.id].month}}</div>
+              <div :class="{'green lighten-4': monthStats[product.id].months > 0}" style="margin-top: 3px; margin-bottom: 2px;">{{monthStats[product.id].months}}</div>
             </td>
             <td >
               <div :class="{'green lighten-4': monthStats[product.id].ly > 0}">{{monthStats[product.id].ly}}</div>
@@ -534,11 +534,12 @@
           for (let category in this.categories) {
             this.categories[category].map((product) => {
               this.monthStats[product.id] = {}
-              this.monthStats[product.id].months = this.getLastMonths(this.categories[category].filter((el) => el.part_id == product.part_id))
-              this.monthStats[product.id].ly = this.getLastYear(this.categories[category].filter((el) => el.part_id == product.part_id))
-              this.monthStats[product.id].ply = this.getPreLastYear(this.categories[category].filter((el) => el.part_id == product.part_id))
+              this.monthStats[product.id].months = parseInt(this.getLastMonths(this.categories[category].filter((el) => el.part_id == product.part_id)) * 10) / 10
+              this.monthStats[product.id].ly = parseInt(this.getLastYear(this.categories[category].filter((el) => el.part_id == product.part_id)) * 10) / 10
+              this.monthStats[product.id].ply = parseInt(this.getPreLastYear(this.categories[category].filter((el) => el.part_id == product.part_id)) * 10) / 10
             })
           }
+          console.log(this.monthStats)
         },
 
         getProducts () {
