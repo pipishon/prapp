@@ -12,14 +12,24 @@ class PdfController extends Controller
   public function invoice($id, Request $request)
   {
       $order = Order::find($id);
+      if ($request->input('sort') == 'name') {
+        $order->products = $order->products->sortBy('name');
+      } else {
+        $order->products = $order->products->sortBy(function($product) {
+            $hash = ($product->sort1) ? $product->sort1 : 0;
+            return $product->sort1.$product->name;
+        });
+      }
       $with_discount = $request->input('with_discount');
       $sums = array(
         'quantity' => 0,
         'price' => 0
       );
+
       foreach ($order->products as $product) {
+        $product->pdf_price = ($product->order_price != null) ? $product->order_price : $product->price;
         $sums['quantity'] += $product->quantity;
-        $sums['price'] += $product->quantity * ($product->price - $product->price * $product->discount / 100);
+        $sums['price'] += $product->quantity * ($product->pdf_price - $product->pdf_price * $product->discount / 100);
       }
       $numberToWords = new NumberToWords();
       $currencyTransformer = $numberToWords->getCurrencyTransformer('ru');

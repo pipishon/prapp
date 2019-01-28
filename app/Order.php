@@ -73,13 +73,15 @@ class Order extends Model
             ));
         }
         $ids[] = $product->id;
+        $product_price = floatval(str_replace(',', '.', $prom_product['price']));
+        $order_product_update = array(
+          'prom_price' => $product_price,
+          'quantity' => str_replace(',','.', $prom_product['quantity']),
+        );
         $order_product = OrderProduct::updateOrCreate(array(
             'product_id' => $product->id,
             'order_id' => $this->id,
-        ),array(
-            'quantity' => str_replace(',','.', $prom_product['quantity']),
-            'prom_price' => floatval(str_replace(',', '.', $prom_product['price'])),
-        ));
+        ), $order_product_update);
         $total_price += floatval(str_replace(',', '.', $prom_product['price']));
     }
     OrderProduct::where('order_id', $this->id)->whereNotIn('product_id', $ids)->delete();

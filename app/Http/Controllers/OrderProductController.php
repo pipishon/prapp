@@ -10,7 +10,12 @@ class OrderProductController extends Controller
     public function update ($id, Request $request)
     {
         $order_product = OrderProduct::find($id);
-        $order_product->discount = $request->input('discount');
+        if ($request->has('discount')) {
+          $order_product->discount = $request->input('discount');
+        }
+        if ($request->has('price')) {
+          $order_product->order_price = $request->input('price');
+        }
         $order_product->save();
         return $order_product;
     }

@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class OrderProduct extends Model
 {
 	//protected $guarded = [];
-	protected $fillable = ['product_id', 'order_id', 'quantity', 'prom_price'];
+	protected $fillable = ['discount', 'product_id', 'order_id', 'quantity', 'prom_price'];
 
-  protected $appends = ['image', 'sku', 'name', 'price', 'prom_id', 'purchase'];
+  protected $appends = ['image', 'sku', 'name', 'price', 'prom_id', 'purchase', 'sort1'];
 
   public function product()
   {
@@ -38,5 +38,8 @@ class OrderProduct extends Model
 
   public function getPromIdAttribute ($val) {
     return $this->product->prom_id;
+  }
+  public function getSort1Attribute ($val) {
+    return $this->product->sort1;
   }
 }

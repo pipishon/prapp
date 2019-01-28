@@ -26,8 +26,8 @@
           <v-btn icon @click="clear"><v-icon>clear</v-icon></v-btn>
         </v-flex>
         <v-flex xs6 md3 >
-          <v-btn flat><a :href="'api/pdf/invoice/' + order.id" target="_blank">Скачать PDF</a></v-btn>
-          <v-btn flat><a :href="'api/pdf/invoice/' + order.id + '?with_discount=true'" target="_blank">Скачать PDF (скидки)</a></v-btn>
+          <v-btn flat><a :href="'api/pdf/invoice/' + order.id + '?sort=' + sort" target="_blank">Скачать PDF</a></v-btn>
+          <v-btn flat><a :href="'api/pdf/invoice/' + order.id + '?with_discount=true&sort=' + sort" target="_blank">Скачать PDF (скидки)</a></v-btn>
         </v-flex>
         <v-flex xs6 md3 >
           <v-btn @click="refreshOrder" flat><v-icon small class="mr-2" >refresh</v-icon>Обновить заказ</v-btn>
@@ -37,7 +37,7 @@
       <div class="row">
         <div class="col">
           <label>Товары</label>
-          <btable :items="order.products" :notstriped="true" :fields="productFields">
+          <btable :items="sortedProducts" :notstriped="true" :fields="productFields">
           <template slot="row" slot-scope="data">
             <tr v-for="(item, index)  in data.items" :key="item.id" :class="{'pink lighten-5': item.on_sale}">
               <td style="width: 40px;">{{index + 1}}</td>
@@ -47,7 +47,10 @@
               <td>{{item.quantity}}</td>
               <td>{{item.purchase}}</td>
               <td>
-                {{item.price}}
+                <input
+                    :value="oprice(item)"
+                   @keypress.enter="savePrice($event, item)"
+                />
                 <span class="grey--text" v-if="item.prom_price && item.prom_price != item.price">({{item.prom_price}})</span>
               </td>
               <td>
@@ -59,7 +62,7 @@
                    ref="discounts"
                 />
               </td>
-              <td>{{Math.round(item.quantity*item.price*(1-item.discount/100) * 100) / 100}}</td>
+              <td>{{Math.round(item.quantity*oprice(item)*(1-item.discount/100) * 100) / 100}}</td>
             </tr>
           </template>
 
@@ -75,6 +78,8 @@
       </div>
       </v-container>
       <v-card-actions>
+        <v-btn :class="{primary: sort == 'name'}" flat @click="sort = 'name'" > Сорт. название </v-btn>
+        <v-btn :class="{primary: sort == 'sort1'}" flat @click="sort = 'sort1'" > Сорт. сорт1 </v-btn>
         <v-spacer></v-spacer>
         <v-btn color="primary" flat @click="showDialog = false" > Отмена </v-btn>
         <v-btn color="primary" flat @click="save" > Сохранить </v-btn>
@@ -90,6 +95,7 @@
         return {
           customer: null,
           showDialog: false,
+          sort: 'name',
           orderFields: [
             { key: 'prom_id', label: 'Id' },
             { key: 'status', label: 'Статус' },
@@ -118,16 +124,28 @@
       watch: {
         showDialog (val) {
           if (val) {
+            console.log(this.order.id)
+            this.sort = 'name'
+            this.order.products = _.orderBy(this.order.products, 'name')
             axios.get('api/customers/' + this.order.customer_id).then((res) => {
               this.customer = res.data
             })
           }
-        }
+        },
+
       },
       computed: {
+        sortedProducts () {
+          if (this.sort == 'name') {
+            return _.orderBy(this.order.products, 'name')
+          } else {
+            return _.orderBy(this.order.products, ['sort1', 'name'], ['asc', 'asc'])
+          }
+        },
         sumPrice () {
           let sum = 0
           this.order.products.map((product) => {
+            const price = product.order_price || product.price
             sum += product.price * product.quantity
           })
           return sum
@@ -142,7 +160,8 @@
         sumPriceWithDiscount () {
           let sum = 0
           this.order.products.map((item) => {
-            sum += item.quantity*item.price*(1-item.discount/100)
+            const price = item.order_price || item.price
+            sum += item.quantity*price*(1-item.discount/100)
           })
           return sum
         },
@@ -160,14 +179,25 @@
         }
       },
       methods: {
+        oprice (product) {
+          return product.order_price || product.price
+        },
         img40(img) {
           return img.replace(/w\d+/, 'w40').replace(/h\d+/, 'h40')
         },
         setMassDiscount (e) {
           this.order.products.map((item) => {
-            item.discount = e.target.value
+            if (item.discount == 0) {
+              item.discount = e.target.value
+            }
           })
           axios.post('api/orderproducts/massdiscount', { items: this.order.products}).then((res) => {
+            console.log(res.data)
+          })
+        },
+        savePrice (e, item) {
+          item.order_price = e.target.value
+          axios.put('api/orderproducts/' + item.id, { price: item.order_price}).then((res) => {
             console.log(res.data)
           })
         },

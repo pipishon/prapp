@@ -203,15 +203,20 @@ class SyncController extends Controller
               'presence' => 'available',
               'status' => 'on_display',
             ));
+          $order_product_update = array(
+            'prom_price' => $product_price,
+            'quantity' => str_replace(',','.', $product['quantity']),
+          );
+          if ($O_product->price != $product_price) {
+            $order_product_update['discount'] = ($O_product->price - $product_price) * 100 / $O_product->price;
+          }
 
           $order_product = OrderProduct::updateOrCreate(array(
             'product_id' => $O_product->id,
             'order_id' => $O_order->id,
             ),
-            array(
-            'prom_price' => $product_price,
-            'quantity' => str_replace(',','.', $product['quantity']),
-          ));
+            $order_product_update
+          );
       }
       if (isset($order['email'])) {
         $sputnik_email = SputnikEmail::firstOrCreate(['email' => $order['email']],

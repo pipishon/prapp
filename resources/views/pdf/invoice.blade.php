@@ -84,7 +84,7 @@ font-size: 12px;
     @foreach($data['products'] as $index => $product)
     <tr>
         <td style="text-align: right;">
-          {{$index + 1}}
+          {{$loop->iteration}}
         </td>
         <td>
           {{$product->sku}}
@@ -97,23 +97,23 @@ font-size: 12px;
         </td>
         @if ($data['with_discount'])
             <td style="text-align: right;">
-              {{number_format($product->price, 2)}}
+              {{number_format($product->pdf_price, 2)}}
             </td>
             <td style="text-align: right;">
               {{number_format($product->discount, 2)}}
             </td>
             <td style="text-align: right;">
-              {{number_format(($product->price - $product->price * $product->discount / 100), 2)}}
+              {{number_format(($product->pdf_price - $product->pdf_price * $product->discount / 100), 2)}}
             </td>
             <td style="text-align: right;">
-              {{number_format(($product->price - $product->price * $product->discount / 100) * $product->quantity, 2)}}
+              {{number_format(($product->pdf_price - $product->pdf_price * $product->discount / 100) * $product->quantity, 2)}}
             </td>
         @else
             <td style="text-align: right;">
-              {{number_format(($product->price - $product->price * $product->discount / 100), 2)}}
+              {{number_format(($product->pdf_price - $product->pdf_price * $product->discount / 100), 2)}}
             </td>
             <td style="text-align: right;">
-              {{number_format(($product->price - $product->price * $product->discount / 100) * $product->quantity, 2)}}
+              {{number_format(($product->pdf_price - $product->pdf_price * $product->discount / 100) * $product->quantity, 2)}}
             </td>
         @endif
     </tr>
