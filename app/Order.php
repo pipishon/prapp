@@ -13,7 +13,7 @@ use App\PromApi;
 class Order extends Model
 {
 	protected $guarded = [];
-  protected $appends = ['validet'];
+  protected $appends = ['validet', 'price_discount'];
 
   public function statuses()
   {
@@ -43,6 +43,15 @@ class Order extends Model
   public function getValidetAttribute ()
   {
     return $this->validateOrder();
+  }
+
+  public function getPriceDiscountAttribute ()
+  {
+      $sum = 0;
+      foreach ($this->products as $product) {
+        $sum += $product->quantity * ($product->price - $product->price * $product->discount / 100);
+      }
+      return number_format($sum, 2);
   }
 
   public function smsStatuses ()
@@ -78,6 +87,11 @@ class Order extends Model
           'prom_price' => $product_price,
           'quantity' => str_replace(',','.', $prom_product['quantity']),
         );
+        if (!OrderProduct::where('product_id', $product->id)
+            ->where('order_id', $this->id)->exists() &&
+            $product->price != $product_price) {
+            $order_product_update['discount'] = ($product->price - $product_price) * 100 / $product->price;
+        }
         $order_product = OrderProduct::updateOrCreate(array(
             'product_id' => $product->id,
             'order_id' => $this->id,

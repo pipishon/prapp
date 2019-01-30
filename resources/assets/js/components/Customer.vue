@@ -65,6 +65,10 @@
         <v-select :items="[' ', 'VIP']" label="Статус" v-model="customer.manual_status" @input="onStatusChange">
         </v-select>
         <div class="mb-1">
+          Авто статус <strong>{{mapAuto[customer.auto_status]}}</strong>
+        </div>
+
+        <div class="mb-1">
             <v-icon  class="ml-1" v-for="i in 5" :key="i" @click="customer.stars = i" :color="(customer.stars < i) ? 'blue-grey lighten-3' : 'purple lighten-1'">star</v-icon>
         </div>
         <div>
@@ -112,6 +116,18 @@ import draggable from 'vuedraggable'
       props: ['id', 'name', 'item'],
       data() {
         return {
+          mapAuto: {
+            'new' : 'Новые',
+            'perspective' : 'Перспективные',
+            'suspended' : 'Подвисшие',
+            'sleep' : 'Спящие',
+            'one_time' : 'Одноразовые',
+            'loyal' : 'Лояльные',
+            'vip' : 'VIP',
+            'risk' : 'В зоне риска',
+            'lost' : 'Потери',
+            'lost_vip' : 'Потери VIP',
+          },
           customer: {},
           showDialog: false,
           startEditPhone: false,

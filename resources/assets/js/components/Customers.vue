@@ -36,6 +36,9 @@
             {{item.manual_status}}
           </td>
           <td>
+            {{mapAuto[item.auto_status]}}
+          </td>
+          <td>
             {{item.comment}}
           </td>
           <td>
@@ -102,6 +105,18 @@
     export default {
       data() {
         return {
+          mapAuto: {
+            'new' : 'Новые',
+            'perspective' : 'Перспективные',
+            'suspended' : 'Подвисшие',
+            'sleep' : 'Спящие',
+            'one_time' : 'Одноразовые',
+            'loyal' : 'Лояльные',
+            'vip' : 'VIP',
+            'risk' : 'В зоне риска',
+            'lost' : 'Потери',
+            'lost_vip' : 'Потери VIP',
+          },
           stats: {},
           total: null,
           tableWidths: {},
@@ -123,6 +138,7 @@
             { key: 'phone', label: 'Телефон' },
             { key: 'email', label: 'email' },
             { key: 'manual_status', label: 'Статус' },
+            { key: 'auto_status', label: 'Авто cтатус' },
             { key: 'comment', label: 'Комментарий' },
             { key: 'first_order', label: 'Дата первой покупки' },
             { key: 'last_order', label: 'Дата последней покупки' },

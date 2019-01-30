@@ -119,6 +119,7 @@ Route::get('importproducts', 'ImportController@importproducts');
 Route::get('importorderproducts', 'ImportController@processOrderProducts');
 
 Route::get('test', 'TestController@index');
+Route::get('test/test1', 'TestController@test1');
 Route::get('test/instagram', 'TestController@instagram');
 
 
@@ -126,3 +127,6 @@ Route::resource('pack', 'PackController');
 
 Route::get('pdf/invoice/{id}', 'PdfController@invoice');
 Route::get('pdf/view/{id}', 'PdfController@view');
+
+Route::get('rfc', 'RfcController@index');
+Route::get('rfc/store', 'RfcController@store');

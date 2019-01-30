@@ -17,6 +17,7 @@
         <nptrack v-if="mode == 'nptrack'"/>
         <pivot v-if="mode == 'pivot'"/>
         <dashboard v-if="mode == 'dashboard'"/>
+        <rfc v-if="mode == 'rfc'"/>
       </div>
     </v-app>
   </div>
@@ -39,6 +40,7 @@ import settings from './components/Settings'
 import nptrack from './components/NpTrack'
 import pivot from './components/Pivot'
 import dashboard from './components/Dashboard'
+import rfc from './components/Rfc'
     export default {
       data () {
         return {
@@ -59,7 +61,8 @@ import dashboard from './components/Dashboard'
         settings,
         nptrack,
         pivot,
-        dashboard
+        dashboard,
+        rfc
       },
       mounted() {
         //this.$store.dispatch('loadDictionary')

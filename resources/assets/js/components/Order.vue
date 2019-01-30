@@ -1,5 +1,5 @@
 <template>
-  <v-dialog  v-model="showDialog" fullscreen transition="dialog-bottom-transition" >
+  <v-dialog  v-model="showDialog"  fullscreen transition="dialog-bottom-transition" >
     <a href="#" @click.prevent slot="activator"><slot></slot></a>
     <v-card v-if="showDialog">
       <v-toolbar flat card dense fixed>
@@ -12,7 +12,42 @@
 
       <div class="row mt-5">
         <div class="col">
-          <btable :items="[order]" :fields="orderFields"></btable>
+          <btable :items="[order]" :fields="orderFields" :notstriped="true">
+            <template slot="row" slot-scope="data">
+              <tr v-for="(item, index)  in data.items" :key="item.id" :class="{'pink lighten-5': item.on_sale}">
+                <td>
+                  {{item.prom_id}}
+                </td>
+                <td>
+                  {{item.status}}
+                </td>
+                <td>
+                  {{item.delivery_option}}
+                </td>
+                <td>
+                  {{item.payment_option}}
+                </td>
+                <td>
+                  {{sumPriceWithDiscount.toFixed(2)}} грн. (<span v-if="item.price.indexOf('грн') == -1">{{parseFloat(item.price).toFixed(2)}} грн.</span><span v-else>{{item.price.replace(',','.')}}</span>)
+                </td>
+                <td>
+                  {{item.phone}}
+                </td>
+                <td>
+                  {{item.email}}
+                </td>
+                <td>
+                  {{item.client_first_name}}
+                </td>
+                <td>
+                  {{item.delivery_address}}
+                </td>
+                <td>
+                  {{item.prom_date_created}}
+                </td>
+              </tr>
+            </template>
+          </btable>
         </div>
       </div>
       <v-layout class="px-5" row>
@@ -34,7 +69,7 @@
 
         </v-flex>
       </v-layout>
-      <div class="row">
+      <div class="row order">
         <div class="col">
           <label>Товары</label>
           <btable :items="sortedProducts" :notstriped="true" :fields="productFields">
@@ -46,14 +81,15 @@
               <td>{{item.sku}}</td>
               <td>{{item.quantity}}</td>
               <td>{{item.purchase}}</td>
-              <td>
+              <td :class="{blink: priceSaved[item.id]}">
+
                 <input
                     :value="oprice(item)"
                    @keypress.enter="savePrice($event, item)"
                 />
                 <span class="grey--text" v-if="item.prom_price && item.prom_price != item.price">({{item.prom_price}})</span>
               </td>
-              <td>
+              <td :class="{blink: discountSaved[item.id]}">
                 <input
                    :value="item.discount"
                    @keypress.enter="saveDiscount($event, item)"
@@ -93,6 +129,8 @@
       props: ['order', 'name'],
       data() {
         return {
+          priceSaved: {},
+          discountSaved: {},
           customer: null,
           showDialog: false,
           sort: 'name',
@@ -197,6 +235,10 @@
         },
         savePrice (e, item) {
           item.order_price = e.target.value
+          this.$set(this.priceSaved, item.id, true);
+          setTimeout(() => {
+            this.priceSaved[item.id] = false;
+          }, 500)
           axios.put('api/orderproducts/' + item.id, { price: item.order_price}).then((res) => {
             console.log(res.data)
           })
@@ -205,6 +247,10 @@
           item.discount = e.target.value
 
           axios.put('api/orderproducts/' + item.id, { discount: item.discount || 0 }).then((res) => {
+            this.$set(this.discountSaved, item.id, true);
+            setTimeout(() => {
+              this.discountSaved[item.id] = false;
+            }, 500)
             console.log(res.data)
           })
           const index = this.$refs.discounts.indexOf(e.target)
@@ -223,6 +269,7 @@
           })
         },
         save() {
+          this.$emit('update')
           this.showDialog = false
         },
         clear () {
@@ -259,5 +306,17 @@ table td input {
 }
 .mass-discount {
   border: 1px solid lightgray;
+}
+.pivot .blink {
+  animation: blink 500ms infinite;  /* IE 10+, Fx 29+ */
+}
+
+@-webkit-keyframes blink {
+  0%, 49% {
+    background-color: #e8f5e9;
+  }
+  50%, 100% {
+    background-color: #fafafa;
+  }
 }
 </style>

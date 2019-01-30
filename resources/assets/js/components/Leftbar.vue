@@ -27,7 +27,8 @@
             'library_books': 'dictionary',
             'settings': 'settings',
             'directions_car': 'nptrack',
-            'table_chart': 'pivot'
+            'table_chart': 'pivot',
+            'contacts': 'rfc'
           }
         }
       },

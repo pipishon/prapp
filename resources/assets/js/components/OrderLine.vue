@@ -53,7 +53,8 @@
         </td>
 
         <td class="text-nowrap">
-          <strong><span v-if="data.item.price.indexOf('грн') == -1">{{parseFloat(data.item.price).toFixed(2)}} грн.</span><span v-else>{{data.item.price}}</span></strong>
+          <strong v-if="false"><span v-if="data.item.price.indexOf('грн') == -1">{{parseFloat(data.item.price).toFixed(2)}} грн.</span><span v-else>{{data.item.price}}</span></strong>
+          <strong>{{data.item.price_discount}} грн.</strong>
           <div :class="{'primary--text': isAllPurchase, 'error--text': !isAllPurchase}">{{earn.toFixed(0)}} грн ({{(earn * 100 /data.item.statuses.payment_price).toFixed(0)}}%)</div>
         </td>
 

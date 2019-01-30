@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
+use App\Order;
 use App\OrderProduct;
+
 
 
 class OrderProductController extends Controller
@@ -17,6 +19,9 @@ class OrderProductController extends Controller
           $order_product->order_price = $request->input('price');
         }
         $order_product->save();
+        $order = Order::find($order_product->order_id);
+        $order->statuses->payment_price = $order->price_discount;
+        $order->push();
         return $order_product;
     }
 
@@ -28,5 +33,8 @@ class OrderProductController extends Controller
         $order_product->discount = $product['discount'];
         $order_product->save();
       }
+        $order = Order::find($order_product->order_id);
+        $order->statuses->payment_price = $order->price_discount;
+        $order->push();
     }
 }

@@ -55,15 +55,25 @@ class SyncController extends Controller
                     continue;
                 }
                 $ids[] = $product->id;
+                $product_price = floatval(str_replace(',', '.', $prom_product['price']));
+                $order_product_update = array(
+                    'prom_price' => $product_price,
+                    'quantity' => str_replace(',','.', $prom_product['quantity']),
+                );
+                if (!OrderProduct::where('product_id', $product->id)
+                    ->where('order_id', $order->id)->exists() &&
+                    $product->price != $product_price) {
+                    $order_product_update['discount'] = ($product->price - $product_price) * 100 / $product->price;
+                }
                 $order_product = OrderProduct::updateOrCreate(array(
                     'product_id' => $product->id,
                     'order_id' => $order->id,
-                ), array(
+                ), $order_product_update); /*array(
                     'quantity' => str_replace(',','.', $prom_product['quantity']),
                     'prom_price' => floatval(str_replace(',', '.', $prom_product['price'])),
-                ));
+                ));*/
             }
-            OrderProduct::where('order_id', $this->id)->whereNotIn('product_id', $ids)->delete();
+            OrderProduct::where('order_id', $order->id)->whereNotIn('product_id', $ids)->delete();
             $price = preg_replace('/\s+/u', '', $prom_order['price']);
             $price = str_replace(',','.', $price);
             $order->price = floatval($price);
