@@ -156,7 +156,6 @@ class Customer extends Model
           break;
       }
       if ($order->status == 'delivered') {
-
       }
       if ($order->status != 'canceled') {
         $price = (int) preg_replace('/\s+/u', '', $order->price);
@@ -165,6 +164,17 @@ class Customer extends Model
       }
 
     }
+
+    /*$not_canceled = $statistic->count_orders_received + $statistic->count_orders_delivered;
+    if ($not_canceled == 1) {
+        $customer->auto_status = 'new';
+    }
+    if ($not_canceled == 2) {
+        $customer->auto_status = 'perspective';
+    }
+    if ($not_canceled > 2 && $not_canceled < 10) {
+        $customer->auto_status = 'loyal';
+  }*/
     $statistic->save();
     $customer->push();
   }

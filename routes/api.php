@@ -53,7 +53,7 @@ Route::prefix('purchase')->group(function () {
 
 Route::prefix('product')->group(function () {
   Route::get('dashboardstats', 'ProductController@dashboardStats');
-  Route::get('calcabc', 'ProductController@calcABC');
+  Route::get('calcabc', 'ProductController@recalcAbc');
   Route::get('calcabcqty', 'ProductController@calcABCQty');
   Route::get('suplier', 'ProductController@getSuplierProducts');
   Route::get('morders', 'ProductController@syncProductMonthOrders');

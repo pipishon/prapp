@@ -458,15 +458,23 @@ class ProductController extends Controller
         return $products;
     }
 
-    public function calcABC (Request $request)
+    public function recalcAbc ()
     {
+        $this->calcABC();
+        $this->calcABCQty();
+    }
 
+    public function calcABC ()
+    {
+        $end_prev_month = Carbon::now()->subMonth()->endOfMonth()->toDateString();
+        $start_prev_6_month = Carbon::now()->subMonth(6)->startOfMonth()->toDateString();
         $products = DB::table('products')
             ->join('order_products', 'order_products.product_id', 'products.id')
             ->join('order_statuses', 'order_products.order_id', 'order_statuses.order_id')
             ->join('orders', 'orders.id', 'order_products.order_id')
-            ->whereDate('orders.prom_date_created', '>', '2018-09-01')
-            ->whereDate('orders.prom_date_created', '<', '2018-12-01')
+            ->where('orders.status', '<>', 'canceled')
+            ->whereDate('orders.prom_date_created', '>', $start_prev_6_month)
+            ->whereDate('orders.prom_date_created', '<', $end_prev_month)
             ->groupBy('products.id')
             ->select('products.id', 'products.prom_id', DB::Raw('SUM((order_products.prom_price - products.purchase_price)*order_products.quantity) as earn'))->orderBy('earn', 'desc')->get();
         $sum = $products->sum('earn');
@@ -474,10 +482,10 @@ class ProductController extends Controller
         $products = $products->map(function ($item) use ($sum, &$agr) {
             $agr += $item->earn * 100 / $sum;
             $abc = 'D';
-            if ($agr < 50) {
+            if ($agr <= 50) {
                 $abc = 'A';
             }
-            if ($agr > 50 && $agr < 80) {
+            if ($agr > 50 && $agr <= 80) {
                 $abc = 'B';
             }
             if ($agr > 80 && $agr < 95) {
@@ -489,15 +497,17 @@ class ProductController extends Controller
         return $products;
     }
 
-    public function calcABCQty (Request $request)
+    public function calcABCQty ()
     {
-
+        $end_prev_month = Carbon::now()->subMonth()->endOfMonth()->toDateString();
+        $start_prev_6_month = Carbon::now()->subMonth(6)->startOfMonth()->toDateString();
         $products = DB::table('products')
             ->join('order_products', 'order_products.product_id', 'products.id')
             ->join('order_statuses', 'order_products.order_id', 'order_statuses.order_id')
             ->join('orders', 'orders.id', 'order_products.order_id')
-            ->whereDate('orders.prom_date_created', '>', '2018-09-01')
-            ->whereDate('orders.prom_date_created', '<', '2018-12-01')
+            ->where('orders.status', '<>', 'canceled')
+            ->whereDate('orders.prom_date_created', '>', $start_prev_6_month)
+            ->whereDate('orders.prom_date_created', '<', $end_prev_month)
             ->groupBy('products.id')
             ->select('products.id', 'products.prom_id', DB::Raw('SUM(order_products.quantity) as qty'))->orderBy('qty', 'desc')->get();
         $sum = $products->sum('qty');
@@ -505,10 +515,10 @@ class ProductController extends Controller
         $products = $products->map(function ($item) use ($sum, &$agr) {
             $agr += $item->qty * 100 / $sum;
             $abc = 'D';
-            if ($agr < 50) {
+            if ($agr <= 50) {
                 $abc = 'A';
             }
-            if ($agr > 50 && $agr < 80) {
+            if ($agr > 50 && $agr <= 80) {
                 $abc = 'B';
             }
             if ($agr > 80 && $agr < 95) {

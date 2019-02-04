@@ -33,62 +33,57 @@ class TestController extends Controller
 
     public function test1 (Request $request)
     {
-        DB::table('customer_statistics')
-            ->update(['days_after_last_order' => DB::Raw('DATEDIFF(CURDATE(), last_order)')]);
-        $qty_days =  DB::table('customers')
-            ->join('customer_statistics', 'customers.id', '=', 'customer_statistics.customer_id')
-            /*->join('orders', 'customers.id', '=', 'orders.customer_id')
-            ->join('order_products', 'orders.id', '=', 'order_products.order_id')
-            ->select('customers.id', 'customer_statistics.days_after_last_order as days', DB::Raw('COUNT(order_products.order_id) as qty'))
-            ->groupBy('order_products.order_id')*/
-            ->update([
-                'customers.auto_status' => DB::Raw('
-                CASE
-                    WHEN customer_statistics.count_orders = 1 AND customer_statistics.days_after_last_order < 45 THEN "new"
-                    WHEN customer_statistics.count_orders = 2 AND customer_statistics.days_after_last_order < 45 THEN "perspective"
-                    WHEN customer_statistics.count_orders < 3 AND customer_statistics.days_after_last_order > 45 AND  customer_statistics.days_after_last_order < 90 THEN "suspended"
-                    WHEN customer_statistics.count_orders < 3 AND customer_statistics.days_after_last_order > 90 AND  customer_statistics.days_after_last_order < 360 THEN "sleep"
-                    WHEN customer_statistics.count_orders = 1 AND customer_statistics.days_after_last_order > 360 THEN "one_time"
-                    WHEN customer_statistics.count_orders = 2 AND customer_statistics.days_after_last_order > 360 THEN "sleep"
-                    WHEN customer_statistics.count_orders > 2 AND customer_statistics.count_orders < 10 AND customer_statistics.days_after_last_order < 90 THEN "loyal"
-                    WHEN customer_statistics.count_orders > 9 AND customer_statistics.days_after_last_order < 90 THEN "vip"
-                    WHEN customer_statistics.count_orders > 2 AND customer_statistics.days_after_last_order > 90 AND  customer_statistics.days_after_last_order < 360 THEN "risk"
-                    WHEN customer_statistics.count_orders > 2 AND customer_statistics.count_orders < 10 AND customer_statistics.days_after_last_order > 360 THEN "lost"
-                    WHEN customer_statistics.count_orders > 9 AND customer_statistics.days_after_last_order > 360 AND customer_statistics.days_after_last_order THEN "lost_vip"
-                END
-                ')
-            ]);
-        /*foreach ($qty_days as $row) {
-            $auto_status = '';
-            if ($row->days == 0 && $row->qty == 1) {
-                $auto_status = 'new';
-            }
-            Customer::find($row->id)->update(['auto_status' => $auto_status]);
-            }*/
-
-
-        $auto_statuses = DB::table('customers')
-            ->select('auto_status', DB::Raw('count(*) as qty'))
-            ->groupBy('auto_status')->get(); //$select->get();
-        $mapStatuses = array(
-            '' => 'хз',
-            'new' => 'Новые',
-            'perspective' => 'Перспективные',
-            'suspended' => 'Подвисшие',
-            'sleep' => 'Спящие',
-            'one_time' => 'Одноразовые',
-            'loyal' => 'Лояльные',
-            'vip' => 'VIP',
-            'risk' => 'В зоне риска',
-            'lost' => 'Потери',
-            'lost_vip' => 'Потери VIP',
-        );
-        foreach ($auto_statuses as $status) {
-            echo $mapStatuses[$status->auto_status].': '.$status->qty.'<br .>';
-        }
+        echo Carbon::now()->subMonth()->endOfMonth()->toDateString();
+        echo Carbon::now()->subMonth(6)->startOfMonth()->toDateString();
         return;
+        $products = DB::table('products')
+            ->join('product_supliers', 'products.id', 'product_supliers.product_id')
+            ->join('order_products', 'order_products.product_id', 'products.id')
+            ->join('orders', 'orders.id', 'order_products.order_id')
+            ->where('product_supliers.suplier_id', '7')
+            ->where('orders.status', '<>', 'canceled')
+            ->whereDate('orders.prom_date_created', '>', '2018-11-22')
+            ->whereDate('orders.prom_date_created', '<', '2018-11-24')
+            ->groupBy('products.id')
+            ->select('products.id', 'products.sku', DB::Raw('SUM(order_products.quantity) as qty'), DB::Raw('SUM((order_products.prom_price - products.purchase_price)*order_products.quantity) as earn'))->orderBy('earn', 'desc')->get();
+        $sum = $products->sum('earn');
+        $agr = 0;
+        $products = $products->map(function ($item) use ($sum, &$agr) {
+            $agr += $item->earn * 100 / $sum;
+            $abc = 'D';
+            if ($agr < 50) {
+                $abc = 'A';
+            }
+            if ($agr > 50 && $agr < 80) {
+                $abc = 'B';
+            }
+            if ($agr > 80 && $agr < 95) {
+                $abc = 'C';
+            }
+            return ['sku' => $item->sku, 'abc' => $abc, 'earn' => $item->earn, 'percent' => $item->earn * 100 / $sum, 'agr' => $agr, 'qty' => $item->qty];
+        });
+        echo '<table>';
+            echo '<tr>';
+            echo '<th>sku</th>';
+            echo '<th>abc</th>';
+            echo '<th>earn</th>';
+            echo '<th>percent</th>';
+            echo '<th>agr</th>';
+            echo '<th>qty</th>';
+            echo '</tr>';
 
-      //Order::where('prom_id', 53188064)->first()->updateFromApi();
+        foreach ($products as $product) {
+            echo '<tr>';
+            echo '<td>'.$product['sku'].'</td>';
+            echo '<td>'.$product['abc'].'</td>';
+            echo '<td>'.$product['earn'].'</td>';
+            echo '<td>'.$product['percent'].'</td>';
+            echo '<td>'.$product['agr'].'</td>';
+            echo '<td>'.$product['qty'].'</td>';
+            echo '</tr>';
+        }
+        echo '</table>';
+        return; //$products;
     }
 
     public function index (Request $request)

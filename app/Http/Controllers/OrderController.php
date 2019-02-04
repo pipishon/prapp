@@ -211,6 +211,7 @@ class OrderController extends Controller
       $order = Order::find($id);
       //if ($order == null) return;
       $order->statuses->payment_price = $order->price_discount;
+      $order->push();
     }
 
     /**

@@ -51,7 +51,7 @@ class Order extends Model
       foreach ($this->products as $product) {
         $sum += $product->quantity * ($product->price - $product->price * $product->discount / 100);
       }
-      return number_format($sum, 2);
+      return number_format($sum, 2, '.', '');
   }
 
   public function smsStatuses ()
