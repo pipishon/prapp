@@ -28,6 +28,7 @@ Route::get('customers/addphoneemail', 'CustomerController@addPhoneEmail');
 Route::get('orders/changestatus', 'OrderController@changeStatus');
 Route::get('orders/updatefromprom/{prom_id}', 'OrderController@updateFromProm');
 Route::get('orders/importfromapi', 'OrderController@ImportFromApi');
+Route::get('orders/refresh/{id}', 'OrderController@refresh');
 
 Route::get('messages/send', 'MessageController@sendMessage');
 
@@ -130,3 +131,4 @@ Route::get('pdf/view/{id}', 'PdfController@view');
 
 Route::get('rfc', 'RfcController@index');
 Route::get('rfc/store', 'RfcController@store');
+Route::get('rfc/update', 'RfcController@updateAutoStatus');

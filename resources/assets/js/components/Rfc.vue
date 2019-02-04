@@ -1,4 +1,5 @@
 <template>
+  <div>
   <v-container grid-list-md>
      <v-layout row wrap>
       <v-flex d-flex md3>
@@ -77,7 +78,21 @@
      </v-layout>
      <div>Неопределенных: {{statuses['']}}</div>
      <h2>Всего: {{total}}</h2>
+      <v-dialog v-model="rangeDialog" width="640">
+        <v-card>
+          <v-daterange no-presets :first-day-of-week="1" locale="ru-Ru" :options="dateRangeOptions" @input="dateRangeTmp = arguments[0]"></v-daterange>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="primary" flat @click=" dateRangeTmp=dateRange.slice();rangeDialog = false" > Закрыть </v-btn>
+              <v-btn color="primary" flat @click="setOrderStatRange" > Показать </v-btn>
+            </v-card-actions>
+        </v-card>
+      </v-dialog>
   </v-container>
+      <v-footer fixed>
+        <v-btn @click="rangeDialog = true" >Показать предыдущие дни</v-btn>
+      </v-footer>
+      </div>
 </template>
 <script>
 import * as moment from 'moment';
@@ -86,10 +101,35 @@ import * as moment from 'moment';
         return {
           statuses: {},
           map: {},
-          total: 1
+          total: 1,
+          rangeDialog: false,
+          dateRange: [moment().subtract(2, 'days').format('Y-MM-DD'), moment().subtract(1, 'days').format('Y-MM-DD')],
+          dateRangeTmp: [],
+        }
+      },
+      computed: {
+        dateRangeOptions () {
+          return {
+            startDate: this.dateRange[0],
+            endDate: this.dateRange[1],
+            format: 'YYYY-MM-DD'
+          }
         }
       },
       methods: {
+        setOrderStatRange () {
+          this.dateRange = this.dateRangeTmp.slice();
+          //this.getSumOrderDayStatistic();
+          this.rangeDialog = false
+        },
+        getPrevStatus () {
+          const params = {
+            range: this.dateRange
+          }
+          axios.get('api/rfc/prev', {params}).then((res) => {
+            this.statuses = res.data.statuses
+          })
+        },
         percent (val) {
           return '(' + (val * 100 / this.total).toFixed(2) + '%)'
         },
@@ -108,4 +148,7 @@ import * as moment from 'moment';
     }
 </script>
 <style>
+.date-range__pickers label{
+  display: none;
+}
 </style>

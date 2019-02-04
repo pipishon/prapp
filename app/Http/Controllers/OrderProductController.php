@@ -33,8 +33,8 @@ class OrderProductController extends Controller
         $order_product->discount = $product['discount'];
         $order_product->save();
       }
-        $order = Order::find($order_product->order_id);
-        $order->statuses->payment_price = $order->price_discount;
-        $order->push();
+      $order = Order::find($order_product->order_id);
+      $order->statuses->payment_price = $order->price_discount;
+      $order->push();
     }
 }

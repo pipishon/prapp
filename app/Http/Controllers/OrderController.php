@@ -206,6 +206,13 @@ class OrderController extends Controller
         //
     }
 
+    public function refresh($id)
+    {
+      $order = Order::find($id);
+      //if ($order == null) return;
+      $order->statuses->payment_price = $order->price_discount;
+    }
+
     /**
      * Remove the specified resource from storage.
      *

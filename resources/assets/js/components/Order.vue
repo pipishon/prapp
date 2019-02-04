@@ -61,8 +61,8 @@
           <v-btn icon @click="clear"><v-icon>clear</v-icon></v-btn>
         </v-flex>
         <v-flex xs6 md3 >
-          <v-btn flat><a :href="'api/pdf/invoice/' + order.id + '?sort=' + sort" target="_blank">Скачать PDF</a></v-btn>
-          <v-btn flat><a :href="'api/pdf/invoice/' + order.id + '?with_discount=true&sort=' + sort" target="_blank">Скачать PDF (скидки)</a></v-btn>
+          <v-btn flat><a :href="'api/pdf/invoice/' + order.id + '?sort=' + sort" target="_blank" @click="updateWithTimeout">Скачать PDF</a></v-btn>
+          <v-btn flat><a :href="'api/pdf/invoice/' + order.id + '?with_discount=true&sort=' + sort" @click="updateWithTimeout" target="_blank">Скачать PDF (скидки)</a></v-btn>
         </v-flex>
         <v-flex xs6 md3 >
           <v-btn @click="refreshOrder" flat><v-icon small class="mr-2" >refresh</v-icon>Обновить заказ</v-btn>
@@ -262,6 +262,10 @@
             next.focus()
           }
         },
+        updateWithTimeout ()
+        {
+          setTimeout(()=>{ this.$emit('update') }, 500)
+        },
         refreshOrder () {
           axios.get('api/orders/updatefromprom/' + this.order.prom_id).then((res) => {
             this.$emit('update')
@@ -269,8 +273,10 @@
           })
         },
         save() {
-          this.$emit('update')
-          this.showDialog = false
+          axios.get('api/orders/refresh/' + this.order.id).then((res) => {
+            this.$emit('update')
+            this.showDialog = false
+          })
         },
         clear () {
           this.order.statuses.custom_email = null

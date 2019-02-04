@@ -44,7 +44,7 @@ import rfc from './components/Rfc'
     export default {
       data () {
         return {
-          mode: 'orders'
+          mode: 'rfc'
         }
       },
       components: {

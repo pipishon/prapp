@@ -12,8 +12,6 @@ class RfcController extends Controller
 {
     public function index()
     {
-        $this->updateAutoStatus();
-
         $auto_statuses = DB::table('customers')
             ->select('auto_status', DB::Raw('count(*) as qty'))
             ->groupBy('auto_status')->get()->pluck('qty', 'auto_status'); //$select->get();
@@ -36,7 +34,6 @@ class RfcController extends Controller
 
     public function store()
     {
-        $this->updateAutoStatus();
         $statuses = DB::table('customers')
             ->select('auto_status', DB::Raw('count(*) as qty'))
             ->groupBy('auto_status')->get()->pluck('qty', 'auto_status')->toArray(); //$select->get();
