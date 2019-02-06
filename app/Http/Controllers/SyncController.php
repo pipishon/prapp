@@ -121,6 +121,10 @@ class SyncController extends Controller
         $customer->name = $customer_name;
       }
 
+      if ($customer->auto_status == null) {
+        $customer->auto_status = 'new';
+      }
+
       $date = new \DateTime($order['date_created']);
       $date->setTimezone(new \DateTimeZone('Europe/Kiev'));
       $date_str = $date->format('Y-m-d H:i');

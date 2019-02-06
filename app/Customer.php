@@ -155,6 +155,7 @@ class Customer extends Model
           $statistic->count_orders_canceled++;
           break;
       }
+      $statistic->count_orders = $statistic->count_orders_delivered + $statistic->count_orders_received;
       if ($order->status == 'delivered') {
       }
       if ($order->status != 'canceled') {
@@ -165,18 +166,18 @@ class Customer extends Model
 
     }
 
-    /*$not_canceled = $statistic->count_orders_received + $statistic->count_orders_delivered;
-    if ($not_canceled == 1) {
+    if ($statistic->count_orders == 1) {
         $customer->auto_status = 'new';
     }
-    if ($not_canceled == 2) {
+    if ($statistic->count_orders == 2) {
         $customer->auto_status = 'perspective';
     }
-    if ($not_canceled > 2 && $not_canceled < 10) {
+    if ($statistic->count_orders > 2 && $statistic->count_orders < 10) {
         $customer->auto_status = 'loyal';
-  }*/
+    }
     $statistic->save();
     $customer->push();
+    $customer->save();
   }
 /*
   public function getFirstOrderAttribute () {

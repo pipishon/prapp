@@ -89,7 +89,9 @@ class Order extends Model
         );
         if (!OrderProduct::where('product_id', $product->id)
             ->where('order_id', $this->id)->exists() &&
-            $product->price != $product_price) {
+            $product->price != $product_price &&
+            $product->price != 0
+        ) {
             $order_product_update['discount'] = ($product->price - $product_price) * 100 / $product->price;
         }
         $order_product = OrderProduct::updateOrCreate(array(
@@ -98,6 +100,9 @@ class Order extends Model
         ), $order_product_update);
         $total_price += floatval(str_replace(',', '.', $prom_product['price']));
     }
+    //dd($ids);
+    //dd($this->products);
+    //dd(OrderProduct::where('order_id', $this->id)->get()->pluck('product_id'), $ids);//->whereNotIn('product_id', $ids)->get());
     OrderProduct::where('order_id', $this->id)->whereNotIn('product_id', $ids)->delete();
     $price = preg_replace('/\s+/u', '', $prom_order['price']);
     $price = str_replace(',','.', $price);

@@ -159,6 +159,9 @@ import draggable from 'vuedraggable'
         }
       },
       computed: {
+        /*prevAutoStatus() {
+          this.item
+        },*/
         isPhoneValid () {
           const rx = /^\+\d{12}$/
           return (this.phoneToAdd.match(rx) != null)

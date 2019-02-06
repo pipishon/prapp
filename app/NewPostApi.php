@@ -100,6 +100,15 @@ class NewPostApi {
           "PaymentMethod"=>"Cash",
           "CargoType"=>"Parcel",
           "VolumeGeneral"=> $data['volume_general'] / 250,
+        /*"OptionsSeat"=> [
+            [
+            "volumetricVolume"=> "1",
+            "volumetricWidth"=> "30",
+            "volumetricLength"=> "30",
+            "volumetricHeight"=> "30",
+            "weight"=> "28"
+            ]
+        ],*/
           "Weight"=> $data['weight'],
           "ServiceType"=>"WarehouseWarehouse",
           "SeatsAmount"=> $data['places'],

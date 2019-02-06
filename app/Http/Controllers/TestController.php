@@ -33,57 +33,11 @@ class TestController extends Controller
 
     public function test1 (Request $request)
     {
-        echo Carbon::now()->subMonth()->endOfMonth()->toDateString();
-        echo Carbon::now()->subMonth(6)->startOfMonth()->toDateString();
-        return;
-        $products = DB::table('products')
-            ->join('product_supliers', 'products.id', 'product_supliers.product_id')
-            ->join('order_products', 'order_products.product_id', 'products.id')
-            ->join('orders', 'orders.id', 'order_products.order_id')
-            ->where('product_supliers.suplier_id', '7')
-            ->where('orders.status', '<>', 'canceled')
-            ->whereDate('orders.prom_date_created', '>', '2018-11-22')
-            ->whereDate('orders.prom_date_created', '<', '2018-11-24')
-            ->groupBy('products.id')
-            ->select('products.id', 'products.sku', DB::Raw('SUM(order_products.quantity) as qty'), DB::Raw('SUM((order_products.prom_price - products.purchase_price)*order_products.quantity) as earn'))->orderBy('earn', 'desc')->get();
-        $sum = $products->sum('earn');
-        $agr = 0;
-        $products = $products->map(function ($item) use ($sum, &$agr) {
-            $agr += $item->earn * 100 / $sum;
-            $abc = 'D';
-            if ($agr < 50) {
-                $abc = 'A';
-            }
-            if ($agr > 50 && $agr < 80) {
-                $abc = 'B';
-            }
-            if ($agr > 80 && $agr < 95) {
-                $abc = 'C';
-            }
-            return ['sku' => $item->sku, 'abc' => $abc, 'earn' => $item->earn, 'percent' => $item->earn * 100 / $sum, 'agr' => $agr, 'qty' => $item->qty];
-        });
-        echo '<table>';
-            echo '<tr>';
-            echo '<th>sku</th>';
-            echo '<th>abc</th>';
-            echo '<th>earn</th>';
-            echo '<th>percent</th>';
-            echo '<th>agr</th>';
-            echo '<th>qty</th>';
-            echo '</tr>';
+        DB::table('customer_statistics')->select('*')->update([
+            'count_orders' => DB::Raw('count_orders_delivered + count_orders_received')
+        ]);
+        return ;
 
-        foreach ($products as $product) {
-            echo '<tr>';
-            echo '<td>'.$product['sku'].'</td>';
-            echo '<td>'.$product['abc'].'</td>';
-            echo '<td>'.$product['earn'].'</td>';
-            echo '<td>'.$product['percent'].'</td>';
-            echo '<td>'.$product['agr'].'</td>';
-            echo '<td>'.$product['qty'].'</td>';
-            echo '</tr>';
-        }
-        echo '</table>';
-        return; //$products;
     }
 
     public function index (Request $request)

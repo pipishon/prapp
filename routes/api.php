@@ -132,3 +132,5 @@ Route::get('pdf/view/{id}', 'PdfController@view');
 Route::get('rfc', 'RfcController@index');
 Route::get('rfc/store', 'RfcController@store');
 Route::get('rfc/update', 'RfcController@updateAutoStatus');
+Route::get('rfc/saved', 'RfcController@getSaved');
+Route::get('rfc/getdates', 'RfcController@getAvailableSavedDates');
