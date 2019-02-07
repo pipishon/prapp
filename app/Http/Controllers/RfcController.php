@@ -46,12 +46,26 @@ class RfcController extends Controller
         ), $statuses);
     }
 
+    public function getToday ()
+    {
+        $auto_statuses = DB::table('customers')
+            ->select('auto_status', DB::Raw('count(*) as qty'))
+            ->groupBy('auto_status')->get()->pluck('qty', 'auto_status'); //$select->get();
+        $rfcs = array (
+            'end' => array($auto_statuses),
+            'start' => Rfc::whereDate('date', Carbon::yesterday())->get()->toArray(),
+            'undef' => DB::table('customers')->whereNull('auto_status')->count()
+        );
+        return $rfcs;
+    }
+
     public function getSaved (Request $request)
     {
         $range = $request->input('range');
         $rfcs = array (
             'start' => Rfc::whereDate('date', $range[0])->get()->toArray(),
-            'end' => Rfc::whereDate('date', $range[1])->get()->toArray()
+            'end' => Rfc::whereDate('date', $range[1])->get()->toArray(),
+            'undef' => DB::table('customers')->whereNull('auto_status')->count()
         );
         return $rfcs;
     }

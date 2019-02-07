@@ -134,3 +134,4 @@ Route::get('rfc/store', 'RfcController@store');
 Route::get('rfc/update', 'RfcController@updateAutoStatus');
 Route::get('rfc/saved', 'RfcController@getSaved');
 Route::get('rfc/getdates', 'RfcController@getAvailableSavedDates');
+Route::get('rfc/gettoday', 'RfcController@getToday');

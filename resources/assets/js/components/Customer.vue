@@ -65,7 +65,11 @@
         <v-select :items="[' ', 'VIP']" label="Статус" v-model="customer.manual_status" @input="onStatusChange">
         </v-select>
         <div class="mb-1">
-          Авто статус <strong>{{mapAuto[customer.auto_status]}}</strong>
+          Авто статус
+          <strong v-if="(prevAutoStatus() != '')">
+            {{mapAuto[prevAutoStatus()]}} →
+          </strong>
+          <strong>{{mapAuto[customer.auto_status]}}</strong>
         </div>
 
         <div class="mb-1">
@@ -111,6 +115,7 @@
 
 <script>
 import draggable from 'vuedraggable'
+import * as moment from 'moment';
 
     export default {
       props: ['id', 'name', 'item'],
@@ -159,15 +164,57 @@ import draggable from 'vuedraggable'
         }
       },
       computed: {
-        /*prevAutoStatus() {
-          this.item
-        },*/
         isPhoneValid () {
           const rx = /^\+\d{12}$/
           return (this.phoneToAdd.match(rx) != null)
         }
       },
       methods: {
+        prevAutoStatus() {
+          let autostatus = ''
+          if (typeof(this.customer.statistic) != 'undefined' &&
+            moment(this.customer.statistic.last_order).isSame(moment(), 'day')) {
+            const n = this.customer.statistic.count_orders - 1
+            const d = this.item.statuses.days_prev_order
+            if (n == 0) {
+              autostatus = "new"
+            }
+            if (n == 1 && d < 45) {
+              autostatus = "new"
+            }
+            if (n == 2 && d < 45) {
+              autostatus = "perspective"
+            }
+            if (n < 3 && d >= 45 && d < 90) {
+              autostatus = "suspended"
+            }
+            if (n < 3 && d >= 90 && d < 365) {
+              autostatus = "sleep"
+            }
+            if (n == 1 && d >= 365) {
+              autostatus = "one_time"
+            }
+            if (n == 2 && d >= 365) {
+              autostatus = "sleep"
+            }
+            if (n > 2 && n < 10 &&  d < 90) {
+              autostatus = "loyal"
+            }
+            if (n > 9 &&  d < 90) {
+              autostatus = "vip"
+            }
+            if (n > 2 &&  d >= 90 && d < 365) {
+              autostatus = "risk"
+            }
+            if (n > 2 && n < 10 &&  d >= 365) {
+              autostatus = "lost"
+            }
+            if (n > 9 &&  d >= 365) {
+              autostatus = "lost_vip"
+            }
+          }
+          return autostatus
+        },
         initValues () {
           this.emailToAdd = ''
           this.phoneToAdd = '+380'
@@ -218,7 +265,6 @@ import draggable from 'vuedraggable'
 
           this.item.customer = this.customer
           axios.put('api/customers/' + this.customer.id, params).then((res) => {
-            console.log(res.data)
             this.$emit('updated', this.customer.id)
             this.showDialog = false
           })

@@ -128,8 +128,10 @@
           </v-layout>
         </v-flex>
      </v-layout>
-     <div>Неопределенных: {{statuses['']}}</div>
+     <div>Неопределенных: {{undef}}</div>
      <h2>Всего: {{total}}</h2>
+     <span v-if="isToday"> Текущая ситуация </span>
+     <span v-else> {{dateRange[0]}} - {{dateRange[1]}}</span>
       <v-dialog v-model="rangeDialog" width="640">
         <v-card>
           <v-daterange no-presets :first-day-of-week="1" locale="ru-Ru" :options="dateRangeOptions" @input="dateRangeTmp = arguments[0]" ></v-daterange>
@@ -142,6 +144,8 @@
       </v-dialog>
   </v-container>
       <v-footer fixed>
+        <v-btn @click="getYesterday" >Вчера</v-btn>
+        <v-btn @click="getToday" >Сегодня</v-btn>
         <v-btn @click="rangeDialog = true" >Показать предыдущие дни</v-btn>
       </v-footer>
       </div>
@@ -151,6 +155,8 @@ import * as moment from 'moment';
     export default {
       data() {
         return {
+          isToday: false,
+          undef: '',
           statuses: {},
           savedDates: [],
           prevStatuses: {},
@@ -177,6 +183,18 @@ import * as moment from 'moment';
         }
       },
       methods: {
+        getToday () {
+          axios.get('api/rfc/gettoday').then((res) => {
+            this.isToday = true
+            this.statuses = res.data.end[0]
+            this.prevStatuses = res.data.start[0]
+            this.undef = res.data.undef
+          })
+        },
+        getYesterday () {
+          this.dateRange = [moment().subtract(2, 'days').format('Y-MM-DD'), moment().subtract(1, 'days').format('Y-MM-DD')]
+          this.getSavedRfc()
+        },
         setOrderStatRange () {
           if (this.dateRangeTmp.length > 0) {
             this.dateRange = this.dateRangeTmp.slice();
@@ -185,7 +203,6 @@ import * as moment from 'moment';
           this.rangeDialog = false
         },
         getSavedRfc () {
-          console.log(this.dateRange)
           const params = {
             range: this.dateRange
           }
@@ -193,6 +210,8 @@ import * as moment from 'moment';
             if (res.data.end.length) {
               this.statuses = res.data.end[0]
               this.prevStatuses = res.data.start[0]
+              this.undef = res.data.undef
+              this.isToday = false
             }
             console.log(res)
           })
@@ -206,7 +225,6 @@ import * as moment from 'moment';
           if (typeof(this.prevStatuses.vip) != 'undefined') {
             prev = '[' + (this.statuses[name] - this.prevStatuses[name]) + ']'
           }
-          console.log(this.prevStatuses[name])
           return  val + ' ' + this.percent(val) + ' ' + prev
         },
         arrowVal (name) {
@@ -237,5 +255,8 @@ import * as moment from 'moment';
 <style>
 .date-range__pickers label{
   display: none;
+}
+.v-icon {
+  line-height: 0.8;
 }
 </style>
