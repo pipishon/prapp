@@ -70,6 +70,13 @@ class Customer extends Model
                           $query = $query->whereDate('st.'.$filter['name'], '>=', $to);
                       }
                       break;
+                  case 'auto_status':
+                      if (!$filter['from']) {
+                        $query = $query->whereNull('auto_status');
+                      } else {
+                        $query = $query->where('auto_status', $filter['from']);
+                      }
+                      break;
               }
           }
       }

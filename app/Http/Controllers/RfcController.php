@@ -75,6 +75,11 @@ class RfcController extends Controller
         return Rfc::all()->pluck('date');
     }
 
+    public function statistic ($name)
+    {
+        return DB::table('rfcs')->select($name, 'date')->get();
+    }
+
     public function updateAutoStatus ()
     {
         DB::table('customer_statistics')

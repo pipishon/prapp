@@ -58,6 +58,54 @@ const store = new Vuex.Store({
     },
     templates: state => {
       return state.templates
+    },
+    getPrevAutoStatus: state => {
+      return (data) => {
+        let autostatus = ''
+        if (typeof(data.customer) != 'undefined' &&
+            typeof(data.customer.statistic) != 'undefined' &&
+          (data.item.status == 'received' || moment(data.customer.statistic.last_order).isSame(moment(), 'day'))) {
+          const n = data.customer.statistic.count_orders - 1
+          const d = data.item.statuses.days_prev_order
+          if (n == 0) {
+            autostatus = "new"
+          }
+          if (n == 1 && d < 45) {
+            autostatus = "new"
+          }
+          if (n == 2 && d < 45) {
+            autostatus = "perspective"
+          }
+          if (n < 3 && d >= 45 && d < 90) {
+            autostatus = "suspended"
+          }
+          if (n < 3 && d >= 90 && d < 365) {
+            autostatus = "sleep"
+          }
+          if (n == 1 && d >= 365) {
+            autostatus = "one_time"
+          }
+          if (n == 2 && d >= 365) {
+            autostatus = "sleep"
+          }
+          if (n > 2 && n < 10 &&  d < 90) {
+            autostatus = "loyal"
+          }
+          if (n > 9 &&  d < 90) {
+            autostatus = "vip"
+          }
+          if (n > 2 &&  d >= 90 && d < 365) {
+            autostatus = "risk"
+          }
+          if (n > 2 && n < 10 &&  d >= 365) {
+            autostatus = "lost"
+          }
+          if (n > 9 &&  d >= 365) {
+            autostatus = "lost_vip"
+          }
+        }
+        return autostatus
+      }
     }
   },
   mutations: {
@@ -123,7 +171,7 @@ const store = new Vuex.Store({
           }
         }
       })
-    }
+    },
   },
   actions: {
     massAction ({dispatch, commit}, data) {

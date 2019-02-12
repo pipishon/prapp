@@ -4,10 +4,10 @@
     <v-container fluid class="my-0 py-0">
         <v-layout row>
             <v-flex md3 >
-          <v-select  :hide-details="true" label="Фильтр пользователей" :items="Object.keys(filterMap)" v-model="selectedFilter" @input="showAddFilterDialog = true" ></v-select>
+              <v-select :menu-props="{maxHeight: 400}"  :hide-details="true" label="Фильтр пользователей" :items="Object.keys(filterMap)" v-model="selectedFilter" @input="showAddFilterDialog = true" ></v-select>
             </v-flex>
               <v-chip v-model="filterChips[item.filter]" v-for="item in filters" :key="item.filter" close>{{item.filter}}
-                <span v-if="item.from">&nbsp;от {{item.from}}</span>
+                <span v-if="item.from">&nbsp;<template v-if="item.filter != 'Авто статус'">от</template> {{item.from}}</span>
                 <span v-if="item.to">&nbsp;до {{item.to}}</span>
               </v-chip>
         </v-layout>
@@ -74,9 +74,13 @@
 
     </btable>
 
-    <v-dialog  v-model="showAddFilterDialog" width="300" persistent @keydown.esc="showAddFilterDialog = false">
+    <v-dialog  v-model="showAddFilterDialog" :width="(selectedFilter != 'Авто статус') ? 300 : 1000" persistent @keydown.esc="showAddFilterDialog = false">
+
 
       <v-card v-if="showAddFilterDialog" >
+
+          <rfc :today="true" v-if="(selectedFilter == 'Авто статус')" @clickstatus="setAutostatusFilter"></rfc>
+          <template v-else>
           <v-card-title class="primary white--text"><h5>{{selectedFilter}}</h5></v-card-title>
           <div class="px-3">
             <v-text-field label="От" v-model="filterFrom"></v-text-field>
@@ -87,6 +91,7 @@
             <v-btn color="primary" flat @click="showAddFilterDialog = false" > Отмена </v-btn>
             <v-btn color="primary" flat @click="setFilter" > Установить </v-btn>
           </v-card-actions>
+          </template>
       </v-card>
     </v-dialog>
     <v-footer fixed class="pa-3">
@@ -94,17 +99,20 @@
       <v-spacer></v-spacer>
     <pagination :current="curPage" :last="lastPage" @change="loadPage"/>
     </v-footer>
+
   </div>
 </template>
 
 <script>
     import customer from './Customer'
+    import rfc from './Rfc'
     import * as moment from 'moment';
     import { mapGetters, mapActions } from 'vuex'
 
     export default {
       data() {
         return {
+          autoDialog: false,
           mapAuto: {
             'new' : 'Новые',
             'perspective' : 'Перспективные',
@@ -132,6 +140,7 @@
              'Кол-во заказов': 'count_orders',
              'Всего денег': 'total_price',
              'Средний чек': 'aver_price',
+             'Авто статус': 'auto_status',
           },
           fields: [
             { key: 'name', label: 'ФИО' },
@@ -156,7 +165,8 @@
         }
       },
       components: {
-        customer
+        customer,
+        rfc
       },
       computed: {
         ...mapGetters(['settings']),
@@ -178,6 +188,12 @@
         updateWidths () {
           this.updateSettings({name: 'customer_table_widths', value: JSON.stringify(this.tableWidths)})
         },
+        setAutostatusFilter (name) {
+          this.selectedFilter = 'Авто статус'
+          this.filterFrom = name
+          this.autoDialog = false
+          this.setFilter()
+        },
         setFilter () {
           let oldFilter = this.filters.filter( el => el.filter == this.selectedFilter )[0]
           if (typeof(oldFilter) != 'undefined') {
@@ -191,6 +207,7 @@
               to: this.filterTo
             })
           }
+          console.log(this.selectedFilter)
           this.filterFrom = null
           this.filterTo = null
           this.sendFilter()
@@ -225,6 +242,7 @@
         },
         getList (params) {
           params = Object.assign(this.searchQuery, params)
+          console.log(params)
           axios.get('api/customers', {params}).then((res) => {
             this.list = res.data.data
             this.total = res.data.total
@@ -255,5 +273,5 @@
       }
     }
 </script>
-<style scope>
+<style>
 </style>

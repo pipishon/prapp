@@ -93,8 +93,13 @@
         <td>
           <customer :item="data.item" :id="data.item.customer.id">{{data.item.client_last_name}} {{data.item.client_first_name}}</customer>
           <div>
-            <strong>{{data.item.customer.manual_status}}</strong>
+            <strong v-if="data.item.customer.manual_status">{{data.item.customer.manual_status}} |</strong> <strong>{{mapAuto[data.item.customer.auto_status]}}</strong>
+            <v-icon style="line-height: 0.7;" v-if="(getPrevAutoStatus({customer: data.item.customer, item: data.item}) != '' && getPrevAutoStatus({customer: data.item.customer, item: data.item}) != data.item.customer.auto_status)">
+              arrow_drop_up
+            </v-icon>
+            <div>
             <v-icon v-if="data.item.customer.stars != null" small :key="i" v-for="i in 5" class="ml-1" :color="(data.item.customer.stars < i) ? 'blue-grey lighten-3' : 'purple lighten-1'">star</v-icon>
+            </div>
           </div>
           <div>
             <div v-if="data.item.statuses.custom_phone">{{data.item.statuses.custom_phone}}</div>
@@ -164,6 +169,18 @@
       },
       data() {
         return {
+          mapAuto: {
+            'new' : 'Новые',
+            'perspective' : 'Перспективные',
+            'suspended' : 'Подвисшие',
+            'sleep' : 'Спящие',
+            'one_time' : 'Одноразовые',
+            'loyal' : 'Лояльные',
+            'vip' : 'VIP',
+            'risk' : 'В зоне риска',
+            'lost' : 'Потери',
+            'lost_vip' : 'Потери VIP',
+          },
           onValidate: false,
           ttnSaved: false,
           showDeliverySelect: false,
@@ -185,7 +202,7 @@
         }
       },
       computed: {
-        ...mapGetters(['selected']),
+        ...mapGetters(['selected', 'getPrevAutoStatus']),
         isAllPurchase () {
           let all = true
           this.item.products.map((product) => {

@@ -130,8 +130,11 @@ Route::get('pdf/invoice/{id}', 'PdfController@invoice');
 Route::get('pdf/view/{id}', 'PdfController@view');
 
 Route::get('rfc', 'RfcController@index');
-Route::get('rfc/store', 'RfcController@store');
-Route::get('rfc/update', 'RfcController@updateAutoStatus');
-Route::get('rfc/saved', 'RfcController@getSaved');
-Route::get('rfc/getdates', 'RfcController@getAvailableSavedDates');
-Route::get('rfc/gettoday', 'RfcController@getToday');
+Route::prefix('rfc')->group(function () {
+  Route::get('store', 'RfcController@store');
+  Route::get('update', 'RfcController@updateAutoStatus');
+  Route::get('saved', 'RfcController@getSaved');
+  Route::get('getdates', 'RfcController@getAvailableSavedDates');
+  Route::get('gettoday', 'RfcController@getToday');
+  Route::get('statistic/{name}', 'RfcController@statistic');
+});
