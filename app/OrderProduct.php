@@ -3,19 +3,42 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class OrderProduct extends Model
 {
 	//protected $guarded = [];
 	protected $fillable = ['discount', 'product_id', 'order_id', 'quantity', 'prom_price'];
 
-  protected $appends = ['image', 'sku', 'name', 'price', 'prom_id', 'purchase', 'sort1'];
+  protected $appends = ['image', 'sku', 'name', 'price', 'prom_id', 'purchase', 'sort1', 'same_payed', 'same_not_payed'];
 
   public function product()
   {
     return $this->hasOne('App\Product', 'id', 'product_id');
   }
     //
+  public function getSamePayedAttribute ($val) {
+
+      return DB::table('order_products')
+          ->join('orders', 'orders.id', 'order_products.order_id')
+          ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
+          ->where('orders.status', 'pending')
+          ->where('order_products.product_id', $this->product_id)
+          ->where('order_statuses.payment_status', 'Оплачен')
+          ->where('order_statuses.collected', '0')
+          ->count();
+  }
+  public function getSameNotPayedAttribute ($val) {
+      return DB::table('order_products')
+          ->join('orders', 'orders.id', 'order_products.order_id')
+          ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
+          ->where('orders.status', 'pending')
+          ->where('order_products.product_id', $this->product_id)
+          ->where('order_statuses.payment_status', 'Не оплачен')
+          ->where('order_statuses.collected', '0')
+          ->count();
+  }
+
   public function getSkuAttribute ($val) {
     return $this->product->sku;
   }

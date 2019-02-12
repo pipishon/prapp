@@ -66,6 +66,13 @@
       </template>
     </btable>
 
+    <div class="hidden-md-and-up">
+      <v-layout row>
+        <v-flex xs12 sm12 >
+          <v-btn flat style="width: 100%; margin-left: 0;" @click="moreOrders">Загрузить еще 10 заказов</v-btn>
+        </v-flex>
+      </v-layout>
+    </div>
     <v-footer fixed class="pa-3 hidden-sm-and-down" >
       <v-btn flat @click="refresh">Обновить заказы</v-btn>
       <v-btn flat @click="getAllOrders" :class="{primary: footerButton == 'all'}">Все заказы ({{globalStats.pending || 0}} | {{globalStats.received || 0}}) ({{allCollected.total}} / {{allCollected.collected}})</v-btn>
@@ -161,6 +168,15 @@
       methods: {
         ...mapMutations(['massSelection']),
         ...mapActions(['massAction']),
+        moreOrders () {
+          const page = this.list.length / 10 + 1;
+          this.searchQuery.per_page = 10
+          this.searchQuery.page = page
+          const params = this.searchQuery
+          axios.get('api/orders', {params}).then((res) => {
+            this.list = this.list.concat(res.data.data)
+          })
+        },
         massChange(val) {
           const massItems = (val) ? this.list : []
           this.massSelection(massItems)
