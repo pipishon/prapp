@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\PromApi;
 use App\Order;
+use App\OrderProduct;
 use App\Product;
 use App\Customer;
 use App\NewPostCity;
@@ -37,6 +38,61 @@ class TestController extends Controller
             'count_orders' => DB::Raw('count_orders_delivered + count_orders_received')
         ]);
         return ;
+
+    }
+
+    public function test2 (Request $request)
+    {
+        $sku = $request->input('sku');
+        $order_prom_id = $request->input('order_id');
+        $product = Product::where('sku', $sku)->first();
+        $order = Order::where('prom_id', $order_prom_id)->first();
+        $order_product = OrderProduct::where('product_id', $product->id)
+            ->where('order_id', $order->id)->first();
+        echo 'Оплаченные: ';
+        echo $order_product->getSamePayedAttribute(0);
+        echo '<br />';
+        echo '<table>';
+        $same = DB::table('order_products')
+              ->join('orders', 'orders.id', 'order_products.order_id')
+              ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
+              ->select('orders.client_first_name','orders.client_last_name', 'orders.prom_id', 'order_products.quantity')
+              ->where('orders.status', 'received')
+              ->where('order_products.product_id', $order_product->product_id)
+              ->where('order_products.order_id', '<>', $order_product->order_id)
+              ->where('order_statuses.payment_status', 'Оплачен')
+              ->where('order_statuses.collected', '0')
+              ->get();
+        foreach ($same as $item) {
+            echo '<tr>';
+            echo '<td>'.$item->prom_id.'</td>';
+            echo '<td>'.$item->client_first_name.' '.$item->client_last_name.'</td>';
+            echo '<td>'.$item->quantity.'</td>';
+            echo '</tr>';
+        }
+        echo '</table>';
+        echo 'Не оплаченные:';
+        echo $order_product->getSameNotPayedAttribute(0);
+        echo '<br />';
+        $same = DB::table('order_products')
+              ->join('orders', 'orders.id', 'order_products.order_id')
+              ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
+              ->select('orders.client_first_name','orders.client_last_name', 'orders.prom_id', 'order_products.quantity')
+              ->where('orders.status', 'received')
+              ->where('order_products.product_id', $order_product->product_id)
+              ->where('order_products.order_id', '<>', $order_product->order_id)
+              ->where('order_statuses.payment_status', 'Не оплачен')
+              ->where('order_statuses.collected', '0')
+              ->get();
+        echo '<table>';
+        foreach ($same as $item) {
+            echo '<tr>';
+            echo '<td>'.$item->prom_id.'</td>';
+            echo '<td>'.$item->client_first_name.' '.$item->client_last_name.'</td>';
+            echo '<td>'.$item->quantity.'</td>';
+            echo '</tr>';
+        }
+        echo '</table>';
 
     }
 

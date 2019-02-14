@@ -130,6 +130,11 @@ class OrderController extends Controller
         $order->load('smsStatuses')->load('emailStatuses')->load('products')->load('ttn')
         ->load('statuses')->load('customer')->customer->load('statistic');
 
+        $order->products->each(function($instance) {
+            $instance->append('same_payed');
+            $instance->append('same_not_payed');
+        });
+
         if ($order->statuses->payment_price == 0) {
           $order->statuses->payment_price = (float) str_replace(',', '.', preg_replace('/\s+/u', '', $order->price));
         }
@@ -252,7 +257,8 @@ class OrderController extends Controller
             $prom_products = $prom_order['products'];
             $order = Order::where('prom_id', $prom_order['id'])->first();
             if ($order == null) continue;
-            $order->products()->delete();
+            $ids = array();
+            //$order->products()->delete();
             foreach ($prom_products as $prom_product) {
                 $product = Product::where('prom_id', $prom_product['id'])->first();
                 if ($product == null) {
@@ -260,6 +266,7 @@ class OrderController extends Controller
                         'name' => $prom_product['name'],
                     ));
                 }
+                $ids[] = $product->id;
                 $order_product = OrderProduct::updateOrCreate(array(
                     'product_id' => $product->id,
                     'order_id' => $order->id,
@@ -268,6 +275,7 @@ class OrderController extends Controller
                     'prom_price' => floatval(str_replace(',', '.', $prom_product['price'])),
                 ));
             }
+            OrderProduct::where('order_id', $order->id)->whereNotIn('product_id', $ids)->delete();
             $price = preg_replace('/\s+/u', '', $prom_order['price']);
             $price = str_replace(',','.', $price);
             $order->price = floatval($price);
@@ -291,5 +299,42 @@ class OrderController extends Controller
         }
         sleep(10);*/
         //return $orders;
+    }
+
+    public function getGroups (Request $request)
+    {
+        $orders = $request->input('orders');
+        $result = DB::table('orders')
+          ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
+          ->join('order_products', 'orders.id', 'order_products.order_id')
+          ->join('products', 'order_products.product_id', 'products.id')
+          ->select('products.category')
+          ->groupBy('products.category')
+          ->where('order_statuses.collected', '0')
+          ->where('orders.status', 'received');
+        if ($orders != 'all') {
+          $result = $result->where('order_statuses.payment_status', 'Оплачен');
+        }
+        return $result->get();
+    }
+
+    public function getProductByGroup (Request $request)
+    {
+        $group = $request->input('group');
+        $orders = $request->input('orders');
+        $result = DB::table('orders')
+          ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
+          ->join('order_products', 'orders.id', 'order_products.order_id')
+          ->join('products', 'order_products.product_id', 'products.id')
+          ->select('products.name', DB::Raw('SUM(order_products.quantity) as sum'), DB::Raw('COUNT(order_products.quantity) as qty'))
+          ->orderBy('products.sort1')
+          ->groupBy('order_products.product_id')
+          ->where('products.category', $group)
+          ->where('order_statuses.collected', '0')
+          ->where('orders.status', 'received');
+        if ($orders != 'all') {
+          $result = $result->where('order_statuses.payment_status', 'Оплачен');
+        }
+        return $result->get();
     }
 }

@@ -1,7 +1,7 @@
 <template>
   <v-dialog  v-model="showDialog"  fullscreen transition="dialog-bottom-transition" >
     <a href="#" @click.prevent slot="activator"><slot></slot></a>
-    <v-card v-if="showDialog">
+    <v-card v-if="showDialog && order != null">
       <v-toolbar flat card dense fixed>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -126,9 +126,10 @@
 
 <script>
     export default {
-      props: ['order', 'name'],
+      props: ['orderid', 'name'],
       data() {
         return {
+          order: null,
           priceSaved: {},
           discountSaved: {},
           customer: null,
@@ -162,11 +163,14 @@
       watch: {
         showDialog (val) {
           if (val) {
-            console.log(this.order.id)
-            this.sort = 'name'
-            this.order.products = _.orderBy(this.order.products, 'name')
-            axios.get('api/customers/' + this.order.customer_id).then((res) => {
-              this.customer = res.data
+            //console.log(this.order.id)
+            axios.get('api/orders/' + this.orderid).then((res) => {
+              this.order = res.data
+              this.sort = 'name'
+              this.order.products = _.orderBy(this.order.products, 'name')
+              axios.get('api/customers/' + this.order.customer_id).then((res) => {
+                this.customer = res.data
+              })
             })
           }
         },
@@ -269,7 +273,14 @@
         refreshOrder () {
           axios.get('api/orders/updatefromprom/' + this.order.prom_id).then((res) => {
             this.$emit('update')
-            console.log(res.data)
+            axios.get('api/orders/' + this.order.id).then((res) => {
+              this.order = res.data
+              this.sort = 'name'
+              this.order.products = _.orderBy(this.order.products, 'name')
+              axios.get('api/customers/' + this.order.customer_id).then((res) => {
+                this.customer = res.data
+              })
+            })
           })
         },
         save() {

@@ -29,6 +29,8 @@ Route::get('orders/changestatus', 'OrderController@changeStatus');
 Route::get('orders/updatefromprom/{prom_id}', 'OrderController@updateFromProm');
 Route::get('orders/importfromapi', 'OrderController@ImportFromApi');
 Route::get('orders/refresh/{id}', 'OrderController@refresh');
+Route::get('orders/getgroups', 'OrderController@getGroups');
+Route::get('orders/getbygroup', 'OrderController@getProductByGroup');
 
 Route::get('messages/send', 'MessageController@sendMessage');
 
@@ -121,6 +123,7 @@ Route::get('importorderproducts', 'ImportController@processOrderProducts');
 
 Route::get('test', 'TestController@index');
 Route::get('test/test1', 'TestController@test1');
+Route::get('test/test2', 'TestController@test2');
 Route::get('test/instagram', 'TestController@instagram');
 
 

@@ -127,7 +127,7 @@
           <td v-for="item in monthHeader">
             <div style="margin-top: 3px; margin-bottom: 2px; white-space: nowrap;">
               <template v-for="morder in product.morders">
-                <span  v-if="morder.year === item.year && morder.month === item.month">
+                <span  v-if="morder.year == item.year && morder.month == item.month">
                   {{morder.quantity}}
                 </span>
               </template>

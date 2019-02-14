@@ -8,33 +8,51 @@
     <div class="hidden-md-and-up">
       <v-layout row>
         <v-toolbar flat dense card color="grey">
-          <input class="mobile-search" placeholder="Поиск по заказам" @keypress.enter="mobileSearch" />
+          <v-btn flat v-if="mobileGroupStep != 0" @click="mobileGroupStep = 0" class="white--text"><v-icon>chevron_left</v-icon> Назад</v-btn>
+          <input v-if="mobileMode == 'orders'" class="mobile-search" placeholder="Поиск по заказам" @keypress.enter="mobileSearch" />
+          <v-spacer></v-spacer>
+          <v-btn icon flat @click="mobileMode = 'select'; mobileGroupStep = 0;"><v-icon>menu</v-icon></v-btn>
         </v-toolbar>
       </v-layout>
 
-      <v-layout row>
-            <v-flex xs4 sm4 >
-              <v-btn class="ma-0 pa-0" flat @click="getAllOrders" :class="{primary: footerButton == 'all'}" small>Все </v-btn> <br />
-              <div class="text-xs-center">({{allCollected.total}} / {{allCollected.collected}})</div>
-            </v-flex>
-            <v-flex xs4 sm4 v-for="name in ['Новая Почта', 'Укрпочта', 'Самовывоз']" :key="name">
-              <v-btn class="ma-0 pa-0"   small flat @click="getSpecDeliveryOrders(name)" :class="{primary: footerButton == name}">{{mapMobile[name]}} </v-btn>
-              <div class="text-xs-center">{{getDeliveryCollectedString(name)}}</div>
-            </v-flex>
-      </v-layout>
-    </div>
-    <v-layout row class="hidden-md-and-up">
-      <v-flex xs12 sm12 >
+      <template v-if="mobileMode == 'select'">
         <v-list three-line >
-          <div class="pa-2" v-for="item in list"
-            style="border-bottom: 1px solid #F5F5F5;"
-            :class="{'green lighten-5': item.statuses.collected_string == 'Собран'}"
-            >
-            <ordermobile @update="getList" :order="item" :key="item.id" />
+          <div class="pa-2" @click="mobileMode = 'orders'" style="border-bottom: 1px solid #F5F5F5;">
+            <h5>Заказы</h5>
+          </div>
+          <div class="pa-2" @click="mobileMode = 'group'" style="border-bottom: 1px solid #F5F5F5;">
+            <h5>Группировка товаров по группам</h5>
           </div>
         </v-list>
-      </v-flex>
-    </v-layout>
+      </template>
+      <template v-if="mobileMode == 'group'">
+        <ordermobilegroup :groupstep="mobileGroupStep" @changegroupstep="mobileGroupStep = 1"></ordermobilegroup>
+      </template>
+      <template v-if="mobileMode == 'orders'">
+        <v-layout row>
+          <v-flex xs4 sm4 >
+            <v-btn class="ma-0 pa-0" flat @click="getAllOrders" :class="{primary: footerButton == 'all'}" small>Все </v-btn> <br />
+            <div class="text-xs-center">({{allCollected.total}} / {{allCollected.collected}})</div>
+          </v-flex>
+          <v-flex xs4 sm4 v-for="name in ['Новая Почта', 'Укрпочта', 'Самовывоз']" :key="name">
+            <v-btn class="ma-0 pa-0"   small flat @click="getSpecDeliveryOrders(name)" :class="{primary: footerButton == name}">{{mapMobile[name]}} </v-btn>
+            <div class="text-xs-center">{{getDeliveryCollectedString(name)}}</div>
+          </v-flex>
+        </v-layout>
+        <v-layout row>
+          <v-flex xs12 sm12 >
+            <v-list three-line >
+              <div class="pa-2" v-for="item in list"
+                style="border-bottom: 1px solid #F5F5F5;"
+                :class="{'green lighten-5': item.statuses.collected_string == 'Собран'}"
+                >
+                <ordermobile @update="getList" :order="item" :key="item.id" />
+              </div>
+            </v-list>
+          </v-flex>
+        </v-layout>
+      </template>
+    </div>
 
     <btable
        class="hidden-sm-and-down"
@@ -58,7 +76,7 @@
                 </v-list-tile>
               </v-list>
             </v-menu>
-              <v-icon v-if="selected.length && isMassBusy" class="mass-loader">hourglass_empty</v-icon>
+            <v-icon v-if="selected.length && isMassBusy" class="mass-loader">hourglass_empty</v-icon>
        </template>
 
       <template slot="row" slot-scope="data">
@@ -66,7 +84,7 @@
       </template>
     </btable>
 
-    <div class="hidden-md-and-up">
+    <div v-if="mobileMode == 'orders'" class="hidden-md-and-up">
       <v-layout row>
         <v-flex xs12 sm12 >
           <v-btn flat style="width: 100%; margin-left: 0;" @click="moreOrders">Загрузить еще 10 заказов</v-btn>
@@ -100,12 +118,15 @@
 <script>
     import orderline from './OrderLine'
     import ordermobile from './OrderMobile'
+    import ordermobilegroup from './OrderMobileGroup'
     import autosms from './AutoSms'
     import { mapActions, mapGetters, mapMutations } from 'vuex'
 
     export default {
       data() {
         return {
+          mobileGroupStep: 0,
+          mobileMode: 'orders',
           autoUpdateInterval: null,
           autoUpdate: false,
           listLoading: false,
@@ -161,6 +182,7 @@
         }
       },
       components: {
+        ordermobilegroup,
         ordermobile,
         orderline,
         autosms

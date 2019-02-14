@@ -27,7 +27,7 @@
             <a :href="'https://my.prom.ua/cabinet/order_v2/edit/' + data.item.prom_id" target="_blank"><v-icon small>open_in_new</v-icon></a>
           </span>
           <div v-html="orderDate(data)" class="text-nowrap"></div>
-          <order @update="$emit('update')" :order="data.item"><span>Товаров {{data.item.products.length}} шт</span></order>
+          <order @update="$emit('update')" :orderid="data.item.id"><span>Товаров {{data.item.products.length}} шт</span></order>
           <datedelivery :delivery="data.item.delivery_option" :item="data.item.statuses" :id="data.item.id" />
         </td>
 

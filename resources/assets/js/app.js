@@ -63,6 +63,8 @@ const store = new Vuex.Store({
       return (data) => {
         let autostatus = ''
         if (typeof(data.customer) != 'undefined' &&
+            typeof(data.item) != 'undefined' &&
+            typeof(data.item.statuses) != 'undefined' &&
             typeof(data.customer.statistic) != 'undefined' &&
           (data.item.status == 'received' || moment(data.customer.statistic.last_order).isSame(moment(), 'day'))) {
           const n = data.customer.statistic.count_orders - 1

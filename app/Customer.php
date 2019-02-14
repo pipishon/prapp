@@ -150,7 +150,7 @@ class Customer extends Model
       $statistic->first_order = $statistic->last_order = $customer->created_at;
     }
     foreach ($customer->orders as $order) {
-      $statistic->count_orders = $statistic->count_orders + 1;
+      //$statistic->count_orders = $statistic->count_orders + 1;
       switch ($order->status) {
         case 'delivered':
           $statistic->count_orders_delivered++;
@@ -162,7 +162,6 @@ class Customer extends Model
           $statistic->count_orders_canceled++;
           break;
       }
-      $statistic->count_orders = $statistic->count_orders_delivered + $statistic->count_orders_received;
       if ($order->status == 'delivered') {
       }
       if ($order->status != 'canceled') {
@@ -173,15 +172,25 @@ class Customer extends Model
 
     }
 
-    if ($statistic->count_orders == 1) {
-        $customer->auto_status = 'new';
+    $statistic->count_orders = $statistic->count_orders_delivered + $statistic->count_orders_received;
+
+    $last = new Carbon($statistic->last_order);
+    $now = Carbon::now();
+    if ($last->diff($now)->days < 1) {
+        if ($statistic->count_orders == 1) {
+            $customer->auto_status = 'new';
+        }
+        if ($statistic->count_orders == 2) {
+            $customer->auto_status = 'perspective';
+        }
+        if ($statistic->count_orders > 2 && $statistic->count_orders < 10) {
+            $customer->auto_status = 'loyal';
+        }
+        if ($statistic->count_orders > 9) {
+            $customer->auto_status = 'vip';
+        }
     }
-    if ($statistic->count_orders == 2) {
-        $customer->auto_status = 'perspective';
-    }
-    if ($statistic->count_orders > 2 && $statistic->count_orders < 10) {
-        $customer->auto_status = 'loyal';
-    }
+
     $statistic->save();
     $customer->push();
     $customer->save();

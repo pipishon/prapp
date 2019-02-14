@@ -49,7 +49,7 @@
           </div>
         </v-list-tile-action>
     </v-list-tile>
-    <v-card v-if="showDialog" >
+    <v-card v-if="showDialog && orderDialog != null" >
       <v-toolbar flat card dense class="grey darken-1 mobile-order">
         <v-toolbar-items @click="showDialog = false">
           <v-icon color="white">keyboard_arrow_left</v-icon><span  class="white--text " style="padding-top: 11px; font-size: 18px;" >  Назад </span>
@@ -61,28 +61,28 @@
       </v-toolbar>
       <div class="px-2 mt-1">
         <div >
-          <strong>Заказ № {{order.prom_id}}</strong>
-          <span class="ml-2">на {{order.statuses.payment_price}} грн</span>
+          <strong>Заказ № {{orderDialog.prom_id}}</strong>
+          <span class="ml-2">на {{orderDialog.statuses.payment_price}} грн</span>
         </div>
         <div class="mt-1">
-          <span>от {{order.prom_date_created}}</span>
+          <span>от {{orderDialog.prom_date_created}}</span>
         </div>
         <div class="mt-1">
           <div class="grey--text">Клиент:</div>
-          <span>{{order.client_first_name}} {{order.client_last_name}} | {{order.customer.statistic.count_orders}} {{orderString(order.customer.statistic.count_orders)}} на {{order.customer.statistic.total_price}} грн
+          <span>{{orderDialog.client_first_name}} {{orderDialog.client_last_name}} | {{orderDialog.customer.statistic.count_orders}} {{orderString(orderDialog.customer.statistic.count_orders)}} на {{orderDialog.customer.statistic.total_price}} грн
             </span>
         </div>
-        <div v-if="order.client_notes" class="mt-1">
+        <div v-if="orderDialog.client_notes" class="mt-1">
           <div class="grey--text">Комментарий:</div>
-          <span>{{order.client_notes}}</span>
+          <span>{{orderDialog.client_notes}}</span>
         </div>
         <div class="mt-1">
           <div class="grey--text">Доставка:</div>
-          <span>{{order.delivery_option}}</span>
+          <span>{{orderDialog.delivery_option}}</span>
         </div>
       </div>
       <div class="pa-2 mt-2" style="border-top: 1px solid lightgray; border-bottom: 1px solid lightgray;">
-        <strong>Товары в заказе (<span class="body-1"><strong>{{order.products.length}}</strong></span> шт):</strong>
+        <strong>Товары в заказе (<span class="body-1"><strong>{{orderDialog.products.length}}</strong></span> шт):</strong>
       </div>
       <v-list class="mobile-order px-2">
         <div class="my-1" v-for="(item, index) in orderedProducts"
@@ -105,6 +105,10 @@
                     <div class="body-1">{{convertPrice(item.product.price)}}&nbsp;грн&nbsp;|&nbsp;<strong>{{item.quantity}} шт</strong>&nbsp;|&nbsp;{{convertPrice(item.product.price * item.quantity)}} грн</div>
                   </div>
                 </v-list-tile-content>
+                <div class="same-icons">
+                  <div><v-icon small>turned_in</v-icon>{{item.same_payed}}</div>
+                  <div><v-icon small>turned_in_not</v-icon>{{item.same_not_payed}}</div>
+                </div>
               </v-list-tile>
         </div>
       </v-list>
@@ -118,8 +122,21 @@ import * as moment from 'moment';
       props: ['order' ],
       data() {
         return {
+          orderDialog: null,
           customer: null,
           showDialog: false,
+        }
+      },
+      watch: {
+        showDialog (val) {
+          if (val) {
+            axios.get('api/orders/' + this.order.id).then((res) => {
+              this.orderDialog = res.data
+              this.sort = 'name'
+              this.orderDialog.products = _.orderBy(this.orderDialog.products, 'name')
+              console.log(this.orderDialog.products)
+            })
+          }
         }
       },
       computed: {
@@ -136,7 +153,7 @@ import * as moment from 'moment';
           return this.order.statuses.shipment_date
         },
         orderedProducts: function () {
-          return _.orderBy(this.order.products, [ 'product.sort1', 'product.name'])
+          return _.orderBy(this.orderDialog.products, [ 'product.sort1', 'product.name'])
         },
         maxPrice () {
           if (this.order.products.length == 0) return {product: {}}
@@ -191,5 +208,10 @@ import * as moment from 'moment';
 }
 .mobile-order .v-toolbar__content {
   padding-left: 0 !important;
+}
+.mobile-order .same-icons {
+  position: absolute;
+  right: 20px;
+  bottom: 5px;
 }
 </style>
