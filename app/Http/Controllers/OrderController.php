@@ -310,10 +310,12 @@ class OrderController extends Controller
           ->join('products', 'order_products.product_id', 'products.id')
           ->select('products.category')
           ->groupBy('products.category')
-          ->where('order_statuses.collected', '0')
-          ->where('orders.status', 'received');
+          ->where('orders.status', 'received')
+          ->where('order_statuses.collected', '0');
         if ($orders != 'all') {
-          $result = $result->where('order_statuses.payment_status', 'Оплачен');
+          $result = $result->where(function ($query) {
+            $query->where('order_statuses.payment_status', 'Оплачен')->orWhere('order_statuses.payment_status', 'Наложенный');
+          });
         }
         return $result->get();
     }
@@ -326,14 +328,17 @@ class OrderController extends Controller
           ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
           ->join('order_products', 'orders.id', 'order_products.order_id')
           ->join('products', 'order_products.product_id', 'products.id')
-          ->select('products.name', DB::Raw('SUM(order_products.quantity) as sum'), DB::Raw('COUNT(order_products.quantity) as qty'))
+          ->select('products.name', 'products.sku', 'products.main_image', 'products.price', DB::Raw('SUM(order_products.quantity) as sum'), DB::Raw('COUNT(order_products.quantity) as qty'))
           ->orderBy('products.sort1')
+          ->orderBy('products.name')
           ->groupBy('order_products.product_id')
           ->where('products.category', $group)
           ->where('order_statuses.collected', '0')
           ->where('orders.status', 'received');
         if ($orders != 'all') {
-          $result = $result->where('order_statuses.payment_status', 'Оплачен');
+          $result = $result->where(function ($query) {
+            $query->where('order_statuses.payment_status', 'Оплачен')->orWhere('order_statuses.payment_status', 'Наложенный');
+          });
         }
         return $result->get();
     }

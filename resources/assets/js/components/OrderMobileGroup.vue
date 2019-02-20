@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mobile-group">
     <v-list v-if="groupstep == 0">
       <div
         v-for="item in groups"
@@ -10,18 +10,22 @@
         {{item.category}}
       </div>
     </v-list>
-    <v-list v-if="groupstep == 1">
+    <v-list v-if="groupstep == 1" class="products">
       <v-list-tile
         v-for="item in products"
         :key="item.name"
-        @click="getByGroup(item.category)"
+        style="border-bottom: 1px solid #F5F5F5;"
         >
+        <v-list-tile-avatar :size="50">
+          <img :src="item.main_image">
+        </v-list-tile-avatar>
         <v-list-tile-content>
-          <span style="font-size: 12px;"> {{item.name}}</span>
+          <span style="font-size: 14px; line-height: 1.4;"> {{item.name}}</span>
+          <div style="font-size: 14px; line-height: 1.4;" class="grey--text">{{item.sku}}&nbsp;|&nbsp;{{item.price.toFixed(2)}} грн</div>
         </v-list-tile-content>
         <v-list-tile-avatar>
-          <span style="font-size: 12px;">
-            <span>{{item.sum}}</span>/<span class="grey--text">{{item.qty}}</span>
+          <span style="font-size: 14px; white-space: nowrap;">
+            <strong>{{item.sum}}</strong>&nbsp;&nbsp;<span class="grey--text">/ {{item.qty}}</span>
           </span>
         </v-list-tile-avatar>
       </v-list-tile>
@@ -54,7 +58,7 @@
           const params = {
             orders: this.orders
           }
-          axios.get('api/orders/getgroups', params).then((res) => {
+          axios.get('api/orders/getgroups', {params}).then((res) => {
             this.groups = res.data
           })
         },
@@ -75,4 +79,16 @@
     }
 </script>
 <style>
+.mobile-group .v-avatar,
+.mobile-group .v-avatar img
+{
+  border-radius: 0;
+}
+.mobile-group {
+  margin: 0 -15px;
+}
+.mobile-group .products .v-list__tile
+{
+  height: 74px;
+}
 </style>
