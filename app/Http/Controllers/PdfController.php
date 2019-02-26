@@ -47,7 +47,25 @@ class PdfController extends Controller
       );
       $pdf = \PDF::loadView('pdf.invoice', array('data' => $data));
       $pdf->setPaper(array(0, 0, 595.28, 841.89));
-      return $pdf->download('order-'.$order->prom_id.'.pdf');
+      $GLOBALS['height'] = 0;
+      $dompdf = $pdf->getDomPDF();
+
+      $dompdf->setCallbacks(
+          array(
+            'myCallbacks' => array(
+              'event' => 'end_frame', 'f' => function ($infos) {
+                $frame = $infos["frame"];
+                if (strtolower($frame->get_node()->nodeName) === "body") {
+                    $padding_box = $frame->get_padding_box();
+                    $GLOBALS['height'] = $padding_box['h'];
+                }
+              }
+            )
+          )
+        );
+      $pdf->output();
+      //dd('test');
+      return $pdf->download('order-'.$order->prom_id.'-'.$GLOBALS['height'].'.pdf');
   }
 
 }

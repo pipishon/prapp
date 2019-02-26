@@ -328,7 +328,7 @@ class OrderController extends Controller
           ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
           ->join('order_products', 'orders.id', 'order_products.order_id')
           ->join('products', 'order_products.product_id', 'products.id')
-          ->select('products.name', 'products.sku', 'products.main_image', 'products.price', DB::Raw('SUM(order_products.quantity) as sum'), DB::Raw('COUNT(order_products.quantity) as qty'))
+          ->select('products.id', 'products.name', 'products.sku', 'products.main_image', 'products.price', DB::Raw('SUM(order_products.quantity) as sum'), DB::Raw('COUNT(order_products.quantity) as qty'))
           ->orderBy('products.sort1')
           ->orderBy('products.name')
           ->groupBy('order_products.product_id')
@@ -340,6 +340,22 @@ class OrderController extends Controller
             $query->where('order_statuses.payment_status', 'Оплачен')->orWhere('order_statuses.payment_status', 'Наложенный');
           });
         }
-        return $result->get();
+        $products = $result->get();
+        foreach ($products as $product) {
+            $orders_with_product = DB::table('orders')
+              ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
+              ->join('order_products', 'orders.id', 'order_products.order_id')
+              ->select('orders.prom_id', 'orders.client_first_name',  'orders.client_last_name', 'orders.delivery_option', 'order_statuses.shipment_date', 'order_products.quantity')
+              ->where('order_statuses.collected', '0')
+              ->where('orders.status', 'received')
+              ->where('order_products.product_id', $product->id);
+            if ($orders != 'all') {
+              $orders_with_product = $orders_with_product->where(function ($query) {
+                $query->where('order_statuses.payment_status', 'Оплачен')->orWhere('order_statuses.payment_status', 'Наложенный');
+              });
+            }
+            $product->orders = $orders_with_product->get();
+        }
+        return $products;
     }
 }

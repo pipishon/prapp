@@ -11,24 +11,49 @@
       </div>
     </v-list>
     <v-list v-if="groupstep == 1" class="products">
-      <v-list-tile
+      <v-list-group
         v-for="item in products"
         :key="item.name"
-        style="border-bottom: 1px solid #F5F5F5;"
-        >
-        <v-list-tile-avatar :size="50">
-          <img :src="item.main_image">
-        </v-list-tile-avatar>
-        <v-list-tile-content>
-          <span style="font-size: 14px; line-height: 1.4;"> {{item.name}}</span>
-          <div style="font-size: 14px; line-height: 1.4;" class="grey--text">{{item.sku}}&nbsp;|&nbsp;{{item.price.toFixed(2)}} грн</div>
-        </v-list-tile-content>
-        <v-list-tile-avatar>
-          <span style="font-size: 14px; white-space: nowrap;">
-            <strong>{{item.sum}}</strong>&nbsp;&nbsp;<span class="grey--text">/ {{item.qty}}</span>
-          </span>
-        </v-list-tile-avatar>
-      </v-list-tile>
+        v-model="activeProducts[item.name]"
+      >
+        <v-list-tile
+          style="border-bottom: 1px solid #F5F5F5; width: 100%;"
+          slot="activator"
+          >
+          <v-list-tile-avatar :size="50">
+            <img :src="item.main_image">
+          </v-list-tile-avatar>
+          <v-list-tile-content>
+            <span style="font-size: 14px; line-height: 1.4;"> {{item.name}}</span>
+            <div style="font-size: 14px; line-height: 1.4;" class="grey--text">{{item.sku}}&nbsp;|&nbsp;{{item.price.toFixed(2)}} грн</div>
+          </v-list-tile-content>
+          <v-list-tile-avatar>
+            <span style="font-size: 14px; white-space: nowrap;">
+              <strong>{{item.sum}}</strong>&nbsp;&nbsp;<span class="grey--text">/ {{item.qty}}</span>
+            </span>
+          </v-list-tile-avatar>
+        </v-list-tile>
+        <v-list-tile v-for="order in item.orders" :key="order.prom_id">
+          <v-list-tile-avatar>
+            <div style="font-size: 14px; line-height: 1.4;" >
+              {{order.prom_id}}
+            </div>
+          </v-list-tile-avatar>
+          <v-list-tile-content style="position: relative;">
+            {{order.client_first_name}} {{order.client_last_name}}
+            <div style="font-size: 14px; line-height: 1.4;" class="grey--text">
+              {{order.delivery_option}}
+            </div>
+            <div style="font-size: 18px; line-height: 1.4; position: absolute; right: 0;">
+              <strong v-if="formatDeliveryDate(order.shipment_date)">+</strong>
+              <strong v-else>-</strong>
+            </div>
+          </v-list-tile-content>
+          <v-list-tile-avatar>
+            {{order.quantity}}
+          </v-list-tile-avatar>
+        </v-list-tile>
+      </v-list-group>
     </v-list>
     <v-footer fixed v-if="groupstep == 0">
       <v-layout row>
@@ -44,16 +69,21 @@
 </template>
 
 <script>
+import * as moment from 'moment';
     export default {
       props: ['groupstep'],
       data() {
         return {
+          activeProducts: {},
           groups: null,
           products: null,
           orders: 'payed'
         }
       },
       methods: {
+        formatDeliveryDate (val) {
+          return moment(val).isSame(moment(), 'day')
+        },
         getOrderProductGroups () {
           const params = {
             orders: this.orders
@@ -90,5 +120,10 @@
 .mobile-group .products .v-list__tile
 {
   height: 74px;
+}
+.mobile-group .v-list__group__header .v-list__group__header__append-icon,
+.mobile-group .v-list__group__header .v-list__group__header__prepend-icon
+{
+  display: none;
 }
 </style>
