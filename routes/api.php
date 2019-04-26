@@ -17,6 +17,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::middleware('auth')->group(function () {
+
 
 Route::get('sendsms', 'SmsApiController@sendSms');
 
@@ -42,6 +44,7 @@ Route::get('newpost/validate', 'NewPostCityController@isAddressValide');
 Route::get('newpost/getttn', 'NewPostApiController@getTtn');
 
 Route::resource('products', 'ProductController');
+Route::resource('discounts', 'DiscountController');
 
 Route::resource('orderproducts', 'OrderProductController');
 Route::post('orderproducts/massdiscount', 'OrderProductController@massDiscount');
@@ -115,6 +118,9 @@ Route::prefix('mass')->group(function () {
   Route::get('delivered', 'MassActionController@statusDelivered');
   Route::get('sendttn', 'MassActionController@sendTtn');
   Route::get('createttn', 'MassActionController@createTtn');
+  Route::get('pdf', 'MassActionController@createPdf');
+  Route::get('discount', 'MassActionController@setDiscount');
+  Route::get('removediscount', 'MassActionController@removeDiscount');
 });
 
 Route::get('import', 'ImportController@import');
@@ -125,6 +131,7 @@ Route::get('test', 'TestController@index');
 Route::get('test/test1', 'TestController@test1');
 Route::get('test/test2', 'TestController@test2');
 Route::get('test/instagram', 'TestController@instagram');
+Route::get('test/{action}', 'TestController@actionProccess');
 
 
 Route::resource('pack', 'PackController');
@@ -141,3 +148,6 @@ Route::prefix('rfc')->group(function () {
   Route::get('gettoday', 'RfcController@getToday');
   Route::get('statistic/{name}', 'RfcController@statistic');
 });
+});
+
+Route::get('votes', 'VoteController@index');

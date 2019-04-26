@@ -1,0 +1,152 @@
+html, body{
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  background-color: #F4F4F4;
+  font-family: 'arial', 'helvetica neue', 'helvetica', 'sans-serif'  !important;
+  font-size: 12px  !important;
+  line-height: 1.5 !important;
+  font-weight: normal !important;
+}
+body p {
+  font-size: 14px;
+}
+
+main {
+  width: 600px;
+  margin: auto;
+  text-align: center;
+}
+
+header {
+  width: 600px;
+  margin: auto;
+  display: flex;
+   justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  padding-bottom: 10px;
+}
+
+header .logo img {
+  width: 210px;
+  margin-left: 10px;
+  vertical-align: inherit;
+}
+
+main {
+  background-color: white;
+  border-top: 2px solid rgb(0, 174, 92);
+  padding: 20px;
+  line-height: 1.5;
+}
+
+h1 {
+    font-size: 22px;
+    color: #16b469;
+    text-align: center;
+    font-weight: normal;
+    padding-top: 20px;
+    padding-bottom: 15px;
+    margin: 0;
+}
+
+h4 {
+  margin: 0;
+  font-size: 16px;
+  text-align: center;
+  font-weight: normal;
+  padding-top: 10px;
+  padding-bottom: 15px;
+}
+
+textarea {
+  padding: 5px 10px;
+  display: block;
+  width: 560px;
+  resize: none;
+  overflow: hidden;
+  height: 120px;
+  border-radius: 3px;
+}
+
+#submit {
+  display: block;
+  width: 130px;
+  height: 43px;
+  line-height: 43px;
+  color: white;
+  background-color: #31cb4b;
+  text-align: center;
+  font-size: 18px;
+  border-radius: 7px;
+  border: none;
+  margin-top: 30px;
+  margin-bottom: 35px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.remote-vote-btns a{
+  margin: 0 10px;
+}
+
+.copyraite {
+  text-align: center;
+  margin: 30px auto;
+  color: #696969;
+  font-size: 14px;
+  height: 14px;
+}
+
+@media (max-width: 600px) {
+  header, main
+  {
+    width: 100%;
+    padding: 5%;
+  }
+
+  main {
+    background-color: white;
+  }
+
+  textarea {
+    width: 100%;
+  }
+
+  .message {
+    display: none;
+  }
+
+  .logo {
+    margin: auto;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+  }
+
+  h4 {
+    font-size: 0.9rem;
+  }
+
+  #submit {
+    width: 100%;
+    border-radius: 3px;
+  }
+ .remote-vote-btns a {
+   margin: 0;
+   width: 45%;
+   display: inline-block;
+ }
+
+ .remote-vote-btns a img{
+   width: 100%;
+ }
+
+}

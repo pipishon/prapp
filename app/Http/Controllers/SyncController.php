@@ -202,6 +202,7 @@ class SyncController extends Controller
       }
 
 
+      $group_discounts = $this->getProductGroupDiscounts($order['products']);
 
       foreach ($order['products'] as $product) {
         $product_price = $product['price'];
@@ -220,10 +221,19 @@ class SyncController extends Controller
           $order_product_update = array(
             'prom_price' => $product_price,
             'quantity' => str_replace(',','.', $product['quantity']),
-          );
-          if ($O_product->price != $product_price) {
-            $order_product_update['discount'] = ($O_product->price - $product_price) * 100 / $O_product->price;
-          }
+        );
+        $discount_arr = $this->getProductDiscount(
+            $customer,
+            $O_product,
+            str_replace(',','.', $product['quantity']),
+            $order['price'],
+            $product_price,
+            $group_discounts
+        );
+        if ($discount_arr['discount'] != 0) {
+            $order_product_update['discount'] = $discount_arr['discount'];
+            $order_product_update['discount_descripiton'] = $discount_arr['type'];
+        }
 
           $order_product = OrderProduct::updateOrCreate(array(
             'product_id' => $O_product->id,
@@ -265,6 +275,104 @@ class SyncController extends Controller
     print_r('Get orders '.count($orders));
     print_r('Statuses updated '.count($orders_to_update_status));
   }
+
+  public function getProductDiscount($customer, $product, $product_quantity, $total_price, $product_price, $group_discounts) {
+      $total_price = (float) str_replace(',', '.', preg_replace('/\s+/u', '', $total_price));
+      $prom_discount = 0;
+      if ($product->price != $product_price) {
+        $prom_discount = ($product->price - $product_price) * 100 / $product->price;
+      }
+
+      if ($customer->statistic) {
+          $num_orders = ($customer->statistic->count_orders > 2) ? 2 : $customer->statistic->count_orders - 1;
+      } else {
+          $num_orders = 1;
+      }
+
+      $customer_discount = 0;
+        $table_discounts = json_decode(Settings::where('name','table_discounts')->value('value'), true);
+        if (isset($table_discounts['enable']) && $table_discounts['enable']) {
+            $price_key = 0;
+            $qty_key = 0;
+            foreach ($table_discounts['prices'] as $key => $price) {
+                if ($total_price < (int) $price) {
+                    $price_key = $key + 1;
+                }
+            }
+            foreach ($table_discounts['quantities'] as $key => $qty) {
+                if ($num_orders >= (int) $qty) {
+                    $qty_key = $key;
+                }
+            }
+            $customer_discount = (float) $table_discounts['vals'][$price_key][$qty_key];
+        }
+        $product_discount = 0;
+      if (isset($group_discounts[$product->product_id])) {
+          $product_discount = $group_discounts[$product->product_id];
+      }
+
+
+      $discount = 0;
+      $discount_type = '';
+      if ($prom_discount > $product_discount && $prom_discount > $customer_discount) {
+          $discount = $prom_discount;
+          $discount_type = 'prom';
+      } else {
+          $discount = $customer_discount;
+          $discount_type = 'customer';
+          if ($product_discount > $customer_discount) {
+              $discount = $product_discount;
+              $discount_type = 'product';
+          }
+      }
+      return array('discount' => $discount, 'type' => $discount_type);
+  }
+
+    public function getProductGroupDiscounts ($products)
+    {
+        $product_ids = Product::whereIn('prom_id', array_column($products, 'id'))->get()->pluck('id', 'prom_id')->toArray();
+        foreach ($products as $key => $product) {
+            if (isset($product_ids[$products[$key]['id']])) {
+                $products[$key]['prom_id'] = $products[$key]['id'];
+                $products[$key]['id'] = $product_ids[$products[$key]['prom_id']];
+            }
+        }
+        $discount_ids = DB::table('discount_products')->select('discount_id', 'product_id')
+            ->whereIn('product_id', $product_ids)->get()->pluck('discount_id', 'product_id')->toArray();
+        $discounts = array();
+        foreach ($products as $product) {
+            foreach ($discount_ids as $product_id => $discount_id) {
+                if ($product_id == $product['id']) {
+                    if (isset($discounts[$discount_id])){
+                        $discounts[$discount_id] += $product['quantity'];
+                    } else {
+                        $discounts[$discount_id] = $product['quantity'];
+                    }
+                }
+            }
+        }
+        $discount_vals = DB::table('discounts')->select('vals', 'id')->whereIn('id', array_values($discount_ids))->get()->pluck('vals', 'id')->toArray();
+
+        $product_discounts = array();
+
+        foreach ($discount_vals as $discount_id => $discount_val) {
+            $vals = unserialize($discount_val);
+            $percent = 0;
+            foreach ($vals as $val) {
+              if ($val['qty'] <= $discounts[$discount_id]) {
+                  $percent = $val['percent'];
+              }
+            }
+            foreach ($products as $product) {
+                foreach ($discount_ids as $product_id => $ds_id) {
+                    if ($product_id == $product['id'] && $ds_id == $discount_id) {
+                        $product_discounts[$product_id] = (float) $percent;
+                    }
+                }
+            }
+        }
+        return $product_discounts;
+    }
 
   public function smsStatus () {
     $statuses = array(
@@ -371,7 +479,8 @@ class SyncController extends Controller
     $map_type = array(
         1427460 => 'requisites',
         1430244 => 'ttn',
-        1469445 => 'ttn'
+        1469445 => 'ttn',
+        1795607 => 'feedback'
     );
 
     foreach ($activities as $activity) {

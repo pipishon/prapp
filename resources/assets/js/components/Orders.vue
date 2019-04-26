@@ -68,10 +68,10 @@
        >
        <template slot="mass">
             <v-checkbox class="ma-0 pa-0" :input-value="this.selected.length" @change="massChange"></v-checkbox>
-            <v-menu offset-y v-if="selected.length" class="ma-0 mass-menu" >
+            <v-menu offset-y v-if="selected.length" class="ma-0 mass-menu" v-model="massMenu" >
               <div  slot="activator" class="ma-0 mass-menu-activator"><strong>{{selected.length}} заказов &#8595;</strong></div>
               <v-list>
-                <v-list-tile v-for="(item, fnName) in {massTtn: 'Сформировать ТТН', massSendTtn: 'Разослать ТТН', massDelivered: 'Установить Выполнен'}" :key="fnName" @click="massAction({fnName, selected})" >
+                <v-list-tile v-for="(item, fnName) in {massTtn: 'Сформировать ТТН', massSendTtn: 'Разослать ТТН', massDelivered: 'Установить Выполнен', massPdf: 'Сформировать PDF', massPdfReq: 'Сформировать PDF *'}" :key="fnName" @click="massAction({fnName, selected})" >
                   <v-list-tile-title >{{ item }}</v-list-tile-title>
                 </v-list-tile>
               </v-list>
@@ -125,6 +125,7 @@
     export default {
       data() {
         return {
+          massMenu: false,
           mobileGroupStep: 0,
           mobileMode: 'orders',
           autoUpdateInterval: null,
@@ -185,7 +186,7 @@
         ordermobilegroup,
         ordermobile,
         orderline,
-        autosms
+        autosms,
       },
       methods: {
         ...mapMutations(['massSelection']),
@@ -324,16 +325,16 @@
       mounted() {
         this.tableWidths = (typeof(this.settings.order_table_widths) != 'undefined') ? JSON.parse(this.settings.order_table_widths) : {}
         this.getList()
-        this.autoUpdateInterval = setInterval(() => {
+        /* this.autoUpdateInterval = setInterval(() => {
           if (this.selected.length == 0) {
             this.autoUpdate = true
             this.getList()
           }
           console.log('interval')
-        }, 120000)
+        }, 120000) */
       },
       destroyed() {
-         clearInterval(this.autoUpdateInterval)
+         // clearInterval(this.autoUpdateInterval)
       }
     }
 </script>

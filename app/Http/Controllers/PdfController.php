@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use NumberToWords\NumberToWords;
 use Carbon\Carbon;
 use App\Order;
+use Illuminate\Http\Response;
 
 class PdfController extends Controller
 {
@@ -19,7 +20,7 @@ class PdfController extends Controller
       } else {
         $order->products = $order->products->sortBy(function($product) {
             $hash = ($product->sort1) ? $product->sort1 : 0;
-            return $product->sort1.$product->name;
+            return $hash.$product->name;
         });
       }
       $with_discount = $request->input('with_discount');
@@ -63,9 +64,62 @@ class PdfController extends Controller
             )
           )
         );
-      $pdf->output();
+      $output = $pdf->output();
+      $filename = 'order-'.$order->prom_id.'-'.$GLOBALS['height'].'.pdf';
       //dd('test');
-      return $pdf->download('order-'.$order->prom_id.'-'.$GLOBALS['height'].'.pdf');
+      return new Response($output, 200, array(
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' =>  'attachment; filename="'.$filename.'"'
+        ));
+      //return $pdf->download('order-'.$order->prom_id.'-'.$GLOBALS['height'].'.pdf');
   }
+
+  public function getInvoiceByLink (Request $request)
+  {
+        $iv = 'p/Ȅ����';
+        $hash = rawurldecode($request->input('hash'));
+        //var_dump($hash);
+        $id = openssl_decrypt($hash, 'AES-128-CBC', 'sercet', 0, $iv);
+        //var_dump($id);
+
+      $order = Order::find($id);
+
+      $order->products = $order->products->sortBy(function($product) {
+        $hash = ($product->sort1) ? $product->sort1 : 0;
+        return $hash.$product->name;
+      });
+      $sums = array(
+        'quantity' => 0,
+        'price' => 0
+      );
+
+      $with_discount = false;
+
+      foreach ($order->products as $product) {
+        $product->pdf_price = ($product->order_price != null) ? $product->order_price : $product->price;
+        $sums['quantity'] += $product->quantity;
+        $sums['price'] += $product->quantity * ($product->pdf_price - $product->pdf_price * $product->discount / 100);
+        if ($product->discount) {
+          $with_discount = true;
+        }
+      }
+      $numberToWords = new NumberToWords();
+      $currencyTransformer = $numberToWords->getCurrencyTransformer('ru');
+      $title = $currencyTransformer->toWords($sums['price']*100, 'UAH');
+      $sums['text'] =  mb_strtoupper(mb_substr($title, 0, 1, 'UTF-8'), 'UTF-8') . mb_substr($title, 1, null,'UTF-8');
+      $data = array(
+        'customer' => $order->client_first_name.' '.$order->client_last_name,
+        'order_id' => $order->prom_id,
+        'date' => Carbon::parse($order->prom_date_created)->format('d.m.Y'),
+        'products' => $order->products,
+        'sums' => $sums,
+        'with_discount' => $with_discount
+      );
+      $pdf = \PDF::loadView('pdf.invoice', array('data' => $data));
+      $pdf->setPaper(array(0, 0, 595.28, 841.89));
+      //dd('test');
+      return $pdf->download('order-'.$order->prom_id.'.pdf');
+  }
+
 
 }

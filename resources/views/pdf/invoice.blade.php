@@ -1,11 +1,12 @@
-<html>
+﻿<html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <style>
   body {
     font-size: 11px;
-    padding: 10px 20px 30px 20px;
-	color: black;
+    padding: 10px 15px 30px 15px;
+    color: black;
+    line-height: 1;
   }
   .head-table td{
     padding: 8px 0;
@@ -68,12 +69,12 @@ font-size: 12px;
 </table>
 <h3>ЗАКАЗ № {{$data['order_id']}} от {{$data['date']}}</h3>
 
-<table width="490" class="products-table">
+<table width="510" class="products-table">
     <tr>
         <th width="15">№</th><th width="60">Артикул</th><th>Наименование товара</th> <th width="25">Кол.</th>
         @if ($data['with_discount'])
             <th width="30">Цена</th>
-            <th width="30">Скидка, %</th>
+            <th width="25">Скидка, %</th>
             <th width="30">Цена со скидкой</th>
             <th width="35">Сумма со скидкой</th>
         @else

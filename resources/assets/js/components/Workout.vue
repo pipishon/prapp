@@ -83,6 +83,9 @@
                 <v-flex xs6 md6 >
                   <v-checkbox :disabled="!isEmailValid" v-if="(item.email!='' || item.statuses.custom_email != null)" v-model="sendEmail" label="Email"></v-checkbox>
                 </v-flex>
+                <v-flex v-if="type=='ttn'" xs6 md6>
+                  <v-checkbox v-model="sendInvoice" label="Счет"></v-checkbox>
+                </v-flex>
               </v-layout>
             </div>
           </div>
@@ -103,6 +106,7 @@ import * as moment from 'moment';
       props: ['item', 'delivery'],
       data() {
         return {
+          sendInvoice: true,
           showDialog: false,
           dialogData: {},
           statusColor: ['gray', 'green', '#82b1ff', 'red'],
@@ -154,7 +158,7 @@ import * as moment from 'moment';
           let result = {requisites: {}, payed: {}, ttn: {}}
           this.item.email_statuses.map((el) => {
             for (name in map) {
-              if (el[name] != null) {
+              if (el[name] != null && el.type != 'feedback') {
                 result[el.type][name] = {status: map[name], time: el[name]}
               }
             }
@@ -265,7 +269,8 @@ import * as moment from 'moment';
                 'order_id': this.dialogData.prom_id,
                 type: 'ttn',
                 ttn: this.ttn,
-                deliverer: this.deliverer
+                deliverer: this.deliverer,
+                invoice: (this.sendInvoice) ? 1 : 0
               }
               axios.get('api/sendemail', {params}).then((res) => {
                 console.log(res.data)

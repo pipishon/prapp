@@ -314,7 +314,9 @@ class OrderController extends Controller
           ->where('order_statuses.collected', '0');
         if ($orders != 'all') {
           $result = $result->where(function ($query) {
-            $query->where('order_statuses.payment_status', 'Оплачен')->orWhere('order_statuses.payment_status', 'Наложенный');
+              $query->where('order_statuses.payment_status', 'Оплачен')->orWhere('order_statuses.payment_status', 'Наложенный')->orWhere(function ($query) {
+                $query->where('orders.delivery_option', 'Самовывоз')->whereNotNull('order_statuses.shipment_date');
+              });
           });
         }
         return $result->get();
@@ -337,7 +339,9 @@ class OrderController extends Controller
           ->where('orders.status', 'received');
         if ($orders != 'all') {
           $result = $result->where(function ($query) {
-            $query->where('order_statuses.payment_status', 'Оплачен')->orWhere('order_statuses.payment_status', 'Наложенный');
+              $query->where('order_statuses.payment_status', 'Оплачен')->orWhere('order_statuses.payment_status', 'Наложенный')->orWhere(function ($query) {
+                $query->where('orders.delivery_option', 'Самовывоз')->whereNotNull('order_statuses.shipment_date');
+              });
           });
         }
         $products = $result->get();
@@ -351,7 +355,9 @@ class OrderController extends Controller
               ->where('order_products.product_id', $product->id);
             if ($orders != 'all') {
               $orders_with_product = $orders_with_product->where(function ($query) {
-                $query->where('order_statuses.payment_status', 'Оплачен')->orWhere('order_statuses.payment_status', 'Наложенный');
+                  $query->where('order_statuses.payment_status', 'Оплачен')->orWhere('order_statuses.payment_status', 'Наложенный')->orWhere(function ($query) {
+                    $query->where('orders.delivery_option', 'Самовывоз')->whereNotNull('order_statuses.shipment_date');
+                  });
               });
             }
             $product->orders = $orders_with_product->get();

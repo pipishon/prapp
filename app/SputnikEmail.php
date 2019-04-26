@@ -38,7 +38,7 @@ class SputnikEmail extends Model
         $password = 'komandor';
 
         $ch = curl_init();
-       // curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json', 'Content-Type: application/json'));
         $query = '';
         if ($type == 'post') {
@@ -52,9 +52,10 @@ class SputnikEmail extends Model
         curl_setopt($ch, CURLOPT_URL, 'https://esputnik.com/api/v1/'.$path.$query);
         curl_setopt($ch,CURLOPT_USERPWD, $login.':'.$password);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_PROXY, '10.0.0.80:3128');
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        // $output = curl_exec($ch);
+        $output = curl_exec($ch);
         return json_decode($output, true);
     }
 

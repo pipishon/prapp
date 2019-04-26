@@ -75,6 +75,20 @@
                     <span >{{label}}</span>
                     </div>
                 </v-list-tile>
+                <v-list-tile>
+                  <v-list-tile-title >
+                    <div style="width: 100%; padding: 0 16px; cursor: pointer;">
+                      <massdiscount :selected="selected" @click.native="massMenu = false">Назначить скидку</massdiscount>
+                    </div>
+                  </v-list-tile-title>
+                </v-list-tile>
+                <v-list-tile>
+                  <v-list-tile-title >
+                    <div style="width: 100%; padding: 0 16px; cursor: pointer;">
+                      <span @click="massAction({fnName: 'massRemoveDiscount', selected: selected})">Удалить скидку</span>
+                    </div>
+                  </v-list-tile-title>
+                </v-list-tile>
               </v-list>
             </v-menu>
               <v-icon v-if="selected.length && isMassBusy" class="mass-loader">hourglass_empty</v-icon>
@@ -82,19 +96,19 @@
       <template slot="row" slot-scope="data">
         <tr v-for="item  in data.items" :key="item.id" :class="{'pink lighten-5': item.on_sale}">
 
-          <td>
+          <td >
             <v-checkbox flat class="mt-0" :value="selected.indexOf(item) != -1" @change="changeMass(arguments[0], item)"> </v-checkbox>
           </td>
-          <td>
+          <td v-show="fields[0].enable == true">
             <img width="50" :src="item.main_image" />
           </td>
-          <td>
+          <td v-show="fields[1].enable == true">
             <product @update="getList" :product="item">{{item.name}}</product>
           </td>
-          <td>
+          <td v-show="fields[2].enable == true">
             {{item.sku}}
           </td>
-          <td>
+          <td v-show="fields[3].enable == true">
             <div :class="{'red--text text--lighten-1': item.presence != 'available'}">
               <div>{{mapPresence[item.presence]}}</div>
               <div>{{item.quantity}}</div>
@@ -102,53 +116,62 @@
               <v-icon style="font-size: 18px;color: #E57373;" v-else>visibility_off</v-icon>
             </div>
           </td>
-          <td>
+          <td v-show="fields[4].enable == true">
             {{item.category}}
           </td>
-          <td>
+          <td v-show="fields[5].enable == true">
             <div v-for="item in item.supliers">{{item.name}}</div>
           </td>
-          <td>
+          <td v-show="fields[6].enable == true">
           </td>
-          <td>
+          <td v-show="fields[7].enable == true">
             <a href="#" v-if="item.morders" @click.prevent="showOrderStatistic(item)">
               {{item.morders.reduce((a, b) => {
                 return {quantity: a.quantity + b.quantity}
                 }, {quantity: 0}).quantity}}
             </a>
           </td>
-          <td>
+          <td v-show="fields[8].enable == true">
             {{item.purchase_price}}
           </td>
-          <td>
+          <td v-show="fields[9].enable == true">
             {{item.price}}
           </td>
-          <td>
+          <td v-show="fields[10].enable == true">
             <span v-if="item.margin">{{item.margin.toFixed(2)}}</span>
           </td>
-          <td>
+          <td v-show="fields[11].enable == true">
             <div v-for="item in item.labels">{{item.name}}</div>
           </td>
-          <td>
+          <td v-show="fields[12].enable == true">
             {{item.sort1}}
           </td>
-          <td>
+          <td v-show="fields[13].enable == true">
             {{item.sort2}}
           </td>
-          <td>
+          <td v-show="fields[14].enable == true">
             {{item.abc_earn}}
           </td>
-          <td>
+          <td v-show="fields[15].enable == true">
             {{item.abc_qty}}
+          </td>
+          <td v-show="fields[16].enable == true">
+            <span v-if="item.discount">
+              {{item.discount.name}}
+            </span>
           </td>
         </tr>
       </template>
       <template slot="footer">
-        <td colspan="6">Всего: {{stats.total}} шт ({{(stats.total * 100/stats.all).toFixed(2)}} %)</td>
+        <td colspan="2">Всего: {{stats.total}} шт ({{(stats.total * 100/stats.all).toFixed(2)}} %)</td>
+          <td v-show="fields[1].enable == true"></td>
+          <td v-show="fields[2].enable == true"></td>
+          <td v-show="fields[3].enable == true"></td>
+          <td v-show="fields[4].enable == true"></td>
         <td>{{(stats.supliers * 100/stats.all).toFixed(2)}} %</td>
-        <td colspan="2"></td>
+          <td v-show="fields[6].enable == true"></td>
+          <td v-show="fields[7].enable == true"></td>
         <td>{{((stats.all - stats.purchase_price) * 100/stats.all).toFixed(2)}} %</td>
-        <td colspan="7"></td>
       </template>
     </btable>
 
@@ -291,9 +314,11 @@
 <script>
     import { mapActions, mapGetters, mapMutations } from 'vuex'
     import product from './Product'
+    import massdiscount from './MassDiscountDialog'
     export default {
       components: {
-        product
+        product,
+        massdiscount
       },
       data() {
         return {
@@ -345,22 +370,23 @@
           supliers: [],
           labels: [],
           fields: [
-            { key: 'main_image', label: 'Фото' },
-            { key: 'name', label: 'Название' },
-            { key: 'sku', label: 'Артикул' },
-            { key: 'availability', label: 'Наличие' },
-            { key: 'category', label: 'Группа' },
-            { key: 'suplier', label: 'Поставщик' },
-            { key: 'min_quantity', label: 'Мин. остаток' },
-            { key: 'orders', label: 'Заказы' },
-            { key: 'purchase_price', label: 'Закуп цена' },
-            { key: 'price', label: 'Цена продажи' },
-            { key: 'marga', label: 'Маржа' },
-            { key: 'label', label: 'Метки товара' },
-            { key: 'sort1', label: 'Сорт1' },
-            { key: 'sort2', label: 'Сорт2' },
-            { key: 'abc_earn', label: 'ABC приб' },
-            { key: 'abc_qty', label: 'ABC кол' },
+            { key: 'main_image', label: 'Фото', enable: true },
+            { key: 'name', label: 'Название', enable: true },
+            { key: 'sku', label: 'Артикул', enable: true },
+            { key: 'availability', label: 'Наличие', enable: true },
+            { key: 'category', label: 'Группа', enable: true },
+            { key: 'suplier', label: 'Поставщик', enable: true },
+            { key: 'min_quantity', label: 'Мин. остаток', enable: true },
+            { key: 'orders', label: 'Заказы', enable: true },
+            { key: 'purchase_price', label: 'Закуп цена', enable: true },
+            { key: 'price', label: 'Цена продажи', enable: true },
+            { key: 'marga', label: 'Маржа', enable: true },
+            { key: 'label', label: 'Метки товара', enable: true },
+            { key: 'sort1', label: 'Сорт1', enable: true },
+            { key: 'sort2', label: 'Сорт2', enable: true },
+            { key: 'abc_earn', label: 'ABC приб', enable: true },
+            { key: 'abc_qty', label: 'ABC кол', enable: true },
+            { key: 'discount', label: 'Скидка', enable: true },
           ],
           list: [],
           groups: [],
@@ -383,6 +409,11 @@
         settings: {
           handler () {
             this.tableWidths = (typeof(this.settings.product_table_widths) != 'undefined') ? JSON.parse(this.settings.product_table_widths) : {}
+            if (typeof(this.settings.product_table_cols) != 'undefined') {
+              JSON.parse(this.settings.product_table_cols).map((val, idx) => {
+                this.fields[idx].enable = val
+              })
+            }
           },
           deep: true
         }
@@ -631,6 +662,11 @@
 
         this.searchQuery.on_display = true
         this.tableWidths = (typeof(this.settings.product_table_widths) != 'undefined') ? JSON.parse(this.settings.product_table_widths) : {}
+        if (typeof(this.settings.product_table_cols) != 'undefined') {
+          JSON.parse(this.settings.product_table_cols).map((val, idx) => {
+            this.fields[idx].enable = val
+          })
+        }
         this.getLabels()
         this.getSupliers()
         this.getList()

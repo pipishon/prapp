@@ -29,6 +29,7 @@ class OrderProduct extends Model
           ->sum('order_products.quantity');
       return $same;
   }
+
   public function getSameNotPayedAttribute ($val) {
       $same = DB::table('order_products')
           ->join('orders', 'orders.id', 'order_products.order_id')

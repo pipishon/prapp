@@ -9,6 +9,14 @@ use Carbon\Carbon;
 
 class MessageEmailController extends Controller
 {
+    public function getPdfLink ($order_id)
+    {
+        $ivlen = openssl_cipher_iv_length('AES-128-CBC');
+        $iv = openssl_random_pseudo_bytes($ivlen);
+        $iv = 'p/Ȅ����';
+        return 'http://my.helgamade.com.ua/invoice?hash='.rawurlencode(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv));
+    }
+
     public function sendEmail (Request $request)
     {
         $email = $request->input('email');
@@ -38,6 +46,9 @@ class MessageEmailController extends Controller
                 $params = array(
                     'ttn' => $request->input('ttn'),
                 );
+                if ($request->input('invoice')) {
+                    $params['invoice'] = $this->getPdfLink($order_id);;
+                }
                 $sputnik_email->sendEvent($trigger, $params);
                 break;
         }

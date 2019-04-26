@@ -28,7 +28,9 @@
             'settings': 'settings',
             'directions_car': 'nptrack',
             'table_chart': 'pivot',
-            'contacts': 'rfc'
+            'contacts': 'rfc',
+            'offline_bolt': 'discount',
+            '3d_rotation': 'votes',
           }
         }
       },

@@ -16,6 +16,8 @@ use App\NewPostCity;
 use App\NewPostApi;
 use App\NewPostTtn;
 use Illuminate\Http\Request;
+use NumberToWords\NumberToWords;
+use App\DiscountProduct;
 
 class MassActionController extends Controller
 {
@@ -73,6 +75,7 @@ class MassActionController extends Controller
                 $trigger = ($order->delivery_option == 'Укрпочта') ? 'api-send-ttn-ukrpost' : 'api-send-ttn-newpost';
                 $params = array(
                     'ttn' => $order->statuses->ttn_string,
+                    'invoice' = $this->getPdfLink($order_id)
                 );
                 $result['email'][] = $order->id;
                 $sputnik_email->sendEvent($trigger, $params);
@@ -83,9 +86,18 @@ class MassActionController extends Controller
     }
     return $result;
   }
+
+    public function getPdfLink ($order_id)
+    {
+        $ivlen = openssl_cipher_iv_length('AES-128-CBC');
+        $iv = openssl_random_pseudo_bytes($ivlen);
+        $iv = 'p/Ȅ����';
+        return 'http://my.helgamade.com.ua/invoice?hash='.rawurlencode(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv));
+    }
+
   public function createTtn (Request $request)
   {
-    $ids = $request->input('ids');
+    $ids = $request->input('ids');//Request $request
     $orders = Order::whereIn('id', $ids)->get();
     $result = array();
     foreach ($orders as $order) {
@@ -170,6 +182,117 @@ class MassActionController extends Controller
     }
     return $result;
   }
+
+  public function createPdf (Request $request)
+  {
+      $ids = $request->input('ids');
+      $orders = Order::whereIn('id', $ids)->whereIn('id', function ($query) use ($ids) {
+          $query->from('order_statuses')->select('order_id')->where('bill', 0)->whereIn('order_id', $ids);
+      });
+      if ($request->has('bill_required')) {
+          $orders =  $orders->whereIn('customer_id', function($query) {
+              $query->from('customers')->select('id')->whereNotNull('bill_required');
+          });
+      }
+      $orders = $orders->get();
+      $pdfs_data = array();
+      foreach ($orders as $order) {
+        $order->statuses->bill = 1;
+        $order->push();
+        $order->products = $order->products->sortBy(function($product) {
+            $hash = ($product->sort1) ? $product->sort1 : 0;
+            return $hash.$product->name;
+        });
+      //$with_discount = $request->input('with_discount');
+        $sums = array(
+            'quantity' => 0,
+            'price' => 0
+        );
+        $with_discount = false;
+          foreach ($order->products as $product) {
+            $product->pdf_price = ($product->order_price != null) ? $product->order_price : $product->price;
+            $sums['quantity'] += $product->quantity;
+            $sums['price'] += $product->quantity * ($product->pdf_price - $product->pdf_price * $product->discount / 100);
+            if ($product->discount) {
+              $with_discount = true;
+            }
+          }
+          $numberToWords = new NumberToWords();
+          $currencyTransformer = $numberToWords->getCurrencyTransformer('ru');
+          $title = $currencyTransformer->toWords($sums['price']*100, 'UAH');
+          $sums['text'] =  mb_strtoupper(mb_substr($title, 0, 1, 'UTF-8'), 'UTF-8') . mb_substr($title, 1, null,'UTF-8');
+          $data = array(
+            'customer' => $order->client_first_name.' '.$order->client_last_name,
+            'order_id' => $order->prom_id,
+            'date' => Carbon::parse($order->prom_date_created)->format('d.m.Y'),
+            'products' => $order->products,
+            'sums' => $sums,
+            'with_discount' => $with_discount,
+            'second' => false,
+            'margin' => 0,
+          );
+          $pdf = \PDF::loadView('pdf.invoice', array('data' => $data));
+          $pdf->setPaper(array(0, 0, 595.28, 841.89));
+          $GLOBALS['height'] = 0;
+          $dompdf = $pdf->getDomPDF();
+
+          $dompdf->setCallbacks(
+              array(
+                'myCallbacks' => array(
+                  'event' => 'end_frame', 'f' => function ($infos) {
+                    $frame = $infos["frame"];
+                    if (strtolower($frame->get_node()->nodeName) === "body") {
+                        $padding_box = $frame->get_padding_box();
+                        $GLOBALS['height'] += $padding_box['h'];
+                    }
+                  }
+                )
+              )
+            );
+          $output = $pdf->output();
+          $data['height'] = $GLOBALS['height'];
+          $pdfs_data[] = $data;
+      }
+
+      usort($pdfs_data, function ($a, $b) {
+          return $a['height'] < $b['height'];
+      });
+      $sorted_pdfs_data = array();
+      $last = count($pdfs_data) - 1;
+      foreach ($pdfs_data as $key => $row) {
+          if ($key > $last) continue;
+          if ($row['height'] + $pdfs_data[$last]['height'] > 841.8897637795 || $key == $last) {
+              $sorted_pdfs_data[] = $row;
+          } else {
+              $sorted_pdfs_data[] = $row;
+              $pdfs_data[$last]['second'] = true;
+              $pdfs_data[$last]['margin'] = ((841.8897637795 - ($row['height'] + $pdfs_data[$last]['height']))*1.333333) - 20;
+              $sorted_pdfs_data[] = $pdfs_data[$last];
+              $last = $last - 1;
+          }
+      }
+
+      $pdf_all = \PDF::loadView('pdf.mass_invoice', array('pdfs_data' => $sorted_pdfs_data));
+      $pdf_all->setPaper(array(0, 0, 595.2755905512, 841.8897637795));
+      return $pdf_all->download('orders.pdf');
+  }
+
+  public function setDiscount (Request $request)
+  {
+      $discount_id = $request->input('discount');
+      $ids = $request->input('ids');
+      foreach ($ids as $id) {
+          DiscountProduct::updateOrCreate(array('product_id' => $id), array('discount_id' => $discount_id));
+      }
+  }
+
+  public function removeDiscount (Request $request)
+  {
+      $ids = $request->input('ids');
+      DiscountProduct::whereIn('product_id', $ids)->delete();
+  }
+
+
 }
 
 

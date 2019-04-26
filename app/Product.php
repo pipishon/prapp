@@ -9,7 +9,7 @@ class Product extends Model
 {
 	protected $guarded = [];
 
-  protected $appends = ['orders'];
+  protected $appends = ['orders', 'discount'];
 
   public function getOrdersAttribute () {
       return 0;
@@ -18,6 +18,12 @@ class Product extends Model
         ->join('orders', 'orders.id', 'order_products.order_id')
         ->where('products.id', $this->id)
         ->where('orders.status', 'delivered')->count();
+  }
+
+  public function getDiscountAttribute () {
+      return DB::table('discounts')->select('name')
+          ->join('discount_products', 'discounts.id', 'discount_products.discount_id')
+          ->where('discount_products.product_id', $this->id)->first();
   }
 
     public static function createFromApi($prom_id)

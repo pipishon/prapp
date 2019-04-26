@@ -4,12 +4,13 @@
       <thead class="thead-dark">
         <th v-if="rownumber"></th>
         <th v-if="selectAll" style="width: 40px"></th>
-        <th v-for="(field, key) in fields" :class="field.th_class" @click="$set(showWidthAdj, key, true)" :style="widthStyle(key)">
+        <th v-for="(field, key) in fields"  v-show="typeof(field.enable) == 'undefined' || field.enable == true"  :class="field.th_class" @click="$set(showWidthAdj, key, true)" :style="widthStyle(key)">
           <span v-if="typeof(widths) == 'undefined' || !showWidthAdj[key]">
             {{field.label}}
           </span>
           <v-text-field v-model="widths[key]" v-if="typeof(widths) != 'undefined' && showWidthAdj[key]" dark @keyup.enter="showWidthAdj[key] = false; $emit('updatewidth')" class="ma-0 pa-0"></v-text-field>
         </th>
+        <th style="width: 40px;"><togglecolumns :fields="fields"></togglecolumns></th>
       </thead>
       <tfoot>
         <tr>
@@ -22,7 +23,7 @@
             <slot name="mass"></slot>
           </td>
 
-          <td v-for="field in fields" >
+          <td v-for="field in fields" v-show="typeof(field.enable) == 'undefined' || field.enable == true">
             <input v-if="search.indexOf(field.key) != -1" type="text" class="form-control" placeholder="Search" @keyup.enter="onChange($event, field.key)"/>
           </td>
         </tr>
@@ -39,6 +40,7 @@
 </template>
 
 <script>
+    import togglecolumns from './ToggleColumns'
     import { mapActions, mapMutations, mapGetters } from 'vuex'
     export default {
       props: ['items', 'fields', 'search', 'notstriped', 'rownumber', 'orders', 'widths', 'selectAll'],
@@ -46,6 +48,9 @@
         return {
           showWidthAdj: {}
         }
+      },
+      components: {
+        togglecolumns
       },
       computed: {
       },

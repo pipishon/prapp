@@ -152,6 +152,8 @@ const store = new Vuex.Store({
         }
       })
     },
+    setBillSend(state, ids) {
+    },
     setTtn(state, ttns) {
       state.orders.map((order) => {
         if (typeof(ttns[order.id]) != 'undefined') {
@@ -179,6 +181,54 @@ const store = new Vuex.Store({
     massAction ({dispatch, commit}, data) {
       commit('setMassBusy', true)
       dispatch(data.fnName, data)
+    },
+    massRemoveDiscount({commit}, data) {
+      const ids = data.selected.map((el) => el = el.id)
+      axios.get('api/mass/removediscount', {params: {ids}}).then((res) => {
+        commit('setMassBusy', false)
+        commit('massSelection', [])
+        console.log(res.data)
+      })
+    },
+    massDiscount({commit}, data) {
+      const ids = data.selected.map((el) => el = el.id)
+      const discount = data.discountId
+      axios.get('api/mass/discount', {params: {ids, discount}}).then((res) => {
+        commit('setMassBusy', false)
+        commit('massSelection', [])
+        console.log(res.data)
+      })
+    },
+    massPdfReq ({commit}, data) {
+      data.selected.map((el) => {
+          if (el.customer.bill_required) {
+            el.statuses.bill = 1
+          }
+        }
+      )
+      const ids = data.selected.map((el) => el = el.id)
+      console.log(ids)
+      let url = 'api/mass/pdf?bill_required=1&'
+      ids.map((id) => {
+        url +='ids[]=' + id + '&'
+      })
+
+      commit('setMassBusy', false)
+      commit('massSelection', [])
+      window.open(url)
+    },
+    massPdf ({commit}, data) {
+      data.selected.map((el) => el.statuses.bill = 1)
+      const ids = data.selected.map((el) => el = el.id)
+      console.log(ids)
+      let url = 'api/mass/pdf?'
+      ids.map((id) => {
+        url +='ids[]=' + id + '&'
+      })
+
+      commit('setMassBusy', false)
+      commit('massSelection', [])
+      window.open(url)
     },
     massTtn ({commit}, data) {
       const ids = data.selected.map((el) => el = el.id)

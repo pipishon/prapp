@@ -7,6 +7,9 @@
               <span v-if="['Самовывоз', 'Укрпочта'].indexOf(item.delivery_option) == -1">
                 Вес: <strong ><u @click="showDialog = true" >{{item.statuses.shipment_weight.replace('-', '&mdash;')}}</u></strong><span class="ml-2"> Место: <strong>{{item.statuses.shipment_place}}</strong></span>
               </span>
+              <span v-if="item.delivery_option == 'Укрпочта'">
+                Вес: <strong ><u @click="showDialog = true" >{{item.statuses.shipment_weight.replace('-', '&mdash;')}}</u></strong><span class="ml-2"> Длина: <strong>{{item.statuses.shipment_length}}</strong></span>
+              </span>
               <span v-else><br /></span>
             </div>
             <table class="table mt-1">
@@ -30,6 +33,16 @@
                         </v-flex>
                       </v-layout>
                    </v-container>
+                  <v-container fluid v-if="item.delivery_option == 'Укрпочта'">
+                      <v-layout row>
+                        <v-flex xs12 md6 class="px-2" >
+                          <v-text-field :hide-details="true" label="Вес посылки" v-model="weight" />
+                        </v-flex>
+                        <v-flex xs12 md6 class="px-2">
+                          <v-text-field :hide-details="true" label="Длина посылки" v-model="length" />
+                        </v-flex>
+                      </v-layout>
+                   </v-container>
                       <v-card-actions>
                         <v-spacer></v-spacer>
                         <v-btn color="primary" flat @click="showDialog = false" > Отмена </v-btn>
@@ -48,6 +61,7 @@ import * as moment from 'moment';
         return {
           weight: '0,5 кг',
           place: '1',
+          length: '',
           gift: null,
           showDialog: false,
           collectedString: null,
@@ -84,6 +98,10 @@ import * as moment from 'moment';
         onMount () {
            this.weight = (this.item.statuses.shipment_weight == '-') ? '0,5 кг' : this.item.statuses.shipment_weight
            this.place = (this.item.statuses.shipment_place == '-') ? '1' : this.item.statuses.shipment_place
+           if (this.item.delivery_option == 'Укрпочта') {
+             this.weight = (this.item.statuses.shipment_weight == '-') ? '' : this.item.statuses.shipment_weight
+             this.length = (this.item.statuses.shipment_length == '') ? '' : this.item.statuses.shipment_length
+           }
            this.collectedString = this.item.statuses.collected_string
            this.gift = this.item.statuses.present_name;
         },
@@ -117,6 +135,7 @@ import * as moment from 'moment';
           this.saved = true
           this.item.statuses.shipment_weight = this.weight;
           this.item.statuses.shipment_place = this.place;
+          this.item.statuses.shipment_length = this.length;
           if (this.changeCollectedStatus) {
             this.item.statuses.collected_string = 'Собран';
             this.item.statuses.collected = 1

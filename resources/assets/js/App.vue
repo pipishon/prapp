@@ -18,6 +18,8 @@
         <pivot v-if="mode == 'pivot'"/>
         <dashboard v-if="mode == 'dashboard'"/>
         <rfc v-if="mode == 'rfc'"/>
+        <discount v-if="mode == 'discount'"/>
+        <votes v-if="mode == 'votes'"/>
       </div>
     </v-app>
   </div>
@@ -40,7 +42,9 @@ import settings from './components/Settings'
 import nptrack from './components/NpTrack'
 import pivot from './components/Pivot'
 import dashboard from './components/Dashboard'
+import discount from './components/Discounts'
 import rfc from './components/Rfc'
+import votes from './components/Votes'
     export default {
       data () {
         return {
@@ -62,7 +66,9 @@ import rfc from './components/Rfc'
         nptrack,
         pivot,
         dashboard,
-        rfc
+        rfc,
+        discount,
+        votes
       },
       mounted() {
         //this.$store.dispatch('loadDictionary')
