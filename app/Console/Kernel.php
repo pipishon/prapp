@@ -24,8 +24,16 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
+    //  $schedule->call('App\Http\Controllers\SyncController@messages')->cron('0 0 * * *');
+     //   $schedule->call('App\Http\Controllers\NewPostTtnTrackController@checkStatus')->cron('0 0 * * *');
+      //  $schedule->call('App\Http\Controllers\RfcController@store')->cron('58 23 * * *');
+      //  $schedule->call('App\Http\Controllers\OrderDayStatisticController@calcMonth')->cron('0 2 * * *');
+     //   $schedule->call('App\Http\Controllers\SyncController@newPost')->cron('0 8 * * *');
+      //  $schedule->call('App\Http\Controllers\SyncController@smsStatus')->cron('*/2 8-21 * * *');
+      //  $schedule->call('App\Http\Controllers\SyncController@orders')->cron('*/3 * * * *');
+      //  $schedule->call('App\Http\Controllers\SyncController@OrderProducts')->cron('*/5 7-21 * * *');
+      //$schedule->call('App\Http\Controllers\TestController@feedbackcron')->cron('*/30 * * * *');
+
     }
 
     /**

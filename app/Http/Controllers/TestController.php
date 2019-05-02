@@ -38,9 +38,11 @@ class TestController extends Controller
         return;
     }
 
-    public function sendfeedback (Request $request)
+    public function sendfeedback ($order_id = null, Request $request)
     {
+      if ($order_id == null) {
         $order_id = $request->input('order_id');
+      }
         if (Order::where('prom_id', $order_id)->first() == null) {
             dd('Неверный id заказа');
         }
@@ -72,15 +74,55 @@ class TestController extends Controller
         $sputnik_email->sendEvent('api-send-feedback', $params);
     }
 
+    public function feedbackcron ()
+    {
+        $np = DB::table('orders')
+            ->select('orders.prom_id')
+            ->join('new_post_ttn_tracks', 'orders.id', 'new_post_ttn_tracks.order_id')
+            ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
+            ->whereIn('orders.delivery_option', ['Новая Почта', 'НП без риска'])
+            ->whereRaw('new_post_ttn_tracks.date_received = CURDATE() - INTERVAL 1 DAY')
+            ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 30')
+            ->whereRaw('HOUR(orders.prom_date_created) = HOUR(NOW())')
+            ->whereNotIn('orders.prom_id', function($query) {
+              $query->select('message_emails.order_id')->where('message_emails.type', 'feedback')
+              ->where('message_emails.order_id', 'orders.prom_id');
+            })
+            ->get()->pluck('prom_id')->toArray();
+        $pickup = DB::table('orders')
+            ->select('orders.prom_id')
+            ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
+            ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
+            ->where('orders.delivery_option', 'Самовывоз')
+            ->whereRaw('order_statuses.delivered = CURDATE() - INTERVAL 1 DAY')
+            ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 30')
+            ->whereRaw('HOUR(orders.prom_date_created) = HOUR(NOW())')
+            ->whereNotIn('orders.prom_id', function($query) {
+              $query->select('message_emails.order_id')->where('message_emails.type', 'feedback')
+              ->where('message_emails.order_id', 'orders.prom_id');
+            })
+            ->get()->pluck('prom_id')->toArray();
+        $res = array_merge($np, $pickup);
+        foreach ($res as $order_id) {
+          $this->sendfeedback($order_id);
+        }
+    }
+
+
     public function feedback ()
     {
         $np = DB::table('orders')
             ->select('orders.prom_id', 'new_post_ttn_tracks.date_received', 'orders.prom_date_created' )
             ->join('new_post_ttn_tracks', 'orders.id', 'new_post_ttn_tracks.order_id')
+            ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
             ->whereIn('orders.delivery_option', ['Новая Почта', 'НП без риска'])
             ->whereRaw('new_post_ttn_tracks.date_received = CURDATE() - INTERVAL 1 DAY')
             ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 30')
             ->whereRaw('HOUR(orders.prom_date_created) = HOUR(NOW())')
+            ->whereNotIn('orders.prom_id', function($query) {
+              $query->select('message_emails.order_id')->where('message_emails.type', 'feedback')
+              ->where('message_emails.order_id', 'orders.prom_id');
+            })
             ->get()->toArray();
         echo 'Новая почта';
         echo '<pre>';
@@ -89,10 +131,15 @@ class TestController extends Controller
         $pickup = DB::table('orders')
             ->select('orders.prom_id', 'orders.prom_date_created', 'order_statuses.delivered' )
             ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
+            ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
             ->where('orders.delivery_option', 'Самовывоз')
             ->whereRaw('order_statuses.delivered = CURDATE() - INTERVAL 1 DAY')
             ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 30')
             ->whereRaw('HOUR(orders.prom_date_created) = HOUR(NOW())')
+            ->whereNotIn('orders.prom_id', function($query) {
+              $query->select('message_emails.order_id')->where('message_emails.type', 'feedback')
+              ->where('message_emails.order_id', 'orders.prom_id');
+            })
             ->get()->toArray();
         echo 'Самовывоз';
         echo '<pre>';

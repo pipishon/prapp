@@ -12,4 +12,9 @@ class Vote extends Model
       {
         return $this->hasOne('App\Order', 'prom_id', 'order_id');
       }
+
+      public function message()
+      {
+        return $this->hasOne('App\MessageEmail', 'order_id', 'order_id')->where('type', 'feedback');
+      }
 }

@@ -151,3 +151,4 @@ Route::prefix('rfc')->group(function () {
 });
 
 Route::get('votes', 'VoteController@index');
+Route::get('votesemail', 'VoteController@getEmails');
