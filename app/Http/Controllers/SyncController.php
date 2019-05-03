@@ -307,8 +307,8 @@ class SyncController extends Controller
             $customer_discount = (float) $table_discounts['vals'][$price_key][$qty_key];
         }
         $product_discount = 0;
-      if (isset($group_discounts[$product->product_id])) {
-          $product_discount = $group_discounts[$product->product_id];
+      if (isset($group_discounts[$product->id])) {
+          $product_discount = $group_discounts[$product->id];
       }
 
 

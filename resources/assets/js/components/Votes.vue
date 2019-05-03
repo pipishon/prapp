@@ -8,7 +8,7 @@
   >
     <template slot="items" slot-scope="props">
       <td>
-        <strong>{{props.item.send_at}}</strong>
+        <strong>{{props.item.send_at}}<span v-if="props.item.send_by == 'manual'">(Р)</span></strong>
         <div>
           <v-icon small>local_shipping</v-icon>
           <span v-if="props.item.delivered">{{props.item.delivered}}</span>
@@ -34,7 +34,8 @@
         {{props.item.delivery_option}}
       </td>
       <td>
-        {{props.item.email}}
+        <span v-if="props.item.custom_email">{{props.item.custom_email}}</span>
+        <span v-else>{{props.item.email}}</span>
       </td>
       <td>
         <table class="delivery-table">
@@ -96,6 +97,12 @@
       </td>
       <td>
         {{props.item.ip}}
+
+        <div class="text-center">{{mapDevice[props.item.device]}}</div>
+      </td>
+      <td>
+        Отзыв <v-icon v-if="props.item.is_prom_comment" small color="green">check_circle</v-icon>
+              <v-icon v-else small color="gray">check_circle</v-icon>
       </td>
     </template>
   </v-data-table>
@@ -108,6 +115,11 @@
     export default {
       data() {
         return {
+          mapDevice: {
+            'desctop': 'ПК',
+            'tablet': 'Планшет',
+            'mobile': 'Moб',
+          },
           mapAuto: {
             'new' : 'Новые',
             'perspective' : 'Перспективные',
@@ -127,6 +139,7 @@
             { text: 'Голос', value:'vote' },
             { text: 'Комментарий', value:'comment' },
             { text: 'IP', value:'ip' },
+            { text: '', value:'is_prom_comment' },
           ],
           list: [],
           emailHeaders: [

@@ -9,6 +9,7 @@ use App\Sms;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\PromApi;
+use Carbon\Carbon;
 
 class Order extends Model
 {
@@ -64,7 +65,138 @@ class Order extends Model
     return $this->hasOne('App\Customer', 'id', 'customer_id');
   }
 
-  public function updateFromApi ()
+
+public function getProductGroupDiscounts ($products)
+{
+    $product_ids = Product::whereIn('prom_id', array_column($products, 'id'))->get()->pluck('id', 'prom_id')->toArray();
+    foreach ($products as $key => $product) {
+        if (isset($product_ids[$products[$key]['id']])) {
+            $products[$key]['prom_id'] = $products[$key]['id'];
+            $products[$key]['id'] = $product_ids[$products[$key]['prom_id']];
+        }
+    }
+    $discount_ids = DB::table('discount_products')->select('discount_id', 'product_id')
+        ->whereIn('product_id', $product_ids)->get()->pluck('discount_id', 'product_id')->toArray();
+    $discounts = array();
+    foreach ($products as $product) {
+        foreach ($discount_ids as $product_id => $discount_id) {
+            if ($product_id == $product['id']) {
+                if (isset($discounts[$discount_id])){
+                    $discounts[$discount_id] += $product['quantity'];
+                } else {
+                    $discounts[$discount_id] = $product['quantity'];
+                }
+            }
+        }
+    }
+    $discount_vals = DB::table('discounts')->select('vals', 'id')->whereIn('id', array_values($discount_ids))->get()->pluck('vals', 'id')->toArray();
+
+    $product_discounts = array();
+
+    foreach ($discount_vals as $discount_id => $discount_val) {
+        $vals = unserialize($discount_val);
+        $percent = 0;
+        foreach ($vals as $val) {
+          if ($val['qty'] <= $discounts[$discount_id]) {
+              $percent = $val['percent'];
+          }
+        }
+        foreach ($products as $product) {
+            foreach ($discount_ids as $product_id => $ds_id) {
+                if ($product_id == $product['id'] && $ds_id == $discount_id) {
+                    $product_discounts[$product_id] = (float) $percent;
+                }
+            }
+        }
+    }
+    return $product_discounts;
+}
+
+  public function getProductDiscount($customer, $product, $product_quantity, $total_price, $product_price, $group_discounts) {
+      $total_price = (float) str_replace(',', '.', preg_replace('/\s+/u', '', $total_price));
+      $prom_discount = 0;
+      if ($product->price != $product_price) {
+        $prom_discount = ($product->price - $product_price) * 100 / $product->price;
+      }
+
+
+      if ($customer->statistic) {
+          $num_orders = ($customer->statistic->count_orders > 2) ? 2 : $customer->statistic->count_orders - 1;
+      } else {
+          $num_orders = 1;
+      }
+
+      $customer_discount = 0;
+        $table_discounts = json_decode(Settings::where('name','table_discounts')->value('value'), true);
+        if (isset($table_discounts['enable']) && $table_discounts['enable']) {
+            $price_key = 0;
+            $qty_key = 0;
+            foreach ($table_discounts['prices'] as $key => $price) {
+                if ($total_price < (int) $price) {
+                    $price_key = $key + 1;
+                }
+            }
+            foreach ($table_discounts['quantities'] as $key => $qty) {
+                if ($num_orders >= (int) $qty) {
+                    $qty_key = $key;
+                }
+            }
+            $customer_discount = (float) $table_discounts['vals'][$price_key][$qty_key];
+        }
+        $product_discount = 0;
+      if (isset($group_discounts[$product->id])) {
+          $product_discount = $group_discounts[$product->id];
+      }
+
+
+      $discount = 0;
+      $discount_type = '';
+      if ($prom_discount > $product_discount && $prom_discount > $customer_discount) {
+          $discount = $prom_discount;
+          $discount_type = 'prom';
+      } else {
+          $discount = $customer_discount;
+          $discount_type = 'customer';
+          if ($product_discount > $customer_discount) {
+              $discount = $product_discount;
+              $discount_type = 'product';
+          }
+      }
+      return array('discount' => $discount, 'type' => $discount_type);
+  }
+
+    public function sendfeedback ()
+    {
+        $order_id = $this->prom_id;
+
+        $email = ($this->statuses->custom_email != null) ? $this->statuses->custom_email : $this->email;
+        $ivlen = openssl_cipher_iv_length('AES-128-CBC');
+        $iv = openssl_random_pseudo_bytes($ivlen);
+        $iv = 'p/Ȅ����';
+        $params = array(
+            'hash' => rawurlencode(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv)),
+            'order_id' => $order_id
+        );
+
+        $sputnik_email = SputnikEmail::where('email', $email)->first();
+        if (!$sputnik_email) {
+            $sputnik_email = SputnikEmail::create(['email' => $email]);
+            $sputnik_email->subscribe();
+        }
+
+        $message_email = MessageEmail::create(array(
+            'email' => $email,
+            'order_id' => $order_id,
+            'type' => 'feedback',
+            'send_at' => Carbon::now(),
+            'send_by' => 'manual'
+        ));
+
+        $sputnik_email->sendEvent('api-send-feedback', $params);
+        return $message_email;
+    }
+
+  public function updateFromApi ($with_discounts = false)
   {
     $order_id = $this->prom_id;
     $api = new PromApi;
@@ -74,6 +206,12 @@ class Order extends Model
     //$this->products()->delete();
     $total_price = 0;
     $ids = array();
+
+    if ($with_discounts) {
+        $group_discounts = $this->getProductGroupDiscounts($prom_products);
+        $customer = $this->customer;
+    }
+
     foreach ($prom_products as $prom_product) {
         $product = Product::where('prom_id', $prom_product['id'])->first();
         if ($product == null) {
@@ -87,22 +225,39 @@ class Order extends Model
           'prom_price' => $product_price,
           'quantity' => str_replace(',','.', $prom_product['quantity']),
         );
-        if (!OrderProduct::where('product_id', $product->id)
+
+        if ($with_discounts) {
+            $discount_arr = $this->getProductDiscount(
+                $customer,
+                $product,
+                str_replace(',','.', $prom_product['quantity']),
+                $prom_order['price'],
+                $product_price,
+                $group_discounts
+            );
+
+            if ($discount_arr['discount'] != 0) {
+                $order_product_update['discount'] = $discount_arr['discount'];
+                $order_product_update['discount_descripiton'] = $discount_arr['type'];
+            } else {
+                $order_product_update['discount'] = 0;
+            }
+        }
+
+        /*if (!OrderProduct::where('product_id', $product->id)
             ->where('order_id', $this->id)->exists() &&
             $product->price != $product_price &&
             $product->price != 0
         ) {
             $order_product_update['discount'] = ($product->price - $product_price) * 100 / $product->price;
-        }
+        }*/
         $order_product = OrderProduct::updateOrCreate(array(
             'product_id' => $product->id,
             'order_id' => $this->id,
         ), $order_product_update);
         $total_price += floatval(str_replace(',', '.', $prom_product['price']));
     }
-    //dd($ids);
-    //dd($this->products);
-    //dd(OrderProduct::where('order_id', $this->id)->get()->pluck('product_id'), $ids);//->whereNotIn('product_id', $ids)->get());
+
     OrderProduct::where('order_id', $this->id)->whereNotIn('product_id', $ids)->delete();
     $price = preg_replace('/\s+/u', '', $prom_order['price']);
     $price = str_replace(',','.', $price);

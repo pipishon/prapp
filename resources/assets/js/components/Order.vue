@@ -57,15 +57,23 @@
         <v-flex xs6 md3 >
           <v-select v-model="order.statuses.custom_email" label="Приоритетный email заказа" :items="emails" @change="updateStatuses"></v-select>
         </v-flex>
-        <v-flex xs6 md3 >
+        <v-flex xs6 md4 >
           <v-btn icon @click="clear"><v-icon>clear</v-icon></v-btn>
+          <div>
+            <v-btn @click="sendFeedback()" :class="{success: feedbackSent}" flat>Запрос на отзыв </v-btn>
+            <v-progress-circular v-show="onSendFeedback"
+              size="20" :width="2" indeterminate color="primary" >
+            </v-progress-circular>
+          </div>
+
         </v-flex>
         <v-flex xs6 md3 >
           <v-btn flat><a :href="'api/pdf/invoice/' + order.id + '?sort=' + sort" target="_blank" @click="updateWithTimeout">Скачать PDF</a></v-btn>
           <v-btn flat><a :href="'api/pdf/invoice/' + order.id + '?with_discount=true&sort=' + sort" @click="updateWithTimeout" target="_blank">Скачать PDF (скидки)</a></v-btn>
         </v-flex>
         <v-flex xs6 md3 >
-          <v-btn @click="refreshOrder" flat><v-icon small class="mr-2" >refresh</v-icon>Обновить заказ</v-btn>
+          <v-btn @click="refreshOrder(false)" flat><v-icon small class="mr-2" >refresh</v-icon>Обновить заказ</v-btn>
+          <v-btn @click="refreshOrder(true)" flat><v-icon small class="mr-2" >refresh</v-icon>Обновить заказ со скидками</v-btn>
 
         </v-flex>
       </v-layout>
@@ -129,6 +137,8 @@
       props: ['orderid', 'name'],
       data() {
         return {
+          onSendFeedback: false,
+          feedbackSent: false,
           order: null,
           priceSaved: {},
           discountSaved: {},
@@ -270,8 +280,20 @@
         {
           setTimeout(()=>{ this.$emit('update') }, 500)
         },
-        refreshOrder () {
-          axios.get('api/orders/updatefromprom/' + this.order.prom_id).then((res) => {
+        sendFeedback () {
+          this.onSendFeedback = true
+          axios.get('api/orders/sendfeedback/' + this.order.prom_id).then((res) => {
+            this.onSendFeedback = false
+            this.feedbackSent = true
+            console.log(res)
+          })
+        },
+        refreshOrder (withDiscounts) {
+          let params = {}
+          if (withDiscounts) {
+            params.with_discounts = true
+          }
+          axios.get('api/orders/updatefromprom/' + this.order.prom_id, {params}).then((res) => {
             this.$emit('update')
             axios.get('api/orders/' + this.order.id).then((res) => {
               this.order = res.data
@@ -305,6 +327,7 @@
     }
 </script>
 <style scoped>
+
 
 table tr:hover {
   background-color: #FFF9C4;

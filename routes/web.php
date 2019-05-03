@@ -14,6 +14,7 @@ Route::group(['domain' => 'feedback.'.env('APP_BASE_DOMAIN')], function (){
     Route::get('/', 'VoteController@getForm');
     Route::post('/', 'VoteController@processForm');
     Route::get('/success', 'VoteController@getSuccess')->name('vote.success');
+    Route::get('/remoteclick', 'VoteController@remoteClick');
 });
 
 Route::middleware('auth')->get('/', function () {

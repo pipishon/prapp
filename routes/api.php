@@ -33,6 +33,7 @@ Route::get('orders/importfromapi', 'OrderController@ImportFromApi');
 Route::get('orders/refresh/{id}', 'OrderController@refresh');
 Route::get('orders/getgroups', 'OrderController@getGroups');
 Route::get('orders/getbygroup', 'OrderController@getProductByGroup');
+Route::get('orders/sendfeedback/{prom_id}', 'OrderController@sendFeedBack');
 
 Route::get('messages/send', 'MessageController@sendMessage');
 

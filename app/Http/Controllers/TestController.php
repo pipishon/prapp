@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use App\Settings;
 use App\SputnikEmail;
 use App\MessageEmail;
+use App\MobileDetect;
 
 class TestController extends Controller
 {
@@ -29,6 +30,12 @@ class TestController extends Controller
         }
     }
 
+    public function ismobile ()
+    {
+        $detect = new MobileDetect;
+        var_dump($detect->isMobile());
+    }
+
     public function viewfeedback (Request $request)
     {
         $params = array('hash' => 'hash', 'vote' => 1);
@@ -38,11 +45,8 @@ class TestController extends Controller
         return;
     }
 
-    public function sendfeedback ($order_id = null, Request $request)
+    public static function sendfeedback ($order_id = null)
     {
-      if ($order_id == null) {
-        $order_id = $request->input('order_id');
-      }
         if (Order::where('prom_id', $order_id)->first() == null) {
             dd('Неверный id заказа');
         }
@@ -76,35 +80,32 @@ class TestController extends Controller
 
     public function feedbackcron ()
     {
+        $message_ids = DB::table('message_emails')->select('order_id')->where('type', 'feedback')->pluck('order_id');
         $np = DB::table('orders')
             ->select('orders.prom_id')
             ->join('new_post_ttn_tracks', 'orders.id', 'new_post_ttn_tracks.order_id')
             ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
             ->whereIn('orders.delivery_option', ['Новая Почта', 'НП без риска'])
             ->whereRaw('new_post_ttn_tracks.date_received = CURDATE() - INTERVAL 1 DAY')
-            ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 30')
+            ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 35')
             ->whereRaw('HOUR(orders.prom_date_created) = HOUR(NOW())')
-            ->whereNotIn('orders.prom_id', function($query) {
-              $query->select('message_emails.order_id')->where('message_emails.type', 'feedback')
-              ->where('message_emails.order_id', 'orders.prom_id');
-            })
+            ->whereNotIn('orders.prom_id', $message_ids)
+            ->distinct('orders.prom_id')
             ->get()->pluck('prom_id')->toArray();
         $pickup = DB::table('orders')
             ->select('orders.prom_id')
             ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
             ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
             ->where('orders.delivery_option', 'Самовывоз')
-            ->whereRaw('order_statuses.delivered = CURDATE() - INTERVAL 1 DAY')
-            ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 30')
+            ->whereRaw('DATE(order_statuses.delivered) = CURDATE() - INTERVAL 1 DAY')
+            ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 35')
             ->whereRaw('HOUR(orders.prom_date_created) = HOUR(NOW())')
-            ->whereNotIn('orders.prom_id', function($query) {
-              $query->select('message_emails.order_id')->where('message_emails.type', 'feedback')
-              ->where('message_emails.order_id', 'orders.prom_id');
-            })
+            ->whereNotIn('orders.prom_id', $message_ids)
+            ->distinct('orders.prom_id')
             ->get()->pluck('prom_id')->toArray();
         $res = array_merge($np, $pickup);
         foreach ($res as $order_id) {
-          $this->sendfeedback($order_id);
+            self::sendfeedback($order_id);
         }
     }
 
@@ -117,12 +118,13 @@ class TestController extends Controller
             ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
             ->whereIn('orders.delivery_option', ['Новая Почта', 'НП без риска'])
             ->whereRaw('new_post_ttn_tracks.date_received = CURDATE() - INTERVAL 1 DAY')
-            ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 30')
+            ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 35')
             ->whereRaw('HOUR(orders.prom_date_created) = HOUR(NOW())')
             ->whereNotIn('orders.prom_id', function($query) {
               $query->select('message_emails.order_id')->where('message_emails.type', 'feedback')
               ->where('message_emails.order_id', 'orders.prom_id');
             })
+            ->distinct('orders.prom_id')
             ->get()->toArray();
         echo 'Новая почта';
         echo '<pre>';
@@ -134,12 +136,13 @@ class TestController extends Controller
             ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
             ->where('orders.delivery_option', 'Самовывоз')
             ->whereRaw('order_statuses.delivered = CURDATE() - INTERVAL 1 DAY')
-            ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 30')
+            ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 35')
             ->whereRaw('HOUR(orders.prom_date_created) = HOUR(NOW())')
             ->whereNotIn('orders.prom_id', function($query) {
               $query->select('message_emails.order_id')->where('message_emails.type', 'feedback')
               ->where('message_emails.order_id', 'orders.prom_id');
             })
+            ->distinct('orders.prom_id')
             ->get()->toArray();
         echo 'Самовывоз';
         echo '<pre>';
@@ -163,7 +166,7 @@ class TestController extends Controller
       return ;
     }
 
-    public function getProductDiscounts ($products)
+    public function getProductGroupDiscounts ($products)
     {
         $product_ids = Product::whereIn('prom_id', array_column($products, 'id'))->get()->pluck('id', 'prom_id')->toArray();
         foreach ($products as $key => $product) {
@@ -208,6 +211,88 @@ class TestController extends Controller
         }
         return $product_discounts;
     }
+
+  public function getProductDiscount($customer, $product, $product_quantity, $total_price, $product_price, $group_discounts) {
+      $total_price = (float) str_replace(',', '.', preg_replace('/\s+/u', '', $total_price));
+      $prom_discount = 0;
+      if ($product->price != $product_price) {
+        $prom_discount = ($product->price - $product_price) * 100 / $product->price;
+      }
+
+      if ($customer->statistic) {
+          $num_orders = ($customer->statistic->count_orders > 2) ? 2 : $customer->statistic->count_orders - 1;
+      } else {
+          $num_orders = 1;
+      }
+
+      $customer_discount = 0;
+        $table_discounts = json_decode(Settings::where('name','table_discounts')->value('value'), true);
+        if (isset($table_discounts['enable']) && $table_discounts['enable']) {
+            $price_key = 0;
+            $qty_key = 0;
+            foreach ($table_discounts['prices'] as $key => $price) {
+                if ($total_price < (int) $price) {
+                    $price_key = $key + 1;
+                }
+            }
+            foreach ($table_discounts['quantities'] as $key => $qty) {
+                if ($num_orders >= (int) $qty) {
+                    $qty_key = $key;
+                }
+            }
+            $customer_discount = (float) $table_discounts['vals'][$price_key][$qty_key];
+        }
+        $product_discount = 0;
+      if (isset($group_discounts[$product->id])) {
+          $product_discount = $group_discounts[$product->id];
+      }
+
+
+      $discount = 0;
+      $discount_type = '';
+      if ($prom_discount > $product_discount && $prom_discount > $customer_discount) {
+          $discount = $prom_discount;
+          $discount_type = 'prom';
+      } else {
+          $discount = $customer_discount;
+          $discount_type = 'customer';
+          if ($product_discount > $customer_discount) {
+              $discount = $product_discount;
+              $discount_type = 'product';
+          }
+      }
+
+              var_dump(array('discount' => $discount, 'type' => $discount_type));
+      return array('discount' => $discount, 'type' => $discount_type);
+  }
+
+    public function discounts ()
+    {
+      $api = new PromApi;
+      $order = $api->getItem(76791169, 'orders');
+      $order = $order['order'];
+      //dd($api->getOpenOrders());
+      $group_discounts = $this->getProductGroupDiscounts($order['products']);
+
+      $customer = Order::where(['prom_id' => $order['id']])->first()->customer;
+      foreach ($order['products'] as $product) {
+        $product_price = $product['price'];
+        $product_price = preg_replace('/\s+/u', '', $product_price);
+        $product_price = str_replace(',','.', $product_price);
+        $product_price = floatval($product_price);
+        $O_product = Product::where(array('prom_id' => $product['id']))->first();
+
+        $discount_arr = $this->getProductDiscount(
+            $customer,
+            $O_product,
+            str_replace(',','.', $product['quantity']),
+            $order['price'],
+            $product_price,
+            $group_discounts
+        );
+      }
+    }
+
 
     public function test1 (Request $request)
     {
