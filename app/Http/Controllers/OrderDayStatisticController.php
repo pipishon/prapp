@@ -8,6 +8,7 @@ use App\Order;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use App\Cron;
 
 class OrderDayStatisticController extends Controller
 {
@@ -19,6 +20,10 @@ class OrderDayStatisticController extends Controller
 
     public function calcMonth (Request $request)
     {
+        $cron = Cron::find(5);
+        $cron->last_job = Carbon::now();
+        $cron->save();
+
         $end = Carbon::today();
         $start = Carbon::today();
         $start->subMonth();

@@ -153,3 +153,6 @@ Route::prefix('rfc')->group(function () {
 
 Route::get('votes', 'VoteController@index');
 Route::get('votesemail', 'VoteController@getEmails');
+
+Route::get('crons', 'CronController@index');
+Route::post('crons', 'CronController@store');

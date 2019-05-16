@@ -19,6 +19,7 @@ use App\Settings;
 use App\SputnikEmail;
 use App\MessageEmail;
 use App\MobileDetect;
+use App\Cron;
 
 class TestController extends Controller
 {
@@ -28,6 +29,14 @@ class TestController extends Controller
         if (method_exists($this, $action)) {
             $this->{$action}($request);
         }
+    }
+
+    public function sputnikactive ()
+    {
+      $activities = SputnikEmail::getActivity();
+      echo '<pre>';
+      print_r($activities);
+      echo '</pre>';
     }
 
     public function ismobile ()
@@ -47,18 +56,21 @@ class TestController extends Controller
 
     public static function sendfeedback ($order_id = null)
     {
-        if (Order::where('prom_id', $order_id)->first() == null) {
-            dd('Неверный id заказа');
+        $order = Order::where('prom_id', $order_id)->first();
+        if ($order == null) {
+          return;
         }
         if (MessageEmail::where('order_id', $order_id)->where('type', 'feedback')->first() != null)  return;
 
-        $email = 'info@helgamade.com.ua';
+        $email = ($order->statuses->custom_email != null) ? $order->statuses->custom_email : $order->email;
+        if ($email == null || $email == '') return;
+        //$email = 'info@helgamade.com.ua';
 
         $ivlen = openssl_cipher_iv_length('AES-128-CBC');
         $iv = openssl_random_pseudo_bytes($ivlen);
         $iv = 'p/Ȅ����';
         $params = array(
-            'hash' => rawurlencode(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv)),
+            'hash' => rawurlencode(strtr(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv), '+/=', '-_,')),
             'order_id' => $order_id
         );
 
@@ -80,11 +92,15 @@ class TestController extends Controller
 
     public function feedbackcron ()
     {
+        $cron = Cron::find(10);
+        $cron->last_job = Carbon::now();
+        $cron->save();
+
         $message_ids = DB::table('message_emails')->select('order_id')->where('type', 'feedback')->pluck('order_id');
         $np = DB::table('orders')
             ->select('orders.prom_id')
             ->join('new_post_ttn_tracks', 'orders.id', 'new_post_ttn_tracks.order_id')
-            ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
+            ->leftJoin('message_emails', 'orders.prom_id', '=', 'message_emails.order_id')
             ->whereIn('orders.delivery_option', ['Новая Почта', 'НП без риска'])
             ->whereRaw('new_post_ttn_tracks.date_received = CURDATE() - INTERVAL 1 DAY')
             ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 35')
@@ -95,7 +111,7 @@ class TestController extends Controller
         $pickup = DB::table('orders')
             ->select('orders.prom_id')
             ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
-            ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
+            ->leftJoin('message_emails', 'orders.prom_id', '=', 'message_emails.order_id')
             ->where('orders.delivery_option', 'Самовывоз')
             ->whereRaw('DATE(order_statuses.delivered) = CURDATE() - INTERVAL 1 DAY')
             ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 35')
@@ -104,6 +120,7 @@ class TestController extends Controller
             ->distinct('orders.prom_id')
             ->get()->pluck('prom_id')->toArray();
         $res = array_merge($np, $pickup);
+        //dd($res);
         foreach ($res as $order_id) {
             self::sendfeedback($order_id);
         }
@@ -112,18 +129,20 @@ class TestController extends Controller
 
     public function feedback ()
     {
+        $message_ids = DB::table('message_emails')->select('order_id')->where('type', 'feedback')->pluck('order_id');
         $np = DB::table('orders')
             ->select('orders.prom_id', 'new_post_ttn_tracks.date_received', 'orders.prom_date_created' )
             ->join('new_post_ttn_tracks', 'orders.id', 'new_post_ttn_tracks.order_id')
-            ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
+            ->leftJoin('message_emails', 'orders.prom_id', '=', 'message_emails.order_id')
             ->whereIn('orders.delivery_option', ['Новая Почта', 'НП без риска'])
             ->whereRaw('new_post_ttn_tracks.date_received = CURDATE() - INTERVAL 1 DAY')
             ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 35')
             ->whereRaw('HOUR(orders.prom_date_created) = HOUR(NOW())')
-            ->whereNotIn('orders.prom_id', function($query) {
+            ->whereNotIn('orders.prom_id', $message_ids)
+           /* 'orders.prom_id', function($query) {
               $query->select('message_emails.order_id')->where('message_emails.type', 'feedback')
               ->where('message_emails.order_id', 'orders.prom_id');
-            })
+           })*/
             ->distinct('orders.prom_id')
             ->get()->toArray();
         echo 'Новая почта';
@@ -133,15 +152,16 @@ class TestController extends Controller
         $pickup = DB::table('orders')
             ->select('orders.prom_id', 'orders.prom_date_created', 'order_statuses.delivered' )
             ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
-            ->join('message_emails', 'orders.prom_id', 'message_emails.order_id')
+            ->leftJoin('message_emails', 'orders.prom_id', '=', 'message_emails.order_id')
             ->where('orders.delivery_option', 'Самовывоз')
-            ->whereRaw('order_statuses.delivered = CURDATE() - INTERVAL 1 DAY')
+            ->whereRaw('DATE(order_statuses.delivered) = CURDATE() - INTERVAL 1 DAY')
             ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 35')
             ->whereRaw('HOUR(orders.prom_date_created) = HOUR(NOW())')
-            ->whereNotIn('orders.prom_id', function($query) {
+            ->whereNotIn('orders.prom_id', $message_ids)
+            /*->whereNotIn('orders.prom_id', function($query) {
               $query->select('message_emails.order_id')->where('message_emails.type', 'feedback')
               ->where('message_emails.order_id', 'orders.prom_id');
-            })
+            })*/
             ->distinct('orders.prom_id')
             ->get()->toArray();
         echo 'Самовывоз';

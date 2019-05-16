@@ -20,6 +20,7 @@
         <rfc v-if="mode == 'rfc'"/>
         <discount v-if="mode == 'discount'"/>
         <votes v-if="mode == 'votes'"/>
+        <cron v-if="mode == 'cron'"/>
       </div>
     </v-app>
   </div>
@@ -45,10 +46,11 @@ import dashboard from './components/Dashboard'
 import discount from './components/Discounts'
 import rfc from './components/Rfc'
 import votes from './components/Votes'
+import cron from './components/Cron'
     export default {
       data () {
         return {
-          mode: 'orders'
+          mode: 'votes'
         }
       },
       components: {
@@ -68,7 +70,8 @@ import votes from './components/Votes'
         dashboard,
         rfc,
         discount,
-        votes
+        votes,
+        cron
       },
       mounted() {
         //this.$store.dispatch('loadDictionary')

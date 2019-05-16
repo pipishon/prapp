@@ -31,6 +31,7 @@
             'contacts': 'rfc',
             'offline_bolt': 'discount',
             '3d_rotation': 'votes',
+            'hourglass_full': 'cron',
           }
         }
       },

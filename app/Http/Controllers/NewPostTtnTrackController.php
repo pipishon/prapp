@@ -6,6 +6,7 @@ use App\NewPostApi;
 use App\Order;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Cron;
 
 use Illuminate\Http\Request;
 
@@ -77,6 +78,9 @@ class NewPostTtnTrackController extends Controller
 
     public function checkStatus()
     {
+        $cron = Cron::find(3);
+        $cron->last_job = Carbon::now();
+        $cron->save();
         //$np_tracks = NewPostTtnTrack::whereNotIn('status_code', array(9, 11))->get();
         $np_tracks = NewPostTtnTrack::where(function ($query) {
             $query->where(function ($query) {

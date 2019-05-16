@@ -24,6 +24,7 @@ use App\NewPostApi;
 use App\NewPostCity;
 use App\NewPostWarehouse;
 use App\Dictionary;
+use App\Cron;
 
 use App\AutoReply;
 
@@ -41,6 +42,9 @@ class SyncController extends Controller
 
     public function OrderProducts($orders = null)
     {
+        $cron = Cron::find(9);
+        $cron->last_job = Carbon::now();
+        $cron->save();
         $api = new PromApi;
         $orders = $api->getOpenOrders();
         foreach ($orders as $prom_order) {
@@ -83,6 +87,10 @@ class SyncController extends Controller
 
   public function orders($orders = null)
   {
+
+    $cron = Cron::find(8);
+    $cron->last_job = Carbon::now();
+    $cron->save();
     $api = new PromApi;
     if ($orders == null) {
       $orders = $api->getOpenOrders();
@@ -375,6 +383,9 @@ class SyncController extends Controller
     }
 
   public function smsStatus () {
+    $cron = Cron::find(7);
+    $cron->last_job = Carbon::now();
+    $cron->save();
     $statuses = array(
       'NO_DATA',
       'WRONG_DATA_FORMAT',
@@ -430,6 +441,9 @@ class SyncController extends Controller
   }
 
   public function messages () {
+    $cron = Cron::find(2);
+    $cron->last_job = Carbon::now();
+    $cron->save();
     $api = new PromApi;
     $messages = $api->getMessages();//Message::min('prom_id'));
 
@@ -513,6 +527,9 @@ class SyncController extends Controller
         if (!$order) continue;
         $order_status = $order->statuses;
         switch ($status) {
+          case 'UNDELIVERED':
+              $order_status->{$type.'_email'} = 3;
+              break;
           case 'DELIVERED':
               $order_status->{$type.'_email'} = 2;
               $message_email->delivered_at = Carbon::now();
@@ -530,6 +547,10 @@ class SyncController extends Controller
   }
 
   public function newPost () {
+      $cron = Cron::find(6);
+      $cron->last_job = Carbon::now();
+      $cron->save();
+
       $np = new NewPostApi;
       $privatPost = '95dc212d-479c-4ffb-a8ab-8c1b9073d0bc';
       $warehouses = $np->getWarehouses()['data'];

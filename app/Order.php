@@ -14,7 +14,12 @@ use Carbon\Carbon;
 class Order extends Model
 {
 	protected $guarded = [];
-  protected $appends = ['validet', 'price_discount'];
+  protected $appends = ['validet', 'price_discount', 'feedbackcount'];
+
+  public function getFeedbackcountAttribute()
+  {
+    return $this->hasMany('App\MessageEmail', 'order_id', 'prom_id')->where('type', 'feedback')->count();
+  }
 
   public function statuses()
   {
@@ -174,7 +179,7 @@ public function getProductGroupDiscounts ($products)
         $iv = openssl_random_pseudo_bytes($ivlen);
         $iv = 'p/Ȅ����';
         $params = array(
-            'hash' => rawurlencode(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv)),
+            'hash' => rawurlencode(strtr(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv), '+/=', '-_,')),
             'order_id' => $order_id
         );
 

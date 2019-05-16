@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Customer;
 use App\Rfc;
+use App\Cron;
 use Carbon\Carbon;
 
 class RfcController extends Controller
@@ -35,6 +36,10 @@ class RfcController extends Controller
 
     public function store()
     {
+        $cron = Cron::find(4);
+        $cron->last_job = Carbon::now();
+        $cron->save();
+
         $this->updateAutoStatus();
         $statuses = DB::table('customers')
             ->select('auto_status', DB::Raw('count(*) as qty'))

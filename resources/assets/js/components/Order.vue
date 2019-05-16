@@ -57,14 +57,14 @@
         <v-flex xs6 md3 >
           <v-select v-model="order.statuses.custom_email" label="Приоритетный email заказа" :items="emails" @change="updateStatuses"></v-select>
         </v-flex>
-        <v-flex xs6 md4 >
+        <v-flex xs6 md5 >
           <v-btn icon @click="clear"><v-icon>clear</v-icon></v-btn>
-          <div>
-            <v-btn @click="sendFeedback()" :class="{success: feedbackSent}" flat>Запрос на отзыв </v-btn>
+            <v-btn @click="sendFeedback()" :class="{primary: feedbackSent || order.feedbackcount}" flat>
+              Запрос на отзыв&nbsp;<span v-if="order.feedbackcount">({{order.feedbackcount}})</span>
+            </v-btn>
             <v-progress-circular v-show="onSendFeedback"
               size="20" :width="2" indeterminate color="primary" >
             </v-progress-circular>
-          </div>
 
         </v-flex>
         <v-flex xs6 md3 >

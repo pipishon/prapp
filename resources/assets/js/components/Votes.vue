@@ -1,11 +1,14 @@
 <template>
   <div class="container">
+    <input placeholder="Поиск" v-model="searchEmailsWord" @keypress.enter="getEmails"/>
   <v-data-table
     :headers="emailHeaders"
     :items="emails"
     :disable-initial-sort="true"
+    :loading="onEmailsLoad"
     class="elevation-1"
   >
+  <v-progress-linear v-slot:progress color="blue" indeterminate></v-progress-linear>
     <template slot="items" slot-scope="props">
       <td>
         <strong>{{props.item.send_at}}<span v-if="props.item.send_by == 'manual'">(Р)</span></strong>
@@ -34,8 +37,7 @@
         {{props.item.delivery_option}}
       </td>
       <td>
-        <span v-if="props.item.custom_email">{{props.item.custom_email}}</span>
-        <span v-else>{{props.item.email}}</span>
+        {{props.item.email}}
       </td>
       <td>
         <table class="delivery-table">
@@ -51,11 +53,15 @@
           <tr>
             <td>Доставлено:</td>
             <td>
-              <v-tooltip v-if="props.item.delivered_at" top content-class="white black--text" transition="sss" :open-delay="0" :close-delay="0" style="cursor: default;">
-                <v-icon  small slot="activator" color="green">check_circle</v-icon>
-                {{props.item.delivered_at}}
-              </v-tooltip>
-              <v-icon v-else small slot="activator" color="gray">check_circle</v-icon>
+
+              <v-icon v-if="props.item.status == 'UNDELIVERED'" small color="red">check_circle</v-icon>
+              <span v-else>
+                <v-tooltip v-if="props.item.delivered_at" top content-class="white black--text" transition="sss" :open-delay="0" :close-delay="0" style="cursor: default;">
+                  <v-icon  small slot="activator" color="green">check_circle</v-icon>
+                  {{props.item.delivered_at}}
+                </v-tooltip>
+                <v-icon v-else small color="gray">check_circle</v-icon>
+              </span>
             </td>
           </tr>
           <tr>
@@ -70,6 +76,9 @@
           </tr>
         </table>
       </td>
+      <td>
+        <v-btn icon @click="removeEmail(props.item.prom_id)"><v-icon>delete</v-icon></v-btn>
+      </td>
     </template>
   </v-data-table>
 
@@ -78,7 +87,9 @@
     :items="list"
     :disable-initial-sort="true"
     class="elevation-1 mt-5"
+    :loading="onVotesLoad"
   >
+    <v-progress-linear v-slot:progress color="blue" indeterminate></v-progress-linear>
     <template slot="items" slot-scope="props">
       <td>
         {{props.item.updated_at}}
@@ -115,6 +126,9 @@
     export default {
       data() {
         return {
+          onEmailsLoad: false,
+          onVotesLoad: false,
+          searchEmailsWord: '',
           mapDevice: {
             'desctop': 'ПК',
             'tablet': 'Планшет',
@@ -149,11 +163,19 @@
             { text: 'Доставка', value:'delivery_option' },
             { text: 'Email', value:'email' },
             { text: 'Отправка', value:'send_at' },
+            { text: '', value:'_' },
           ],
           emails: [],
         }
       },
       methods: {
+        removeEmail (id) {
+          console.log(id)
+          this.emails = this.emails.filter((el) => el.prom_id != id)
+          axios.post('api/voteremoveemail', {id}).then((res) => {
+            console.log(res.data)
+          })
+        },
         orderString (n) {
           let r = n%10;
           if (n > 5 && n < 21) { return 'заказов' }
@@ -162,13 +184,21 @@
           return 'заказов'
         },
         getList () {
+          this.onVotesLoad = true
           axios.get('api/votes').then((res) => {
+            this.onVotesLoad = false
             console.log(res.data)
             this.list = res.data
           })
         },
         getEmails () {
-          axios.get('api/votesemail').then((res) => {
+          this.emails = []
+          this.onEmailsLoad = true
+          let params = {
+            search_query: this.searchEmailsWord
+          }
+          axios.get('api/votesemail', {params}).then((res) => {
+            this.onEmailsLoad = false
             console.log(res.data)
             this.emails = res.data
           })
@@ -196,5 +226,11 @@
 }
 .delivery-table tr{
   border: none !important;
+}
+input {
+  padding: 4px 8px;
+  border: 1px solid lightgray;
+  border-radius: 3px;
+  margin-bottom: 1rem;
 }
 </style>

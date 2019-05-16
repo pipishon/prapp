@@ -24,7 +24,7 @@
 
         <td >
           <span class="text-nowrap">{{data.item.prom_id}} <v-icon  v-if="data.item.source == 'mobile_app'">smartphone</v-icon>
-            <a :href="'https://my.prom.ua/cabinet/order_v2/edit/' + data.item.prom_id" target="_blank"><v-icon small>open_in_new</v-icon></a>
+            <a :href="'https://my.prom.ua/cms/order/edit/' + data.item.prom_id" target="_blank"><v-icon small>open_in_new</v-icon></a>
           </span>
           <div v-html="orderDate(data)" class="text-nowrap"></div>
           <order @update="$emit('update')" :orderid="data.item.id"><span>Товаров {{data.item.products.length}} шт</span></order>

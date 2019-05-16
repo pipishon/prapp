@@ -22,42 +22,54 @@ class VoteController extends Controller
       return Vote::with(['order', 'message'])->orderBy('updated_at', 'desc')->get();
     }
 
-    public function getEmails()
+    public function getEmails(Request $request)
     {
+      $search = $request->input('search_query');
       $pickup = DB::table('message_emails')
         ->select('message_emails.send_at', 'message_emails.delivered_at',
-        'message_emails.read_at', 'order_statuses.delivered', 'order_statuses.custom_email',
-        'orders.prom_date_created', 'orders.id as order_id',
+        'message_emails.read_at', 'message_emails.email', 'order_statuses.delivered',
+        'message_emails.status', 'orders.prom_date_created', 'orders.id as order_id',
         'orders.client_last_name',  'orders.client_first_name',
         'customers.id as customer_id', 'customers.manual_status',
         'customers.auto_status', 'customer_statistics.count_orders',
         'customer_statistics.total_price', 'orders.delivery_option',
-        'orders.email', 'orders.prom_id', 'message_emails.send_by')
+        'orders.prom_id', 'message_emails.send_by')
         ->join('orders', 'orders.prom_id', 'message_emails.order_id')
         ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
         ->join('customers', 'orders.customer_id', 'customers.id')
         ->join('customer_statistics', 'customer_statistics.customer_id', 'customers.id')
         ->where('message_emails.type', 'feedback')
         ->where('orders.delivery_option', 'Самовывоз')
-        //->orderBy('message_emails.send_at', 'desc')
+        ->where(function ($query) use ($search) {
+            $query->where('orders.client_last_name', 'LIKE', $search)
+                ->orWhere('orders.prom_id', $search);
+        })
+        ->orderBy('message_emails.send_at', 'desc')
+        ->take(50)
         ->get()->toArray();
       $np = DB::table('message_emails')
         ->select('message_emails.send_at', 'message_emails.delivered_at',
-        'message_emails.read_at', 'new_post_ttn_tracks.date_received as np_received',
-        'orders.prom_date_created', 'orders.id as order_id', 'order_statuses.custom_email',
+        'message_emails.status', 'message_emails.read_at', 'message_emails.email',
+        'new_post_ttn_tracks.date_received as np_received',
+        'orders.prom_date_created', 'orders.id as order_id',
         'orders.client_last_name',  'orders.client_first_name',
         'customers.id as customer_id', 'customers.manual_status',
         'customers.auto_status', 'customer_statistics.count_orders',
         'customer_statistics.total_price', 'orders.delivery_option',
-        'orders.email', 'orders.prom_id', 'message_emails.send_by')
+        'orders.prom_id', 'message_emails.send_by')
         ->join('orders', 'orders.prom_id', 'message_emails.order_id')
-        ->join('new_post_ttn_tracks', 'orders.id', 'new_post_ttn_tracks.order_id')
+        ->leftJoin('new_post_ttn_tracks', 'orders.id', 'new_post_ttn_tracks.order_id')
         ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
         ->join('customers', 'orders.customer_id', 'customers.id')
         ->join('customer_statistics', 'customer_statistics.customer_id', 'customers.id')
         ->where('message_emails.type', 'feedback')
-        ->where('orders.delivery_option', ['Новая Почта', 'НП без риска'])
-        //->orderBy('message_emails.send_at', 'desc')
+        ->whereIn('orders.delivery_option', ['Новая Почта', 'НП без риска'])
+        ->where(function ($query) use ($search) {
+            $query->where('orders.client_last_name', 'LIKE', $search)
+                ->orWhere('orders.prom_id', $search);
+        })
+        ->orderBy('message_emails.send_at', 'desc')
+        ->take(50)
         ->get()->toArray();
       $result = array_merge($pickup, $np);
         usort($result, function($a, $b) {
@@ -121,6 +133,7 @@ class VoteController extends Controller
     {
         $iv = 'p/Ȅ����';
         $hash = rawurldecode($hash);
+        $hash = strtr($hash, '-_,', '+/=');
         return openssl_decrypt($hash, 'AES-128-CBC', 'sercet', 0, $iv);
     }
 }
