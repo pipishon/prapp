@@ -77,7 +77,9 @@
         </table>
       </td>
       <td>
-        <v-btn icon @click="removeEmail(props.item.prom_id)"><v-icon>delete</v-icon></v-btn>
+        <v-btn icon
+          @click="removeId = props.item.prom_id; removeType = 'email'; removeDialog = true"
+          ><v-icon>delete</v-icon></v-btn>
       </td>
     </template>
   </v-data-table>
@@ -115,8 +117,26 @@
         Отзыв <v-icon v-if="props.item.is_prom_comment" small color="green">check_circle</v-icon>
               <v-icon v-else small color="gray">check_circle</v-icon>
       </td>
+      <td>
+        <v-btn icon
+          @click="removeId = props.item.order.prom_id; removeType = 'vote'; removeDialog = true"
+          ><v-icon>delete</v-icon></v-btn>
+      </td>
     </template>
   </v-data-table>
+
+    <v-dialog width="300" v-model="removeDialog" persistent @keydown.esc="showDialog = false">
+      <v-card>
+        <v-container fluid>
+          Подтверждаете удаление?
+         </v-container>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" flat @click="removeItem" > Удалить </v-btn>
+            <v-btn color="primary" flat @click="removeDialog = false" > Отмена </v-btn>
+          </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script>
@@ -126,6 +146,9 @@
     export default {
       data() {
         return {
+          removeDialog: false,
+          removeId: null,
+          removeType: null,
           onEmailsLoad: false,
           onVotesLoad: false,
           searchEmailsWord: '',
@@ -154,6 +177,7 @@
             { text: 'Комментарий', value:'comment' },
             { text: 'IP', value:'ip' },
             { text: '', value:'is_prom_comment' },
+            { text: '', value:'_' },
           ],
           list: [],
           emailHeaders: [
@@ -169,12 +193,27 @@
         }
       },
       methods: {
+        removeItem () {
+          const id = this.removeId
+          switch(this.removeType) {
+            case 'email':
+              this.emails = this.emails.filter((el) => el.prom_id != id)
+              axios.post('api/voteremoveemail', {id}).then((res) => {
+                console.log(res.data)
+              })
+            break
+            case 'vote':
+              this.list = this.list.filter((el) => el.order.prom_id != id)
+              axios.post('api/voteremove', {id}).then((res) => {
+                console.log(res.data)
+              })
+            break
+          }
+          this.removeDialog = false
+        },
         removeEmail (id) {
-          console.log(id)
-          this.emails = this.emails.filter((el) => el.prom_id != id)
-          axios.post('api/voteremoveemail', {id}).then((res) => {
-            console.log(res.data)
-          })
+        },
+        removeVote (id) {
         },
         orderString (n) {
           let r = n%10;

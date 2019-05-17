@@ -103,6 +103,7 @@ class PdfController extends Controller
           $with_discount = true;
         }
       }
+      //$sums['price'] = round($sums['price'], 2);
       $numberToWords = new NumberToWords();
       $currencyTransformer = $numberToWords->getCurrencyTransformer('ru');
       $title = $currencyTransformer->toWords($sums['price']*100, 'UAH');

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Vote;
 use Illuminate\Support\Facades\DB;
 use App\MobileDetect;
+use App\MessageEmail;
 
 class VoteController extends Controller
 {
@@ -20,6 +21,18 @@ class VoteController extends Controller
     public function index (Request $request)
     {
       return Vote::with(['order', 'message'])->orderBy('updated_at', 'desc')->get();
+    }
+
+    public function removeVote(Request $request)
+    {
+        $id = $request->input('id');
+        Vote::where('order_id', $id)->delete();
+    }
+
+    public function removeEmail(Request $request)
+    {
+        $id = $request->input('id');
+        MessageEmail::where('type', 'feedback')->where('order_id', $id)->delete();
     }
 
     public function getEmails(Request $request)

@@ -50,7 +50,7 @@ import cron from './components/Cron'
     export default {
       data () {
         return {
-          mode: 'votes'
+          mode: 'orders'
         }
       },
       components: {

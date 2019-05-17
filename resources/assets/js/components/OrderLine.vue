@@ -264,6 +264,11 @@
               console.log('addtrack', res.data)
             })
           }
+          if (this.item.delivery_option == 'Укрпочта' && e.target.value != '') {
+            /*axios.get('api/addttntotrack', {params}).then((res) => {
+              console.log('addtrack', res.data)
+            })*/
+          }
           setTimeout(() => {
             this.ttnSaved = false;
           }, 500)
