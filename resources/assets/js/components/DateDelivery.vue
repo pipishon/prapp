@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
     export default {
       props: ['delivery', 'item'],
       data() {
@@ -103,7 +103,7 @@ import * as moment from 'moment';
       },
       methods: {
         setDate (n) {
-          this.date = moment().add(n, 'days').format('YYYY-MM-DD')
+          this.date = moment().tz('Europe/Kiev').add(n, 'days').format('YYYY-MM-DD')
         },
         save () {
           this.saved = true

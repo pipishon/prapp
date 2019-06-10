@@ -93,10 +93,22 @@ class TestController extends Controller
     public function feedbackcron ()
     {
         $cron = Cron::find(10);
+        $cron->success = false;
         $cron->last_job = Carbon::now();
         $cron->save();
 
         $message_ids = DB::table('message_emails')->select('order_id')->where('type', 'feedback')->pluck('order_id');
+        $ukr = DB::table('orders')
+            ->select('orders.prom_id')
+            ->join('ukr_post_ttn_tracks', 'orders.prom_id', 'ukr_post_ttn_tracks.prom_id')
+            ->leftJoin('message_emails', 'orders.prom_id', '=', 'message_emails.order_id')
+            ->where('orders.delivery_option', 'Укрпочта')
+            ->whereRaw('ukr_post_ttn_tracks.date_received = CURDATE() - INTERVAL 1 DAY')
+            ->whereRaw('ABS(MINUTE(orders.prom_date_created) - MINUTE(NOW())) < 35')
+            ->whereRaw('HOUR(orders.prom_date_created) = HOUR(NOW())')
+            ->whereNotIn('orders.prom_id', $message_ids)
+            ->distinct('orders.prom_id')
+            ->get()->pluck('prom_id')->toArray();
         $np = DB::table('orders')
             ->select('orders.prom_id')
             ->join('new_post_ttn_tracks', 'orders.id', 'new_post_ttn_tracks.order_id')
@@ -119,11 +131,13 @@ class TestController extends Controller
             ->whereNotIn('orders.prom_id', $message_ids)
             ->distinct('orders.prom_id')
             ->get()->pluck('prom_id')->toArray();
-        $res = array_merge($np, $pickup);
+        $res = array_merge($urk, $np, $pickup);
         //dd($res);
         foreach ($res as $order_id) {
             self::sendfeedback($order_id);
         }
+        $cron->success = true;
+        $cron->save();
     }
 
 

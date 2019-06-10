@@ -36,12 +36,18 @@ const store = new Vuex.Store({
       'delivered': 'Выполнен',
       'canceled': 'Отменен',
     },
+    leftBadges: {
+      votes: 0,
+    },
     selected: [],
     templates: [],
     orders: [],
     isMassBusy: false
   },
   getters: {
+    leftBadges: state => {
+      return state.leftBadges
+    },
     isMassBusy: state => {
       return state.isMassBusy
     },
@@ -129,6 +135,13 @@ const store = new Vuex.Store({
     setTemplates(state, data) {
       state.templates = data
     },
+    updateLeftBadges(state, data) {
+      for (var k in data){
+        if (data.hasOwnProperty(k)) {
+          state.leftBadges[k] = data[k]
+        }
+      }
+    },
     updateOrder(state, data) {
       let order = state.orders.filter( order => order.id == data.id )[0]
       console.log(state.orders, order, data)
@@ -178,6 +191,7 @@ const store = new Vuex.Store({
     },
   },
   actions: {
+
     massAction ({dispatch, commit}, data) {
       commit('setMassBusy', true)
       dispatch(data.fnName, data)

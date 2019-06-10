@@ -27,7 +27,7 @@
 
 <script>
 
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
     export default {
       props: ['item'],
       data() {
@@ -89,7 +89,7 @@ import * as moment from 'moment';
             return
           }
           if (stat == 'delivered')  {
-            this.item.statuses.delivered = moment().format('YYYY-MM-DD HH:mm')
+            this.item.statuses.delivered = moment().tz('Europe/Kiev').format('YYYY-MM-DD HH:mm')
           } else {
             this.item.statuses.delivered = null
           }

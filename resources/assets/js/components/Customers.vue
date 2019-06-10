@@ -106,7 +106,7 @@
 <script>
     import customer from './Customer'
     import rfc from './Rfc'
-    import * as moment from 'moment';
+    import * as moment from 'moment-timezone';
     import { mapGetters, mapActions } from 'vuex'
 
     export default {
@@ -232,7 +232,7 @@
         },
         daysFromNow (d) {
           const from = moment(d);
-          const today = moment();
+          const today = moment().tz('Europe/Kiev');
           return today.diff(from, 'days');
         },
         customerUpdated (id) {

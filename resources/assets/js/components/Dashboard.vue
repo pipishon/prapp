@@ -65,12 +65,12 @@
   </div>
 </template>
 <script>
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
     export default {
       data() {
         return {
           rangeDialog: false,
-          dateRange: [moment().subtract(7, 'days').format('Y-MM-DD'), moment().format('Y-MM-DD')],
+          dateRange: [moment().tz('Europe/Kiev').subtract(7, 'days').format('Y-MM-DD'), moment().tz('Europe/Kiev').format('Y-MM-DD')],
           dateRangeTmp: [],
           sumOrderDayStatistic: {
             'quantity': 0,

@@ -4,9 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Settings;
 use Illuminate\Http\Request;
+use App\Vote;
 
 class SettingsController extends Controller
 {
+    public function getLeftBarBadges ()
+    {
+        return array(
+            'votes' => Vote::count()
+        );
+    }
     /**
      * Display a listing of the resource.
      *

@@ -189,7 +189,7 @@
         autosms,
       },
       methods: {
-        ...mapMutations(['massSelection']),
+        ...mapMutations(['massSelection', 'updateLeftBadges']),
         ...mapActions(['massAction']),
         moreOrders () {
           const page = this.list.length / 10 + 1;
@@ -307,6 +307,9 @@
             this.globalStats = res.data.stats
             this.allCollected = res.data.all_collected
             this.listLoading = false
+          })
+          axios.get('api/getleftbarbadges').then((res) => {
+            this.updateLeftBadges(res.data)
           })
         },
         loadPage(page) {

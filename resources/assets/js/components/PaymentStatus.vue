@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
     export default {
       props: ['delivery', 'item'],
       data() {
@@ -120,7 +120,7 @@ import * as moment from 'moment';
       },
       methods: {
         setDate (n) {
-          this.date = moment().add(n, 'days').format('YYYY-MM-DD')
+          this.date = moment().tz('Europe/Kiev').add(n, 'days').format('YYYY-MM-DD')
         },
         dismiss () {
           this.showDialog = false
@@ -154,7 +154,7 @@ import * as moment from 'moment';
           this.item.payment_status = this.payment_status
 
           if (['Оплачен', 'Наложенный'].indexOf(this.payment_status) != -1) {
-            this.item.payment_date = moment().format('YYYY-MM-DD HH:mm:ss')
+            this.item.payment_date = moment().tz('Europe/Kiev').format('YYYY-MM-DD HH:mm:ss')
             this.payment_date = this.item.payment_date
           } else {
             this.item.payment_date = null

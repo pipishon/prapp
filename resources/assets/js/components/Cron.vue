@@ -13,8 +13,8 @@
         <td class="text-left">{{row.name}}</td>
         <td class="text-left">{{row.period}}</td>
         <td class="align-middle" @click.stop="save()"><v-checkbox v-model="row.active"></v-checkbox></td>
-        <td>{{row.last_job}}</td>
-        <td>{{getNextCron(row.period)}}</td>
+        <td :class="{'red--text text--lighten-1': !row.success}">{{formatDate(row.last_job)}}</td>
+        <td>{{getNextCron(row.period, row.last_job)}}</td>
         <td>
           {{row.description}}
         </td>
@@ -59,6 +59,9 @@
         }
       },
       methods: {
+        formatDate (time) {
+          return moment(time).format('DD-MM-YYYY HH:mm ')
+        },
         openDialog (row) {
           this.activeRow = row
           this.tmpRow = JSON.parse(JSON.stringify(row))
@@ -77,9 +80,12 @@
             this.list = res.data
           })
         },
-        getNextCron (cronString) {
+        getNextCron (cronString, lastJob) {
           try {
-            var interval = parser.parseExpression(cronString);
+            let opts = {
+              currentDate: moment(lastJob),
+            }
+            var interval = parser.parseExpression(cronString, opts);
             return moment(interval.next().toDate()).format('DD-MM-YYYY HH:mm ')
           } catch (err) {
           }

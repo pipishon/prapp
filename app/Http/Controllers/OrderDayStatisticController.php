@@ -22,6 +22,7 @@ class OrderDayStatisticController extends Controller
     {
         $cron = Cron::find(5);
         $cron->last_job = Carbon::now();
+        $cron->success = false;
         $cron->save();
 
         $end = Carbon::today();
@@ -31,6 +32,8 @@ class OrderDayStatisticController extends Controller
         foreach ($period as $date) {
             $this->calcStatisticForDay($date);
         }
+        $cron->success = true;
+        $cron->save();
         return;
     }
 

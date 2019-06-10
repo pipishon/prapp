@@ -38,6 +38,7 @@ class RfcController extends Controller
     {
         $cron = Cron::find(4);
         $cron->last_job = Carbon::now();
+        $cron->success = false;
         $cron->save();
 
         $this->updateAutoStatus();
@@ -49,6 +50,8 @@ class RfcController extends Controller
         Rfc::updateOrCreate(array(
             'date' => Carbon::now()->format('Y-m-d')
         ), $statuses);
+        $cron->success = true;
+        $cron->save();
     }
 
     public function getToday ()

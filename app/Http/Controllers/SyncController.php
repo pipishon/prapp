@@ -90,6 +90,7 @@ class SyncController extends Controller
 
     $cron = Cron::find(8);
     $cron->last_job = Carbon::now();
+    $cron->success = false;
     $cron->save();
     $api = new PromApi;
     if ($orders == null) {
@@ -209,14 +210,7 @@ class SyncController extends Controller
 
       }
 
-
-      $group_discounts = $this->getProductGroupDiscounts($order['products']);
-
       foreach ($order['products'] as $product) {
-        $product_price = $product['price'];
-        $product_price = preg_replace('/\s+/u', '', $product_price);
-        $product_price = str_replace(',','.', $product_price);
-        $product_price = floatval($product_price);
         $O_product = Product::updateOrCreate(array('prom_id' => $product['id']),
             array(
               'sku' => $product['sku'],
@@ -226,6 +220,15 @@ class SyncController extends Controller
               'presence' => 'available',
               'status' => 'on_display',
             ));
+      }
+
+      $group_discounts = $this->getProductGroupDiscounts($order['products']);
+
+      foreach ($order['products'] as $product) {
+        $product_price = $product['price'];
+        $product_price = preg_replace('/\s+/u', '', $product_price);
+        $product_price = str_replace(',','.', $product_price);
+        $product_price = floatval($product_price);
           $order_product_update = array(
             'prom_price' => $product_price,
             'quantity' => str_replace(',','.', $product['quantity']),
@@ -280,6 +283,9 @@ class SyncController extends Controller
       $customer = Customer::find($order->customer_id);
       $customer->recalcStatistics();
     }
+
+    $cron->success = true;
+    $cron->save();
     print_r('Get orders '.count($orders));
     print_r('Statuses updated '.count($orders_to_update_status));
   }
@@ -385,6 +391,7 @@ class SyncController extends Controller
   public function smsStatus () {
     $cron = Cron::find(7);
     $cron->last_job = Carbon::now();
+    $cron->success = false;
     $cron->save();
     $statuses = array(
       'NO_DATA',
@@ -438,11 +445,14 @@ class SyncController extends Controller
       }
     }
     $this->checkSputnikActivity();
+    $cron->success = true;
+    $cron->save();
   }
 
   public function messages () {
     $cron = Cron::find(2);
     $cron->last_job = Carbon::now();
+    $cron->success = false;
     $cron->save();
     $api = new PromApi;
     $messages = $api->getMessages();//Message::min('prom_id'));
@@ -477,6 +487,8 @@ class SyncController extends Controller
       $message->save();
     }
     print_r(count($messages));
+    $cron->success = true;
+    $cron->save();
   }
 
   public function date ($str, $format = false, $import = true) {
@@ -549,6 +561,7 @@ class SyncController extends Controller
   public function newPost () {
       $cron = Cron::find(6);
       $cron->last_job = Carbon::now();
+      $cron->success = false;
       $cron->save();
 
       $np = new NewPostApi;
@@ -574,6 +587,8 @@ class SyncController extends Controller
               'city_id' => $city['CityID'],
           ));
       }
+      $cron->success = true;
+      $cron->save();
   }
 
   public function testapi () {

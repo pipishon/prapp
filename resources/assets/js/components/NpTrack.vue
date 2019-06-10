@@ -12,6 +12,7 @@
       :widths="tableWidths"
       @updatewidth="updateWidths"
       @search="onSearch"
+             v-show="mode == 'np'"
     >
 
       <template slot="row" slot-scope="data">
@@ -24,7 +25,7 @@
           </td>
           <td>
             {{item.prom_id}}
-            <a :href="'https://my.prom.ua/cabinet/order_v2/edit/' + item.prom_id" target="_blank"><v-icon small>open_in_new</v-icon></a>
+            <a :href="'https://my.prom.ua/cms/order/edit/' + item.prom_id" target="_blank"><v-icon small>open_in_new</v-icon></a>
             <div v-if="item.date_first_day_storage"
               :class="{'yellow lighten-4': !isToday(item.date_first_day_storage), 'pink lighten-5': isToday(item.date_first_day_storage)}"
                  class="pa-2"
@@ -35,6 +36,7 @@
           </td>
           <td>
             {{item.int_doc_number}}
+
             <a :href="'https://novaposhta.ua/tracking/?cargo_number=' + item.int_doc_number" target="_blank"><v-icon small>open_in_new</v-icon></a>
             <div class="my-2">
               <a target="_blank" @click.stop :href="'https://my.novaposhta.ua/orders/printDocument/orders[]/'+item.int_doc_number+'/type/html/apiKey/b2aa728b253bc10bbb33e79c30d6498d'">
@@ -155,11 +157,118 @@
 
     </btable>
 
+
+    <btable :items="ukrlist"
+      :fields="ukrfields"
+      :search="['prom_id', 'ttn']"
+      :notstriped="true"
+      :widths="['0', '80', '120', '250', '100', '230', '200', '60']"
+      @search="onSearch"
+             v-show="mode == 'ukr'"
+    >
+
+      <template slot="row" slot-scope="data">
+        <tr v-for="item in data.items" :class="{'green lighten-5': [41002, 41003, 41004, 41022].indexOf(item.status_code) != -1
+          }">
+          <td>
+
+          </td>
+          <td>
+            {{item.prom_id}}
+            <a :href="'https://my.prom.ua/cms/order/edit/' + item.prom_id" target="_blank"><v-icon small>open_in_new</v-icon></a>
+          </td>
+          <td>
+            {{item.ttn}}
+            <a :href="'https://a.ukrposhta.ua/vidslidkuvati-forma-poshuku_UA.html?barcode=' + item.ttn" target="_blank"><v-icon small>open_in_new</v-icon></a>
+          </td>
+          <td>
+            {{item.status}}
+          </td>
+          <td>
+            <customer :id="item.order.customer_id">{{item.order.client_first_name}} {{item.order.client_last_name}}</customer>
+            <div>{{item.order.phone}}</div>
+          </td>
+          <td>
+            {{item.order.delivery_address}}
+          </td>
+          <td>
+            <table class="table">
+              <tbody>
+              <tr>
+                <td>
+                  Отправка:
+                </td>
+                <td class="text-no-wrap">
+                  {{item.date_created}}
+                  <strong>({{item.send_days}})</strong>
+                </td>
+                <td>
+                  <v-icon v-if="item.date_delivered" small color="green">check_circle</v-icon>
+                  <v-icon v-else small>check_circle</v-icon>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Доставка:
+                </td>
+                <td class="text-no-wrap">
+                  <span v-if="item.date_delivered" :class="{'red--text text--lighten-1': !item.date_received && item.delivery_days > 3}">
+                    {{item.date_delivered}}
+                    <strong>({{item.delivery_days}})</strong>
+                  </span>
+                  <span v-else>
+                    &mdash;
+                  </span>
+                </td>
+                <td>
+                  <span class="text-no-wrap" v-if="item.date_delivered">
+                    <span v-if="!item.date_received && item.delivery_days > 3" >
+                        <v-icon small color="#EF5350">check_circle</v-icon>
+                    </span>
+                    <span v-else>
+                      <v-icon v-if="item.date_received" small color="green">check_circle</v-icon>
+                      <v-icon v-else small>check_circle</v-icon>
+                    </span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  Получено:
+                </td>
+                <td>
+                  <span v-if="item.date_received">
+                    {{item.date_received}}
+                  </span>
+                  <span v-else>
+                    &mdash;
+                  </span>
+                </td>
+                <td>
+                  <v-icon v-if="item.date_received" small color="green">check_circle</v-icon>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </td>
+          <td>
+            <v-checkbox v-model="item.current" @change="updateTrack(item)"></v-checkbox>
+          </td>
+        </tr>
+      </template>
+
+
+    </btable>
+
+
+
     <v-footer fixed class="pa-3">
     <v-btn flat @click="refresh">Отследить</v-btn>
     <v-btn flat @click="getUsualTracks" :class="{primary: footerButtons == 'usual'}">Текущие ТТН ({{nums.usual}})</v-btn>
     <v-btn flat @click="getTodayTracks" :class="{primary: footerButtons == 'today'}">Сегодня ТТН ({{nums.today}})</v-btn>
     <v-btn flat @click="getAllTracks" :class="{primary: footerButtons == 'all'}">Все ТТН ({{nums.all}})</v-btn>
+    <v-btn flat @click="mode = 'np'" :class="{primary: mode == 'np'}">НП</v-btn>
+    <v-btn flat @click="mode = 'ukr'" :class="{primary: mode == 'ukr'}">Укр</v-btn>
     <pagination :current="curPage" :last="lastPage" @change="loadPage"/>
     </v-footer>
 
@@ -168,14 +277,16 @@
 
 <script>
     import customer from './Customer'
-    import * as moment from 'moment';
+    import * as moment from 'moment-timezone';
     import { mapGetters, mapActions } from 'vuex'
 
     export default {
       data() {
         return {
+          mode: 'np',
           tableWidths: {},
           nums: {},
+          ukrnums: {},
           listLoading: false,
           footerButtons: 'usual',
           fields: [
@@ -191,7 +302,19 @@
             { key: 'document_cost', label: 'Цена' },
             { key: 'current', label: 'Тек.' },
           ],
+          ukrfields: [
+            { key: 'valid', label: '' },
+            { key: 'prom_id', label: 'Заказ' },
+            { key: 'ttn', label: 'ТТН' },
+            { key: 'status', label: 'Статус доставки' },
+            { key: 'name', label: 'ФИО' },
+            { key: 'address', label: 'Адрес' },
+            { key: 'timetable', label: 'График доставки' },
+            { key: 'current', label: 'Тек.' },
+            //{ key: 'weight', label: 'Вес/Длина' },
+          ],
           list: [],
+          ukrlist: [],
           curPage: 0,
           lastPage: 0,
           searchQuery: {},
@@ -255,8 +378,10 @@
         refresh () {
           this.listLoading = true
           axios.get('api/nptrackcheck').then((res) => {
-            console.log(res.data)
-            this.getList()
+            axios.get('api/checkukrtrack').then((res) => {
+              console.log(res.data)
+              this.getList()
+            })
           })
         },
         getWarehouseNum (w) {
@@ -265,11 +390,11 @@
           return (match != null) ? '&mdash; ' + match[1] : ''
         },
         isToday (d) {
-          return moment().diff(moment(d), 'days') == 0;
+          return moment().tz('Europe/Kiev').diff(moment(d), 'days') == 0;
         },
         daysFromNow (d) {
           const from = moment(d);
-          const today = moment();
+          const today = moment().tz('Europe/Kiev');
           return today.diff(from, 'days');
         },
         getList (params) {
@@ -280,14 +405,17 @@
             this.list = res.data.data
             this.nums = res.data.nums
             if (this.list.length > 0) {
-              this.curCustomer = this.list[0]
               this.curPage = res.data.current_page
               this.lastPage = res.data.last_page
             } else {
-              this.curCustomer = {}
               this.curPage = 1
               this.lastPage = 1
             }
+          })
+          axios.get('api/ukrtrack', {params}).then((res) => {
+            this.ukrlist = res.data.data
+            this.ukrnums = res.data.nums
+            console.log(res.data)
           })
         },
         loadPage(page) {

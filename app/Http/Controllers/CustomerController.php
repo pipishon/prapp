@@ -6,6 +6,8 @@ use App\Customer;
 use App\Email;
 use App\Phone;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 
 class CustomerController extends Controller
 {
@@ -229,4 +231,41 @@ class CustomerController extends Controller
       }
       return Customer::with('orders')->paginate($per_page);
     }
+
+      public function getMonthstats ($id)
+      {
+          $customer = Customer::where('id', $id)->with('orders')->first();
+          $start_date = $customer->orders[count($customer->orders) - 1]->prom_date_created;
+          $end_date = $customer->orders[0]->prom_date_created;
+          $start_date = Carbon::parse($start_date)->startOfMonth();
+          $end_date = Carbon::parse($end_date)->addMonth()->startOfMonth();
+          $period = new CarbonPeriod($start_date , '1 month', $end_date);
+          $dates = array();
+          $cur_date = $start_date;
+          foreach ($period as $date) {
+              if ($cur_date->format('m-d') != $date->format('m-d')) {
+                  foreach ($customer->orders as $order) {
+                      if (Carbon::parse($order->prom_date_created)->between($cur_date, $date)) {
+                          if (!isset($dates[$date->format('d-m-Y')])) {
+                              $dates[$date->format('d-m-Y')] = array(
+                                  'price' => $order->price,
+                                  'count' => 1,
+                              );
+                          } else {
+                            $dates[$date->format('d-m-Y')]['price'] += $order->price;
+                            $dates[$date->format('d-m-Y')]['count'] += 1;
+                          }
+                      }
+                  }
+                  if (!isset($dates[$date->format('d-m-Y')])) {
+                      $dates[$date->format('d-m-Y')] = array(
+                          'price' => 0,
+                          'count' => 0,
+                      );
+                  }
+                  $cur_date = $date;
+              }
+          }
+          return $dates;
+      }
 }

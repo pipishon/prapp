@@ -37,6 +37,7 @@ class NewPostTtnTrackController extends Controller
       }
 
       $np_track = $np_track->orderByRaw("FIELD(status_code, '102', '103', '104', '108') DESC");
+      $np_track = $np_track->orderByRaw("FIELD(status_code, '10') ASC");
 
       $np_track = $np_track->orderByRaw('ISNULL(date_first_day_storage), date_first_day_storage', 'asc');
       $np_track = $np_track->orderBy('date_created', 'asc');
@@ -80,6 +81,7 @@ class NewPostTtnTrackController extends Controller
     {
         $cron = Cron::find(3);
         $cron->last_job = Carbon::now();
+        $cron->success = false;
         $cron->save();
         //$np_tracks = NewPostTtnTrack::whereNotIn('status_code', array(9, 11))->get();
         $np_tracks = NewPostTtnTrack::where(function ($query) {
@@ -160,6 +162,8 @@ class NewPostTtnTrackController extends Controller
             }
             $np_track->save();
         }
+        $cron->success = true;
+        $cron->save();
     }
 
     public function update (NewPostTtnTrack $nptrack, Request $request)

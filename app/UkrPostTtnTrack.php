@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UrkPostTtnTrack extends Model
+class UkrPostTtnTrack extends Model
 {
     protected $guarded = [];
 

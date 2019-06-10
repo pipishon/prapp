@@ -69,7 +69,7 @@
 </template>
 
 <script>
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
     export default {
       props: ['groupstep'],
       data() {
@@ -82,7 +82,7 @@ import * as moment from 'moment';
       },
       methods: {
         formatDeliveryDate (val) {
-          return moment(val).isSame(moment(), 'day')
+          return moment(val).isSame(moment().tz('Europe/Kiev'), 'day')
         },
         getOrderProductGroups () {
           const params = {

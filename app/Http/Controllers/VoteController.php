@@ -60,6 +60,31 @@ class VoteController extends Controller
         ->orderBy('message_emails.send_at', 'desc')
         ->take(50)
         ->get()->toArray();
+
+      $ukr = DB::table('message_emails')
+        ->select('message_emails.send_at', 'message_emails.delivered_at',
+        'message_emails.status', 'message_emails.read_at', 'message_emails.email',
+        'ukr_post_ttn_tracks.date_received as np_received',
+        'orders.prom_date_created', 'orders.id as order_id',
+        'orders.client_last_name',  'orders.client_first_name',
+        'customers.id as customer_id', 'customers.manual_status',
+        'customers.auto_status', 'customer_statistics.count_orders',
+        'customer_statistics.total_price', 'orders.delivery_option',
+        'orders.prom_id', 'message_emails.send_by')
+        ->join('orders', 'orders.prom_id', 'message_emails.order_id')
+        ->leftJoin('ukr_post_ttn_tracks', 'orders.prom_id', 'ukr_post_ttn_tracks.prom_id')
+        ->join('order_statuses', 'orders.id', 'order_statuses.order_id')
+        ->join('customers', 'orders.customer_id', 'customers.id')
+        ->join('customer_statistics', 'customer_statistics.customer_id', 'customers.id')
+        ->where('message_emails.type', 'feedback')
+        ->where('orders.delivery_option', 'Укрпочта')
+        ->where(function ($query) use ($search) {
+            $query->where('orders.client_last_name', 'LIKE', $search)
+                ->orWhere('orders.prom_id', $search);
+        })
+        ->orderBy('message_emails.send_at', 'desc')
+        ->take(50)
+        ->get()->toArray();
       $np = DB::table('message_emails')
         ->select('message_emails.send_at', 'message_emails.delivered_at',
         'message_emails.status', 'message_emails.read_at', 'message_emails.email',
@@ -84,7 +109,7 @@ class VoteController extends Controller
         ->orderBy('message_emails.send_at', 'desc')
         ->take(50)
         ->get()->toArray();
-      $result = array_merge($pickup, $np);
+      $result = array_merge($pickup, $np, $ukr);
         usort($result, function($a, $b) {
           $ad = new \DateTime($a->send_at);
           $bd = new \DateTime($b->send_at);
@@ -101,7 +126,7 @@ class VoteController extends Controller
     {
         $params = $request->only(['hash', 'vote']); //id 100 hash FjAvQe3ev%2FBpEfSK2g%2BANQ%3D%3D
         $order_id = $this->encrypt($params['hash']);
-        if (Vote::where('order_id', $order_id)->first() != null) {
+        if (!$order_id || Vote::where('order_id', $order_id)->first() != null) {
             return view('vote', array('repeat' => true));
         }
         $ip = $_SERVER['REMOTE_ADDR'];
@@ -128,6 +153,7 @@ class VoteController extends Controller
     public function processForm (Request $request)
     {
         $order_id = $this->encrypt($request->input('hash'));
+
         Vote::where('order_id', $order_id)->update(array(
             'comment' => $request->input('comment')
         ));

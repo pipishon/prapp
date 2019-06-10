@@ -1,8 +1,13 @@
 <template>
   <div class="wrap">
       <div class="icons-wrap">
-        <div v-for="(val, key) in modes" @click="mode = val; massSelection([]); $emit('change', val)" class="icon-wrap my-3" :class="{active: mode==val}">
-          <v-icon :color="(mode==val) ? 'orange' : 'white'" medium>{{key}}</v-icon>
+        <div v-for="(val, key) in modes" @click="onClick(val)" class="icon-wrap my-3" :class="{active: mode==val}">
+          <v-badge overlap color="primary" >
+            <span slot="badge" v-if="typeof(leftBadges[val]) != 'undefined' && leftBadges[val] - localBadges[val] > 0">
+              {{leftBadges[val] - localBadges[val]}}
+            </span>
+            <v-icon :color="(mode==val) ? 'orange' : 'white'" medium>{{key}}</v-icon>
+          </v-badge>
         </div>
       </div>
   </div>
@@ -13,6 +18,7 @@
       props: ['imode'],
       data() {
         return {
+          localBadges: {},
           mode: 'dashboard',
           modes: {
             'dashboard': 'dashboard',
@@ -35,10 +41,34 @@
           }
         }
       },
+      computed: {
+        ...mapGetters(['leftBadges'])
+      },
       methods: {
         ...mapMutations(['massSelection']),
+        onClick (val) {
+          this.mode = val
+          this.massSelection([])
+          this.$emit('change', val)
+          this.localBadges[val] = this.leftBadges[val]
+          localStorage.setItem('leftBadges', JSON.stringify(this.localBadges));
+        }
       },
       mounted() {
+        if (localStorage.getItem('leftBadges')) {
+          try {
+            this.localBadges = JSON.parse(localStorage.getItem('leftBadges'));
+          } catch(e) {
+            localStorage.removeItem('leftBadges');
+          }
+        } else {
+          let badges = {}
+          for (let n in this.leftBadges) {
+            badges[n] = 0
+          }
+          this.localBadges = badges
+          localStorage.setItem('leftBadges', JSON.stringify(badges));
+        }
         this.mode = this.imode
       }
     }

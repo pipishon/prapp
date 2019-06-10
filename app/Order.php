@@ -219,13 +219,18 @@ public function getProductGroupDiscounts ($products)
 
     foreach ($prom_products as $prom_product) {
         $product = Product::where('prom_id', $prom_product['id'])->first();
+        $product_price = floatval(str_replace(',', '.', $prom_product['price']));
         if ($product == null) {
             $product = Product::firstOrCreate(array(
                 'name' => $prom_product['name'],
+                'price' => $product_price,
+                'sku' => $product['sku'],
+                'main_image' => (string) $product['image'],
+                'presence' => 'available',
+                'status' => 'on_display',
             ));
         }
         $ids[] = $product->id;
-        $product_price = floatval(str_replace(',', '.', $prom_product['price']));
         $order_product_update = array(
           'prom_price' => $product_price,
           'quantity' => str_replace(',','.', $prom_product['quantity']),

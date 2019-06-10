@@ -264,10 +264,15 @@
               console.log('addtrack', res.data)
             })
           }
+          console.log(this.item.delivery_option)
           if (this.item.delivery_option == 'Укрпочта' && e.target.value != '') {
-            /*axios.get('api/addttntotrack', {params}).then((res) => {
+            const params = {
+              ttn: e.target.value,
+              prom_id: this.item.prom_id,
+            }
+            axios.get('api/addukrtrack', {params}).then((res) => {
               console.log('addtrack', res.data)
-            })*/
+            })
           }
           setTimeout(() => {
             this.ttnSaved = false;

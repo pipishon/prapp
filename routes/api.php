@@ -26,6 +26,8 @@ Route::get('sendemail', 'MessageEmailController@sendEmail');
 
 Route::get('customers/phoneemail', 'CustomerController@getByPhoneEmail');
 Route::get('customers/addphoneemail', 'CustomerController@addPhoneEmail');
+Route::get('customers/monthstats/{id}', 'CustomerController@getMonthstats');
+
 
 Route::get('orders/changestatus', 'OrderController@changeStatus');
 Route::get('orders/updatefromprom/{prom_id}', 'OrderController@updateFromProm');
@@ -158,3 +160,11 @@ Route::post('voteremove', 'VoteController@removeVote');
 
 Route::get('crons', 'CronController@index');
 Route::post('crons', 'CronController@store');
+
+
+Route::resource('ukrtrack', 'UkrPostTtnTrackController');
+Route::get('addukrtrack', 'UkrPostTtnTrackController@addTtn');
+Route::get('checkukrtrack', 'UkrPostTtnTrackController@checkStatus');
+
+Route::get('getleftbarbadges', 'SettingsController@getLeftBarBadges');
+

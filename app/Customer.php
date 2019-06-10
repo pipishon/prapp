@@ -5,6 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use App\CustomerStatistic;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 
 class Customer extends Model
 {
@@ -87,6 +88,7 @@ class Customer extends Model
 
       return $query;
   }
+
 
   public function getNameAttribute ($val) {
     if (isset($this->attributes['name'])) {

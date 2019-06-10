@@ -9,6 +9,7 @@
         </v-toolbar-items>
       </v-toolbar>
       <v-container fluid grid-list-lg>
+        <v-btn :class="{primary: monthsDialog}" @click="monthsDialog = !monthsDialog" flat>График продаж</v-btn>
     <div class="row">
       <div class="form-group col">
         <label>Names</label>
@@ -95,7 +96,10 @@
       <div class="col">
         <h3>Orders</h3>
         <btable :items="customer.orders" :fields="orderFields" :rownumber="1">
-        <template slot="prom_id" slot-scope="data">{{data.item.prom_id}}<a :href="'https://my.prom.ua/cabinet/order_v2/edit/' + data.item.prom_id" target="_blank"><v-icon small>open_in_new</v-icon></a></template>
+        <template slot="prom_id" slot-scope="data">
+          {{data.item.prom_id}}
+          <a :href="'https://my.prom.ua/cms/order/edit/' + data.item.prom_id" target="_blank"><v-icon small>open_in_new</v-icon></a>
+        </template>
         <template slot="status" slot-scope="data">{{$store.state.statuses[data.item.status]}}</template>
         </btable>
         <template v-for="customer in customersToMerge">
@@ -103,6 +107,18 @@
         </template>
       </div>
     </div>
+    <v-dialog v-model="monthsDialog" width="650">
+      <v-card>
+      <div style="width: 650px;">
+        <stackedchart
+          :width="650"
+          :height="400"
+          :chart-data="chartBarData"
+          :options="{responsive: true}"
+        ></stackedchart>
+      </div>
+      </v-card>
+    </v-dialog>
       </v-container>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -122,6 +138,8 @@ import { mapActions, mapGetters, mapMutations } from 'vuex'
       props: ['id', 'name', 'item'],
       data() {
         return {
+          monthsDialog: false,
+          chartBarData: null,
           mapAuto: {
             'new' : 'Новые',
             'perspective' : 'Перспективные',
@@ -227,8 +245,39 @@ import { mapActions, mapGetters, mapMutations } from 'vuex'
           })
         },
         getCustomer () {
+          axios.get('api/customers/monthstats/' + this.id).then((res) => {
+            const mapVals = {
+              'Количество': 'count',
+              'Сумма': 'price',
+            }
+            let labels = []
+            let datasets = [
+                {
+                  label: 'Количество',
+                  data: [],
+                  backgroundColor: '#ff6384',
+                  borderColor: '#ff6384',
+                  fill: false,
+                },
+                {
+                  label: 'Сумма',
+                  data: [],
+                  backgroundColor: '#36a2eb',
+                  borderColor: '#36a2eb',
+                  fill: false,
+                }
+              ]
+              for (let d in res.data) {
+                    labels.push(d)
+                    datasets.map((dataset) => {
+                      dataset.data.push(res.data[d][mapVals[dataset.label]])
+                    })
+              }
+              this.chartBarData = {labels, datasets}
+          })
           axios.get('api/customers/' + this.id).then((res) => {
             this.customer = res.data
+            console.log(res.data)
             //console.log(this.$store.getters.getPrevAutoStatus({customer: this.customer, item: this.item}))
             this.initValues()
           })

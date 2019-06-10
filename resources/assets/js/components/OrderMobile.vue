@@ -117,7 +117,7 @@
 </template>
 
 <script>
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
     export default {
       props: ['order' ],
       data() {
@@ -146,8 +146,8 @@ import * as moment from 'moment';
           return names[0] + ' ' + names[1]
         },
         deliveryDateString() {
-          let today = moment()
-          let tomorrow = moment().add(1, 'd')
+          let today = moment().tz('Europe/Kiev')
+          let tomorrow = moment().tz('Europe/Kiev').add(1, 'd')
           if (today.isSame(this.order.statuses.shipment_date, 'day')) return 'Сегодня'
           if (tomorrow.isSame(this.order.statuses.shipment_date, 'day')) return 'Завтра'
           return this.order.statuses.shipment_date
