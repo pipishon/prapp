@@ -14,7 +14,10 @@ class MessageEmailController extends Controller
         $ivlen = openssl_cipher_iv_length('AES-128-CBC');
         $iv = openssl_random_pseudo_bytes($ivlen);
         $iv = 'p/Ȅ����';
-        return 'http://my.helgamade.com.ua/invoice?hash='.rawurlencode(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv));
+
+				$hash = rawurlencode(strtr(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv), '+/=', '-_,'));
+				//$hash = rawurlencode(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv));
+        return 'http://my.helgamade.com.ua/invoice?hash='.$hash;
     }
 
     public function sendEmail (Request $request)

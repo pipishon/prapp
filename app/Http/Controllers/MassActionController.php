@@ -75,7 +75,7 @@ class MassActionController extends Controller
                 $trigger = ($order->delivery_option == 'Укрпочта') ? 'api-send-ttn-ukrpost' : 'api-send-ttn-newpost';
                 $params = array(
                     'ttn' => $order->statuses->ttn_string,
-                    'invoice' = $this->getPdfLink($order_id)
+                    'invoice' => $this->getPdfLink($order_id)
                 );
                 $result['email'][] = $order->id;
                 $sputnik_email->sendEvent($trigger, $params);
@@ -92,7 +92,10 @@ class MassActionController extends Controller
         $ivlen = openssl_cipher_iv_length('AES-128-CBC');
         $iv = openssl_random_pseudo_bytes($ivlen);
         $iv = 'p/Ȅ����';
-        return 'http://my.helgamade.com.ua/invoice?hash='.rawurlencode(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv));
+
+				$hash = rawurlencode(strtr(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv), '+/=', '-_,'));
+				//$hash = rawurlencode(openssl_encrypt($order_id, 'AES-128-CBC', 'sercet', 0, $iv));
+        return 'http://my.helgamade.com.ua/invoice?hash='.$hash;
     }
 
   public function createTtn (Request $request)
@@ -262,6 +265,9 @@ class MassActionController extends Controller
       foreach ($pdfs_data as $key => $row) {
           if ($key > $last) continue;
           if ($row['height'] + $pdfs_data[$last]['height'] > 841.8897637795 || $key == $last) {
+              if ($row['height'] > 841.8897637795) {
+                  $row['breack'] = true;
+              }
               $sorted_pdfs_data[] = $row;
           } else {
               $sorted_pdfs_data[] = $row;

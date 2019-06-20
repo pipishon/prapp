@@ -78,11 +78,12 @@ class PdfController extends Controller
   {
         $iv = 'p/Ȅ����';
         $hash = rawurldecode($request->input('hash'));
+        $hash = strtr($hash, '-_,', '+/=');
         //var_dump($hash);
         $id = openssl_decrypt($hash, 'AES-128-CBC', 'sercet', 0, $iv);
         //var_dump($id);
 
-      $order = Order::find($id);
+      $order = Order::where('prom_id', $id)->first();
 
       $order->products = $order->products->sortBy(function($product) {
         $hash = ($product->sort1) ? $product->sort1 : 0;
