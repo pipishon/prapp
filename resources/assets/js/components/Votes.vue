@@ -114,8 +114,14 @@
         <div class="text-center">{{mapDevice[props.item.device]}}</div>
       </td>
       <td>
-        Отзыв <v-icon v-if="props.item.is_prom_comment" small color="green">check_circle</v-icon>
-              <v-icon v-else small color="gray">check_circle</v-icon>
+				<div class="text-nowrap">
+						<v-btn icon @click="changeCommentStatus('google', props.item.order.customer)">  
+							<v-icon small :color="commentColors[props.item.order.customer.is_google_comment]">check_circle</v-icon>
+						</v-btn>
+						<v-btn icon @click="changeCommentStatus('prom', props.item)">  
+							<v-icon small :color="commentColors[props.item.is_prom_comment]">check_circle</v-icon>
+						</v-btn>
+				</div>
       </td>
       <td>
         <v-btn icon
@@ -146,6 +152,11 @@
     export default {
       data() {
         return {
+					commentColors: [
+						'gray',
+						'green',
+						'primary'
+					],
           removeDialog: false,
           removeId: null,
           removeType: null,
@@ -176,7 +187,7 @@
             { text: 'Голос', value:'vote' },
             { text: 'Комментарий', value:'comment' },
             { text: 'IP', value:'ip' },
-            { text: '', value:'is_prom_comment' },
+            { text: 'Отзыв', value:'is_prom_comment' },
             { text: '', value:'_' },
           ],
           list: [],
@@ -193,6 +204,21 @@
         }
       },
       methods: {
+				changeCommentStatus(type, item) {
+					let oldStatus = item['is_' + type + '_comment'] || 0
+					item['is_' + type + '_comment'] = (oldStatus == 2) ? 0 : oldStatus + 1
+					let update = {
+							name: 'is_' + type + '_comment',
+							value: item['is_' + type + '_comment'] 
+					}
+					if (type == 'google') {
+						axios.post('api/customers/updatefield/' + item.id, update)
+					}
+
+					if (type == 'prom') {
+						axios.post('api/votes/updatefield/' + item.id, update)
+					}
+				},
         removeItem () {
           const id = this.removeId
           switch(this.removeType) {
@@ -249,7 +275,7 @@
       },
       mounted() {
         this.getList()
-        this.getEmails()
+//        this.getEmails()
       }
     }
 </script>

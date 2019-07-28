@@ -268,4 +268,11 @@ class CustomerController extends Controller
           }
           return $dates;
       }
+
+		public function updateField ($id, Request $request)
+	 	{
+			$update = array();
+			$update[$request->input('name')] = $request->input('value');
+			$customer = Customer::where('id', $id)->update($update);
+		}
 }

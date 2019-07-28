@@ -356,7 +356,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $input = $request->except(array('color', 'toBuy', 'packitems', 'orders', 'suplier_name', 'suplier_links', 'morders', 'orders_count', 'labels', 'supliers'));
+        $input = $request->except(array('color', 'toBuy', 'packitems', 'orders', 'suplier_name', 'suplier_links', 'morders', 'orders_count', 'labels', 'supliers', 'discount'));
         $link_ids = array();
         if (isset($input['suplierlinks'])) {
           foreach ($input['suplierlinks'] as $link) {

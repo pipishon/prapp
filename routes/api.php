@@ -28,6 +28,7 @@ Route::get('customers/phoneemail', 'CustomerController@getByPhoneEmail');
 Route::get('customers/addphoneemail', 'CustomerController@addPhoneEmail');
 Route::get('customers/monthstats/{id}', 'CustomerController@getMonthstats');
 
+Route::post('customers/updatefield/{id}', 'CustomerController@updateField');
 
 Route::get('orders/changestatus', 'OrderController@changeStatus');
 Route::get('orders/updatefromprom/{prom_id}', 'OrderController@updateFromProm');
@@ -157,6 +158,8 @@ Route::get('votes', 'VoteController@index');
 Route::get('votesemail', 'VoteController@getEmails');
 Route::post('voteremoveemail', 'VoteController@removeEmail');
 Route::post('voteremove', 'VoteController@removeVote');
+
+Route::post('votes/updatefield/{id}', 'VoteController@updateField');
 
 Route::get('crons', 'CronController@index');
 Route::post('crons', 'CronController@store');

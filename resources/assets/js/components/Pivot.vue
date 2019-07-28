@@ -598,8 +598,8 @@
       },
       mounted() {
         this.getSupliers()
-      //  this.suplier = 'SHINWON FELT'
-      //  this.getProducts()
+        /*this.suplier = 'National Nonwovens'
+        this.getProducts()*/
       }
     }
 </script>

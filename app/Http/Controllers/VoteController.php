@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Vote;
+use App\Order;
 use Illuminate\Support\Facades\DB;
 use App\MobileDetect;
 use App\MessageEmail;
@@ -20,7 +21,7 @@ class VoteController extends Controller
 
     public function index (Request $request)
     {
-      return Vote::with(['order', 'message'])->orderBy('updated_at', 'desc')->get();
+      return Vote::with(['order', 'message', 'order.customer'])->orderBy('updated_at', 'desc')->get();
     }
 
     public function removeVote(Request $request)
@@ -130,6 +131,7 @@ class VoteController extends Controller
             return view('vote', array('repeat' => true));
         }
         $ip = $_SERVER['REMOTE_ADDR'];
+				$vote = $request->input('vote');
 
         $detect = new MobileDetect;
         $device = 'desctop';
@@ -140,14 +142,32 @@ class VoteController extends Controller
             $device = 'tablet';
         }
 
+				$is_prom_comment = 0;
+
+				if ($vote > 6) {
+					$customer = Order::where('prom_id', $order_id)->first()->customer()->first();
+					$url = 'http://kiev.prom.ua/opinions/list/2054335';
+					if ($customer->is_google_comment == 0) {
+						$customer->is_google_comment = 1;
+						$customer->save();
+						$url = 'https://search.google.com/local/writereview?placeid=ChIJy5LAnKbF1EARJ_CkshyRihY';
+					} else {
+						$is_prom_comment = 1;
+					}
+				}
+
         Vote::create(array(
             'order_id' => $order_id,
-            'vote' => $request->input('vote'),
+            'vote' => $vote,
             'ip' => $ip,
-            'device' => $device
+						'device' => $device,
+						'is_prom_comment' => $is_prom_comment
         ));
-
-        return view('vote', $params );
+				if ($vote > 6) {
+					Redirect::to($url);
+				} else {
+					return view('vote', $params );
+				}
     }
 
     public function processForm (Request $request)
@@ -175,4 +195,12 @@ class VoteController extends Controller
         $hash = strtr($hash, '-_,', '+/=');
         return openssl_decrypt($hash, 'AES-128-CBC', 'sercet', 0, $iv);
     }
+
+		public function updateField ($id, Request $request)
+	 	{
+			$update = array();
+			$update[$request->input('name')] = $request->input('value');
+			$customer = Vote::where('id', $id)->update($update);
+		}
+
 }
