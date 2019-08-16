@@ -12,7 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\NewPostCity;
 use App\OrderStatus;
-use Carbon\Carbon;
+use App\PrivatPayment;
+
 
 class OrderController extends Controller
 {

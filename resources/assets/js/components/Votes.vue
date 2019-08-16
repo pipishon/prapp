@@ -94,7 +94,7 @@
     <v-progress-linear v-slot:progress color="blue" indeterminate></v-progress-linear>
     <template slot="items" slot-scope="props">
       <td>
-        {{props.item.updated_at}}
+        {{props.item.created_at}}
       </td>
       <td>
         <order :orderid="props.item.order.id"><span>{{props.item.order.prom_id}}</span></order>
@@ -106,7 +106,11 @@
         {{props.item.vote}}
       </td>
       <td>
-        {{props.item.comment}}
+        <div v-show="!commentsVisibilyti[props.item.id]">{{props.item.comment}}</div>
+        <v-textarea v-model="props.item.comment" v-show="commentsVisibilyti[props.item.id]" />
+        <div class="text-right">
+          <v-btn  icon @click="changeComment(props.item)"><v-icon small>edit</v-icon></v-btn>
+        </div>
       </td>
       <td>
         {{props.item.ip}}
@@ -115,10 +119,10 @@
       </td>
       <td>
 				<div class="text-nowrap">
-						<v-btn icon @click="changeCommentStatus('google', props.item.order.customer)">  
+						<v-btn icon @click="changeCommentStatus('google', props.item.order.customer)">
 							<v-icon small :color="commentColors[props.item.order.customer.is_google_comment]">check_circle</v-icon>
 						</v-btn>
-						<v-btn icon @click="changeCommentStatus('prom', props.item)">  
+						<v-btn icon @click="changeCommentStatus('prom', props.item)">
 							<v-icon small :color="commentColors[props.item.is_prom_comment]">check_circle</v-icon>
 						</v-btn>
 				</div>
@@ -152,6 +156,8 @@
     export default {
       data() {
         return {
+          commentsVisibilyti: {
+          },
 					commentColors: [
 						'gray',
 						'green',
@@ -204,12 +210,30 @@
         }
       },
       methods: {
+        changeComment(item) {
+          if (typeof(this.commentsVisibilyti[item.id]) == 'undefined') {
+            if (!item.comment) {
+              item.comment = ''
+            }
+            this.$set(this.commentsVisibilyti, item.id, true);
+            return
+          }
+          if (this.commentsVisibilyti[item.id] == false) {
+            this.commentsVisibilyti[item.id] = true
+            return
+          }
+          this.commentsVisibilyti[item.id] = false
+          axios.post('api/votes/updatefield/' + item.id, {
+            name: 'comment',
+            value: item.comment
+          })
+        },
 				changeCommentStatus(type, item) {
 					let oldStatus = item['is_' + type + '_comment'] || 0
 					item['is_' + type + '_comment'] = (oldStatus == 2) ? 0 : oldStatus + 1
 					let update = {
 							name: 'is_' + type + '_comment',
-							value: item['is_' + type + '_comment'] 
+							value: item['is_' + type + '_comment']
 					}
 					if (type == 'google') {
 						axios.post('api/customers/updatefield/' + item.id, update)
@@ -275,7 +299,7 @@
       },
       mounted() {
         this.getList()
-//        this.getEmails()
+        this.getEmails()
       }
     }
 </script>

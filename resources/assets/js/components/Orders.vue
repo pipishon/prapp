@@ -92,11 +92,14 @@
       </v-layout>
     </div>
     <v-footer fixed class="pa-3 hidden-sm-and-down" >
+
+
       <v-btn flat @click="refresh">Обновить заказы</v-btn>
       <v-btn flat @click="getAllOrders" :class="{primary: footerButton == 'all'}">Все заказы ({{globalStats.pending || 0}} | {{globalStats.received || 0}}) ({{allCollected.total}} / {{allCollected.collected}})</v-btn>
 
       <v-btn v-for="name in ['Новая Почта', 'Укрпочта', 'Самовывоз']" :key="name" flat @click="getSpecDeliveryOrders(name)" :class="{primary: footerButton == name}">{{name}} {{getDeliveryCollectedString(name)}}</v-btn>
       <v-btn flat @click="getNalogenii" :class="{primary: footerButton == 'nalogenii'}">Наложенный</v-btn>
+      <v-btn flat @click="privatDrawer = true" >Приват</v-btn>
       <v-btn @click="showNotDelivered" icon title="Показывать только не закрытые заказы"> <v-icon :color="(sNotDelivered) ? 'primary' : ''">no_sim</v-icon> </v-btn>
       <v-btn @click="showTodayDelivered" icon title="Показывать только с сегодняшней отгрузкой"> <v-icon :color="(sTodayDelivered == '1') ? 'primary' : ''">local_shipping</v-icon> </v-btn>
       <v-btn @click="showNotPayed" icon title="Показывать только неоплаченные заказы"> <v-icon :color="(sNotPayed == '1') ? 'primary' : ''">monetization_on</v-icon> </v-btn>
@@ -112,6 +115,7 @@
         <v-select  v-model="perPage" :items="[20, 30, 50]" @input="searchQuery['per_page'] = arguments[0]; getList()"></v-select>
       </span>
     </v-footer>
+    <privat :drawer="privatDrawer" @onClose="privatDrawer = false" />
   </div>
 </template>
 
@@ -120,11 +124,14 @@
     import ordermobile from './OrderMobile'
     import ordermobilegroup from './OrderMobileGroup'
     import autosms from './AutoSms'
+    import privat from './Privat'
     import { mapActions, mapGetters, mapMutations } from 'vuex'
 
     export default {
       data() {
         return {
+          privatPayments: [],
+          privatDrawer: false,
           massMenu: false,
           mobileGroupStep: 0,
           mobileMode: 'orders',
@@ -187,6 +194,7 @@
         ordermobile,
         orderline,
         autosms,
+        privat
       },
       methods: {
         ...mapMutations(['massSelection', 'updateLeftBadges']),
@@ -306,6 +314,7 @@
             this.deliveryCollected = res.data.delivery_collected
             this.globalStats = res.data.stats
             this.allCollected = res.data.all_collected
+            this.privatPayments = res.data.privat_payments
             this.listLoading = false
           })
           axios.get('api/getleftbarbadges').then((res) => {
@@ -319,7 +328,13 @@
           let key = Object.keys(data)[0]
           this.searchQuery[key] = data[key]
           this.footerButton = 'all'
+
+          this.searchQuery['status'] = 'all'
           this.sNotDelivered = false
+          this.searchQuery['not_payed'] = 0
+          this.sNotPayed = this.searchQuery['not_payed']
+
+          this.sTodayDelivered = 0
           delete this.searchQuery.delivery_option
           delete this.searchQuery.status
           this.getList({page: 1})

@@ -25,7 +25,7 @@
               </table>
               </v-tooltip>
               <div v-else style="cursor: default;">
-                <v-icon slot="activator" v-if="typeof(item.statuses[key + '_phone']) != 'undefined'" :color="statusColor[item.statuses[key + '_phone']]" small class="">check_circle</v-icon>
+                <v-icon slot="activator" v-if="typeof(item.statuses[key + '_phone']) != 'undefined' && key != 'payed'" :color="statusColor[item.statuses[key + '_phone']]" small class="">check_circle</v-icon>
               </div>
             </td>
             <td style="line-height: 1;" v-if="item.email!='' || item.statuses.custom_email != null">
@@ -39,7 +39,7 @@
                 </table>
               </v-tooltip>
               <div v-else style="cursor: default;">
-                <div   v-if="typeof(item.statuses[key + '_email']) != 'undefined'">
+                <div   v-if="typeof(item.statuses[key + '_email']) != 'undefined' && key != 'payed'">
                   <v-icon v-if="item.statuses[key + '_email'] == '4'" color="#82b1ff" small class="">offline_pin</v-icon>
                   <v-icon v-else :color="statusColor[item.statuses[key + '_email']]" small class="">check_circle</v-icon>
                 </div>
@@ -115,7 +115,7 @@ import * as moment from 'moment';
           msgs: {},
           type: null,
           tmplts: {},
-          names: {'requisites': 'Реквизиты', 'phoned': 'Звонил', 'drop_phone': 'Не дозвон', 'payed': 'Оплачено', 'collected': 'Собрано', 'ttn': 'ТТН'},
+          names: {'requisites': 'Реквизиты', 'phoned': 'Звонил', 'payed': 'Вайбер', 'drop_phone': 'Не дозвон',  'collected': 'Собрано', 'ttn': 'ТТН'},
           mapStatuses: {'1': 'Отправлено', '2': 'Доставлено', '3': 'Ошибка', '4': 'Прочтено'},
           payemntPrice: null,
           isPhoneValid: true,
@@ -155,10 +155,10 @@ import * as moment from 'moment';
         ...mapGetters(['settings', 'templates']),
         emailStatuses () {
           let map = {'send_at': 'Отправлено', 'delivered_at': 'Доставлено', 'read_at': 'Прочтено'}
-          let result = {requisites: {}, payed: {}, ttn: {}}
+          let result = {requisites: {}, ttn: {}}
           this.item.email_statuses.map((el) => {
             for (name in map) {
-              if (el[name] != null && el.type != 'feedback') {
+              if (el[name] != null && el.type != 'feedback' && el.type != 'payed') {
                 result[el.type][name] = {status: map[name], time: el[name]}
               }
             }
@@ -172,10 +172,10 @@ import * as moment from 'moment';
         },
         smsStatuses () {
           let map = {'send_at': 'Отправлено', 'delivered_at': 'Доставлено', 'error_at': 'Ошибка'}
-          let result = {requisites: {}, payed: {}, ttn: {}}
+          let result = {requisites: {}, ttn: {}}
           this.item.sms_statuses.map((el) => {
             for (name in map) {
-              if (el[name] != null) {
+              if (el[name] != null && el.type != 'payed') {
                 result[el.type][name] = {status: map[name], time: el[name]}
               }
             }
@@ -220,12 +220,12 @@ import * as moment from 'moment';
         },
         onClick (key, item) {
           switch (key) {
-            case 'payed':
             case 'ttn':
             case 'requisites':
               this.type = key;
               this.showDialog = true
               break
+            case 'payed':
             case 'phoned':
             case 'drop_phone':
               item.statuses[key] = !item.statuses[key]

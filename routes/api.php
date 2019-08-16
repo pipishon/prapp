@@ -108,6 +108,7 @@ Route::prefix('statistics')->group(function () {
 
 
 
+
 Route::prefix('sync')->group(function () {
   Route::get('products', 'SyncController@products');
   Route::get('orders', 'SyncController@orders');
@@ -171,3 +172,4 @@ Route::get('checkukrtrack', 'UkrPostTtnTrackController@checkStatus');
 
 Route::get('getleftbarbadges', 'SettingsController@getLeftBarBadges');
 
+Route::resource('privat', 'PrivatPaymentController');
