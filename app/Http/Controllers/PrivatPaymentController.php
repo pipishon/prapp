@@ -15,7 +15,7 @@ class PrivatPaymentController extends Controller
      */
     public function index()
     {
-        return PrivatPayment::whereDate('trandate', Carbon::today())->orderBy('trandate', 'desc')->get();
+        return PrivatPayment::orderBy('trandate', 'desc')->get();
     }
 
     /**

@@ -1,8 +1,8 @@
 <template>
-  <div >
+  <div class="hidden-sm-and-down">
     <v-navigation-drawer
           :value="drawer"
-          @change="emit('onClose')"
+          @input="$emit('onClose')"
           absolute
           temporary
           right
@@ -11,7 +11,8 @@
           <v-list class="pa-1" subheader three-line >
             <v-list-tile >
               <v-list-tile-content >
-                <v-btn @click="getList">Обновить</v-btn>
+								<v-progress-circular indeterminate v-if="onLoad" class="ml-5" ></v-progress-circular>
+                <v-btn @click="getList" v-else>Обновить</v-btn>
               </v-list-tile-content>
             </v-list-tile>
             <v-list-tile v-for="payment in payments" :key="payment.id">
@@ -33,7 +34,8 @@ import * as moment from 'moment';
       props: ['drawer'],
       data() {
         return {
-          payments: []
+          payments: [],
+					onLoad: false
         }
       },
       watch: {
@@ -51,8 +53,10 @@ import * as moment from 'moment';
           return desc.slice(desc.indexOf(Y) + Y.length)
         },
         getList () {
+					this.onLoad = true
           axios.get('api/privat').then((res) => {
             this.payments = res.data
+						this.onLoad = false
           })
         }
       },
