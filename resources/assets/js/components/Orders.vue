@@ -115,7 +115,7 @@
         <v-select  v-model="perPage" :items="[20, 30, 50]" @input="searchQuery['per_page'] = arguments[0]; getList()"></v-select>
       </span>
     </v-footer>
-    <privat :drawer="privatDrawer" @onClose="privatDrawer = arguments[0]" />
+    <privat :drawer="privatDrawer" @onClose="privatDrawer = false" />
   </div>
 </template>
 

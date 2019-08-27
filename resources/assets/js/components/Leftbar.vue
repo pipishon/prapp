@@ -27,7 +27,7 @@
             'view_week': 'orders',
             'mode_comment': 'messages',
             'reply_all': 'autoreply',
-            'bar_chart': 'statistics',
+            'subject': 'statistics',
             'receipt': 'templates',
             'done_outline': 'autoreceive',
             'library_books': 'dictionary',

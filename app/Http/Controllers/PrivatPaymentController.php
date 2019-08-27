@@ -15,7 +15,8 @@ class PrivatPaymentController extends Controller
      */
     public function index()
     {
-        return PrivatPayment::orderBy('trandate', 'desc')->get();
+       // PrivatPayment::getFromApi();
+        return PrivatPayment::orderBy('trandate', 'desc')->take(20)->get();
     }
 
     /**
@@ -70,7 +71,8 @@ class PrivatPaymentController extends Controller
      */
     public function update(Request $request, PrivatPayment $privatPayment)
     {
-        //
+				$privatPayment = PrivatPayment::find($request->input('id'));
+        return ($privatPayment->update($request->except('id'))) ? 'true' : 'false';
     }
 
     /**

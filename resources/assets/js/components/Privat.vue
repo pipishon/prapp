@@ -1,28 +1,37 @@
 <template>
-  <div class="hidden-sm-and-down">
+  <div class="hidden-sm-and-down ">
     <v-navigation-drawer
           :value="drawer"
-          @input="$emit('onClose')"
-          absolute
-          temporary
+          fixed
           right
           width="400"
+class="privat-payment"
         >
-          <v-list class="pa-1" subheader three-line >
-            <v-list-tile >
-              <v-list-tile-content >
-								<v-progress-circular indeterminate v-if="onLoad" class="ml-5" ></v-progress-circular>
-                <v-btn @click="getList" v-else>Обновить</v-btn>
-              </v-list-tile-content>
-            </v-list-tile>
-            <v-list-tile v-for="payment in payments" :key="payment.id">
-              <v-list-tile-content >
-                <v-list-tile-title> {{payment.amount}} грн</v-list-tile-title>
-                <v-list-tile-sub-title>{{ customerName(payment.description) }}</v-list-tile-sub-title>
-                <v-list-tile-sub-title>{{ payment.trandate }}</v-list-tile-sub-title>
-              </v-list-tile-content>
-            </v-list-tile>
-          </v-list>
+		<v-toolbar flat>
+      <v-list>
+        <v-list-tile>
+          <v-list-tile-action>
+						<v-progress-circular indeterminate v-if="onLoad"  ></v-progress-circular>
+						<v-btn @click="getList" icon v-else><v-icon>sync</v-icon></v-btn>
+          </v-list-tile-action>
+          <v-list-tile-title>
+          </v-list-tile-title>
+          <v-list-tile-action >
+						<v-btn class="pull-right" @click="$emit('onClose')" icon><v-icon>close</v-icon></v-btn>
+          </v-list-tile-action >
+        </v-list-tile>
+      </v-list>
+    </v-toolbar>
+<div class="wrap">
+
+				<div v-for="payment in payments" :key="payment.id">
+					<div :class="{'green lighten-5': payment.processed, 'grey lighten-4': !payment.processed}" class="pa-3 ma-3 payment" @click="payment.processed = !payment.processed; update(payment)">
+                <div><strong>{{payment.amount}} грн</strong></div>
+                <div>{{ customerName(payment.description) }}</div>
+                <div>{{ payment.trandate }}</div>
+					</div>
+				</div>
+</div>
       </v-navigation-drawer>
   </div>
 </template>
@@ -58,7 +67,12 @@ import * as moment from 'moment';
             this.payments = res.data
 						this.onLoad = false
           })
-        }
+        },
+				update (payment) {
+          axios.put('api/privat/' + payment.id, payment).then((res) => {
+						console.log(res.data)
+          })
+				}
       },
       mounted() {
         //this.getList()
@@ -66,13 +80,16 @@ import * as moment from 'moment';
     }
 </script>
 <style scoped>
-.modal-lg {
-  max-width: 80vw;
+.payment { 
+	border-radius: 15px;
+	cursor: pointer;
+width: 350px;
 }
-.not-merged {
-  color: gray;
+.wrap {
+	height: 100%;
+	overflow-y: scroll;
 }
-textarea {
-  height: 12rem;
+.privat-payment {
+overflow: hidden;
 }
 </style>

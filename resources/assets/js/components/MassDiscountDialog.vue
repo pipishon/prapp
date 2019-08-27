@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div @click="showDialog = true" style="cursor: pointer;"><slot></slot></div>
+    <div @click.stop="showDialog = true" style="cursor: pointer;"><slot></slot></div>
     <v-dialog  v-model="showDialog" width="300" persistent @keydown.esc="showDialog = false">
       <v-card v-if="showDialog">
         <v-container fluid>
@@ -9,7 +9,7 @@
         </v-container>
         <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="primary" flat @click="showDialog = false" > Отмена </v-btn>
+            <v-btn color="primary" flat @click.stop="showDialog = false" > Отмена </v-btn>
             <v-btn color="primary" flat @click="save" > Сохранить </v-btn>
         </v-card-actions>
       </v-card>
@@ -28,6 +28,11 @@ import { mapActions, mapGetters, mapMutations } from 'vuex'
           discountId: 0,
         }
       },
+watch: {
+showDialog(val) {
+console.log(val)
+}
+},
       methods: {
         ...mapActions(['massAction']),
         save() {
