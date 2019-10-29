@@ -99,7 +99,9 @@
 
       <v-btn v-for="name in ['Новая Почта', 'Укрпочта', 'Самовывоз']" :key="name" flat @click="getSpecDeliveryOrders(name)" :class="{primary: footerButton == name}">{{name}} {{getDeliveryCollectedString(name)}}</v-btn>
       <v-btn flat @click="getNalogenii" :class="{primary: footerButton == 'nalogenii'}">Наложенный</v-btn>
-      <v-btn flat @click="privatDrawer = !privatDrawer" >Приват</v-btn>
+      <v-btn flat @click="privatDrawer = !privatDrawer" >
+				Приват <span v-if="privatNewRecords != 0">({{privatNewRecords}})</span>
+			</v-btn>
       <v-btn @click="showNotDelivered" icon title="Показывать только не закрытые заказы"> <v-icon :color="(sNotDelivered) ? 'primary' : ''">no_sim</v-icon> </v-btn>
       <v-btn @click="showTodayDelivered" icon title="Показывать только с сегодняшней отгрузкой"> <v-icon :color="(sTodayDelivered == '1') ? 'primary' : ''">local_shipping</v-icon> </v-btn>
       <v-btn @click="showNotPayed" icon title="Показывать только неоплаченные заказы"> <v-icon :color="(sNotPayed == '1') ? 'primary' : ''">monetization_on</v-icon> </v-btn>
@@ -115,7 +117,7 @@
         <v-select  v-model="perPage" :items="[20, 30, 50]" @input="searchQuery['per_page'] = arguments[0]; getList()"></v-select>
       </span>
     </v-footer>
-    <privat :drawer="privatDrawer" @onClose="privatDrawer = false" />
+    <privat :drawer="privatDrawer" @onClose="privatDrawer = false" @newRecords="privatNewRecords = arguments[0]" />
   </div>
 </template>
 
@@ -130,6 +132,7 @@
     export default {
       data() {
         return {
+          privatNewRecords: 0,
           privatPayments: [],
           privatDrawer: false,
           massMenu: false,

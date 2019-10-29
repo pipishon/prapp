@@ -218,7 +218,12 @@ import { mapActions, mapGetters, mapMutations } from 'vuex'
                   this.getCustomer()
                 })
               }
-            }
+            } else {
+                params.id = this.customer.id
+                axios.get('api/customers/addphoneemail', {params}).then((res) => {
+                  this.getCustomer()
+                })
+						}
           })
         },
         save () {

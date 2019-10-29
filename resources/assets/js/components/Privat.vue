@@ -70,12 +70,25 @@ import * as moment from 'moment';
         },
 				update (payment) {
           axios.put('api/privat/' + payment.id, payment).then((res) => {
+						this.getUnchecked()
 						console.log(res.data)
           })
+				},
+				getUnchecked () {
+          const params = {last_id: true}
+          axios.get('api/privat', {params}).then((res) => {
+						this.$emit('newRecords', res.data)
+					})
 				}
       },
       mounted() {
-        //this.getList()
+        this.getList()
+				this.getUnchecked()
+        setInterval(() => {
+					// const maxPayment = this.payments.reduce((prev, cur) => 1*prev.id > 1*cur.id ? prev : cur)
+					// const maxId = 1*maxPayment.id
+					this.getUnchecked();
+        }, 120000) 
       }
     }
 </script>

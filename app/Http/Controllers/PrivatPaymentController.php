@@ -13,11 +13,15 @@ class PrivatPaymentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+			if ($request->has('last_id')) {
+				return PrivatPayment::where('processed', '0')->count();
+			}
        // PrivatPayment::getFromApi();
         return PrivatPayment::orderBy('trandate', 'desc')->take(20)->get();
     }
+
 
     /**
      * Show the form for creating a new resource.
