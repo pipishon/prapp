@@ -21,6 +21,7 @@
         <discount v-if="mode == 'discount'"/>
         <votes v-if="mode == 'votes'"/>
         <cron v-if="mode == 'cron'"/>
+        <creturn v-if="mode == 'creturn'"/>
       </div>
     </v-app>
   </div>
@@ -47,10 +48,11 @@ import discount from './components/Discounts'
 import rfc from './components/Rfc'
 import votes from './components/Votes'
 import cron from './components/Cron'
+import creturn from './components/Creturn'
     export default {
       data () {
         return {
-          mode: 'orders'
+          mode: 'creturn'
         }
       },
       components: {
@@ -71,7 +73,8 @@ import cron from './components/Cron'
         rfc,
         discount,
         votes,
-        cron
+        cron,
+        creturn
       },
       mounted() {
         //this.$store.dispatch('loadDictionary')
